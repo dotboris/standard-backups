@@ -23,6 +23,9 @@
           # Go
           pkgs.go
           pkgs.cobra-cli
+
+          # Misc tooling
+          pkgs.just
         ];
       };
     });
