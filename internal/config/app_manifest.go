@@ -47,11 +47,11 @@ func loadAppManifestV1Schema() (*jsonschema.Schema, error) {
 }
 
 func init() {
-	resAppManifestV1Schema, err := loadAppManifestV1Schema()
+	res, err := loadAppManifestV1Schema()
 	if err != nil {
 		log.Panicf("[internal error] failed to load app manifest v1 schema: %v", err)
 	}
-	appManifestV1Schema = *resAppManifestV1Schema
+	appManifestV1Schema = *res
 }
 
 type AppManifestV1 struct {
