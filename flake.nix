@@ -15,6 +15,9 @@
       formatter = pkgs.alejandra;
 
       devShells.default = pkgs.mkShell {
+        hardeningDisable = [
+          "fortify" # required to use delve debugger
+        ];
         packages = [
           # Nix & flake
           pkgs.nil
