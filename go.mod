@@ -4,13 +4,13 @@ go 1.24.3
 
 require (
 	github.com/go-viper/mapstructure/v2 v2.2.1
+	github.com/k0kubun/pp/v3 v3.4.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/cobra v1.9.1
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/k0kubun/pp/v3 v3.4.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
