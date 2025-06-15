@@ -64,7 +64,8 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 				"properties": backendsProperties,
 			},
 			"targets": map[string]any{
-				"type": "object",
+				"type":                 "object",
+				"additionalProperties": false,
 				"patternProperties": map[string]any{
 					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
 						"type":     "object",
@@ -76,7 +77,8 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 				},
 			},
 			"sources": map[string]any{
-				"type": "object",
+				"type":                 "object",
+				"additionalProperties": false,
 				"patternProperties": map[string]any{
 					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
 						"type":     "object",

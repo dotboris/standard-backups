@@ -5,6 +5,7 @@ go 1.24.3
 require (
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/k0kubun/pp/v3 v3.4.1
+	github.com/lithammer/dedent v1.1.0
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/cobra v1.9.1
 )
