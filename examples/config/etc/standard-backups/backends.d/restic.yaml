@@ -1,0 +1,4 @@
+version: 1
+name: restic
+bin: /todo/path/to/restic-backend # TODO
+protocol-version: 1

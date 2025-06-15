@@ -1,0 +1,21 @@
+version: 1
+
+backends:
+  restic:
+    enable: true
+  rsync:
+    enable: true
+
+targets:
+  local:
+    backend: rsync
+  s3:
+    backend: restic
+
+sources:
+  nextcloud:
+    app: nextcloud
+    backup-to: [local, s3]
+  paperless:
+    app: paperless
+    backup-to: [s3] # only to s3
