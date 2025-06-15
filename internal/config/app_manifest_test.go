@@ -22,7 +22,7 @@ post-hook: echo after
 `), 0644)
 			appManifests, err := LoadAppManifests(d)
 			if assert.NoError(t, err) {
-				assert.Equal(t, []AppManifest{
+				assert.Equal(t, []AppManifestV1{
 					{
 						Version:     1,
 						Name:        "example 1",
@@ -55,7 +55,7 @@ post-hook: echo after app2
 `), 0644)
 	appManifests, err := LoadAppManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifest{
+		assert.Equal(t, []AppManifestV1{
 			{
 				Version:     1,
 				Name:        "app1",
@@ -81,7 +81,7 @@ func TestLoadAppManifestsIgnoreNonYaml(t *testing.T) {
 	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0644)
 	appManifests, err := LoadAppManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifest{}, appManifests)
+		assert.Equal(t, []AppManifestV1{}, appManifests)
 	}
 }
 
@@ -89,7 +89,7 @@ func TestLoadAppManifestsEmptyDir(t *testing.T) {
 	d := t.TempDir()
 	appManifests, err := LoadAppManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifest{}, appManifests)
+		assert.Equal(t, []AppManifestV1{}, appManifests)
 	}
 }
 
@@ -102,7 +102,7 @@ directory: /app/to/backup
 `), 0644)
 	appManifests, err := LoadAppManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifest{
+		assert.Equal(t, []AppManifestV1{
 			{
 				Version:     1,
 				Name:        "app",

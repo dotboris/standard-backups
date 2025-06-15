@@ -54,7 +54,7 @@ func init() {
 	appManifestV1Schema = *resAppManifestV1Schema
 }
 
-type AppManifest struct {
+type AppManifestV1 struct {
 	Version     int    `mapstructure:"version"`
 	Name        string `mapstructure:"name"`
 	Description string `mapstructure:"description"`
@@ -63,13 +63,13 @@ type AppManifest struct {
 	PostHook    string `mapstructure:"post-hook"`
 }
 
-func LoadAppManifests(dir string) ([]AppManifest, error) {
+func LoadAppManifests(dir string) ([]AppManifestV1, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list app manifest in %s: %w", dir, err)
 	}
 
-	appManifests := make([]AppManifest, 0)
+	appManifests := make([]AppManifestV1, 0)
 	for _, entry := range entries {
 		if entry.Type().IsRegular() && (strings.HasSuffix(entry.Name(), ".yaml") || strings.HasSuffix(entry.Name(), ".yml")) {
 			fullPath := path.Join(dir, entry.Name())
@@ -84,7 +84,7 @@ func LoadAppManifests(dir string) ([]AppManifest, error) {
 	return appManifests, nil
 }
 
-func loadAppManifest(path string) (*AppManifest, error) {
+func loadAppManifest(path string) (*AppManifestV1, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read app manifest %s: %w", path, err)
@@ -101,7 +101,7 @@ func loadAppManifest(path string) (*AppManifest, error) {
 		return nil, fmt.Errorf("app manifest %s is invalid: %w", path, err)
 	}
 
-	var res AppManifest
+	var res AppManifestV1
 	err = mapstructure.Decode(rawManifest, &res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode app manifest %s: %w", path, err)
