@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -64,6 +65,9 @@ type BackendManifestV1 struct {
 func LoadBackendManifests(dir string) ([]BackendManifestV1, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return []BackendManifestV1{}, nil
+		}
 		return nil, fmt.Errorf("failed to list backend manifest in %s: %w", dir, err)
 	}
 

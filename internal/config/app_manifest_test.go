@@ -88,6 +88,14 @@ func TestLoadAppManifestsEmptyDir(t *testing.T) {
 	}
 }
 
+func TestLoadAppManifestsMissingDir(t *testing.T) {
+	d := t.TempDir()
+	appManifests, err := LoadAppManifests(path.Join(d, "does-not-exist"))
+	if assert.NoError(t, err) {
+		assert.Equal(t, []AppManifestV1{}, appManifests)
+	}
+}
+
 func TestLoadAppManifestsNoHooks(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app.yaml"), []byte(`version: 1

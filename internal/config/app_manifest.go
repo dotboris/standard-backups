@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -66,6 +67,9 @@ type AppManifestV1 struct {
 func LoadAppManifests(dir string) ([]AppManifestV1, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return []AppManifestV1{}, nil
+		}
 		return nil, fmt.Errorf("failed to list app manifest in %s: %w", dir, err)
 	}
 

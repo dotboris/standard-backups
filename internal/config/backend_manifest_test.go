@@ -82,6 +82,14 @@ func TestLoadBackendManifestsEmptyDir(t *testing.T) {
 	}
 }
 
+func TestLoadBackendManifestsMissingDir(t *testing.T) {
+	d := t.TempDir()
+	backendManifests, err := LoadBackendManifests(path.Join(d, "does-not-exist"))
+	if assert.NoError(t, err) {
+		assert.Equal(t, []BackendManifestV1{}, backendManifests)
+	}
+}
+
 func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "backend.yaml"), []byte(`version: 1
