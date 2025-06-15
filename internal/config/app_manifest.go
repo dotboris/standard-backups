@@ -71,7 +71,7 @@ func LoadAppManifests(dir string) ([]AppManifestV1, error) {
 
 	appManifests := make([]AppManifestV1, 0)
 	for _, entry := range entries {
-		if entry.Type().IsRegular() && (strings.HasSuffix(entry.Name(), ".yaml") || strings.HasSuffix(entry.Name(), ".yml")) {
+		if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
 			fullPath := path.Join(dir, entry.Name())
 			appManifest, err := loadAppManifest(fullPath)
 			if err != nil {

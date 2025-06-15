@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -10,28 +9,24 @@ import (
 )
 
 func TestLoadBackendManifestsSingleFile(t *testing.T) {
-	for _, ext := range []string{".yaml", ".yml"} {
-		t.Run(ext, func(t *testing.T) {
-			d := t.TempDir()
-			os.WriteFile(path.Join(d, fmt.Sprintf("example%s", ext)), []byte(`version: 1
+	d := t.TempDir()
+	os.WriteFile(path.Join(d, "example.yaml"), []byte(`version: 1
 name: example 1
 description: the first example
 bin: /path/to/backend
 protocol-version: 1
 `), 0644)
-			backendManifests, err := LoadBackendManifests(d)
-			if assert.NoError(t, err) {
-				assert.Equal(t, []BackendManifestV1{
-					{
-						Version:         1,
-						Name:            "example 1",
-						Description:     "the first example",
-						Bin:             "/path/to/backend",
-						ProtocolVersion: 1,
-					},
-				}, backendManifests)
-			}
-		})
+	backendManifests, err := LoadBackendManifests(d)
+	if assert.NoError(t, err) {
+		assert.Equal(t, []BackendManifestV1{
+			{
+				Version:         1,
+				Name:            "example 1",
+				Description:     "the first example",
+				Bin:             "/path/to/backend",
+				ProtocolVersion: 1,
+			},
+		}, backendManifests)
 	}
 }
 

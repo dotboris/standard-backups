@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -10,30 +9,26 @@ import (
 )
 
 func TestLoadAppManifestsSingleFile(t *testing.T) {
-	for _, ext := range []string{".yaml", ".yml"} {
-		t.Run(ext, func(t *testing.T) {
-			d := t.TempDir()
-			os.WriteFile(path.Join(d, fmt.Sprintf("example%s", ext)), []byte(`version: 1
+	d := t.TempDir()
+	os.WriteFile(path.Join(d, "example.yaml"), []byte(`version: 1
 name: example 1
 description: the first example
 directory: /app/to/backup/1
 pre-hook: echo before
 post-hook: echo after
 `), 0644)
-			appManifests, err := LoadAppManifests(d)
-			if assert.NoError(t, err) {
-				assert.Equal(t, []AppManifestV1{
-					{
-						Version:     1,
-						Name:        "example 1",
-						Description: "the first example",
-						Directory:   "/app/to/backup/1",
-						PreHook:     "echo before",
-						PostHook:    "echo after",
-					},
-				}, appManifests)
-			}
-		})
+	appManifests, err := LoadAppManifests(d)
+	if assert.NoError(t, err) {
+		assert.Equal(t, []AppManifestV1{
+			{
+				Version:     1,
+				Name:        "example 1",
+				Description: "the first example",
+				Directory:   "/app/to/backup/1",
+				PreHook:     "echo before",
+				PostHook:    "echo after",
+			},
+		}, appManifests)
 	}
 }
 

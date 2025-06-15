@@ -69,7 +69,7 @@ func LoadBackendManifests(dir string) ([]BackendManifestV1, error) {
 
 	backendManifests := make([]BackendManifestV1, 0)
 	for _, entry := range entries {
-		if entry.Type().IsRegular() && (strings.HasSuffix(entry.Name(), ".yaml") || strings.HasSuffix(entry.Name(), ".yml")) {
+		if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
 			fullPath := path.Join(dir, entry.Name())
 			backendManifest, err := loadBackendManifest(fullPath)
 			if err != nil {
