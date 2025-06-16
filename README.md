@@ -41,7 +41,7 @@ With `standard-backups` the rules on how to backup a given app are defined in a 
 So what's left for system administrators? Simple high level configuration. Using `standard-backups`' config, admins can:
 
 - choose which backup tools to use,
-- define targets which are different instances of those backup tools (ex: local vs remote),
+- define destinations which are different instances of those backup tools (ex: local vs remote),
 - define sources which connect apps with one or more targets.
 
 From there, they run `standard-backups` on a schedule and leave it to do all the hard work.

@@ -6,7 +6,7 @@ backends:
   rsync:
     enable: true
 
-targets:
+destinations:
   local:
     backend: rsync
   s3:

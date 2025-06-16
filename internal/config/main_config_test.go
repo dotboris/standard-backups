@@ -60,7 +60,7 @@ func TestLoadMainConfigEmptyConfig(t *testing.T) {
 	)
 }
 
-func TestLoadMainConfigBadTargetKey(t *testing.T) {
+func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
 
@@ -70,7 +70,7 @@ func TestLoadMainConfigBadTargetKey(t *testing.T) {
 				configPath,
 				[]byte(testutils.DedentYaml(fmt.Sprintf(`
 					version: 1
-					targets:
+					destinations:
 						%s:
 							backend: bogus
 				`, key))),
@@ -89,7 +89,7 @@ func TestLoadMainConfigBadTargetKey(t *testing.T) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
 						jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
-						- at '/targets': additional properties '%s' not allowed
+						- at '/destinations': additional properties '%s' not allowed
 					`, key)),
 					validationErr.Error(),
 				)
@@ -98,14 +98,14 @@ func TestLoadMainConfigBadTargetKey(t *testing.T) {
 	}
 }
 
-func TestLoadMainConfigTargetBadBackend(t *testing.T) {
+func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
 	os.WriteFile(
 		configPath,
 		[]byte(testutils.DedentYaml(`
 			version: 1
-			targets:
+			destinations:
 				test:
 					backend: nope
 		`)),
@@ -124,7 +124,7 @@ func TestLoadMainConfigTargetBadBackend(t *testing.T) {
 		assert.Equal(t,
 			testutils.Dedent(`
 				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
-				- at '/targets/test/backend': value must be one of 'bogus', 'other'
+				- at '/destinations/test/backend': value must be one of 'bogus', 'other'
 			`),
 			validationErr.Error(),
 		)

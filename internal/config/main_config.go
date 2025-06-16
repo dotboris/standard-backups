@@ -17,7 +17,7 @@ type BackendConfigV1 struct {
 	Enable bool
 }
 
-type TargetConfigV1 struct {
+type DestinationConfigV1 struct {
 	Backend string
 }
 
@@ -29,10 +29,10 @@ type SourceConfigV1 struct {
 // MainConfig is the configuration file that system administrators are expected
 // to write. In other words, it's `$dir/config.yaml`.
 type MainConfig struct {
-	Version  int
-	Backends map[string]BackendConfigV1
-	Targets  map[string]TargetConfigV1
-	Sources  map[string]SourceConfigV1
+	Version      int
+	Backends     map[string]BackendConfigV1
+	Destinations map[string]DestinationConfigV1
+	Sources      map[string]SourceConfigV1
 }
 
 func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*jsonschema.Schema, error) {
@@ -63,7 +63,7 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 				"type":       "object",
 				"properties": backendsProperties,
 			},
-			"targets": map[string]any{
+			"destinations": map[string]any{
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
