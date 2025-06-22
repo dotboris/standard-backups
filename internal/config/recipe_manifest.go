@@ -20,15 +20,21 @@ var (
 		"$id":     recipeManifestV1SchemaUrl,
 		"type":    "object",
 		"required": []any{
-			"version", "name", "directory",
+			"version", "name", "paths",
 		},
 		"properties": map[string]any{
 			"version":     map[string]any{"const": 1},
 			"name":        map[string]any{"type": "string"},
 			"description": map[string]any{"type": "string"},
-			"directory":   map[string]any{"type": "string"},
-			"pre-hook":    map[string]any{"type": "string"},
-			"post-hook":   map[string]any{"type": "string"},
+			"paths": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "string",
+				},
+				"minItems": 1,
+			},
+			"pre-hook":  map[string]any{"type": "string"},
+			"post-hook": map[string]any{"type": "string"},
 		},
 	}
 	recipeManifestV1Schema jsonschema.Schema
@@ -56,12 +62,12 @@ func init() {
 }
 
 type RecipeManifestV1 struct {
-	Version     int    `mapstructure:"version"`
-	Name        string `mapstructure:"name"`
-	Description string `mapstructure:"description"`
-	Directory   string `mapstructure:"directory"`
-	PreHook     string `mapstructure:"pre-hook"`
-	PostHook    string `mapstructure:"post-hook"`
+	Version     int      `mapstructure:"version"`
+	Name        string   `mapstructure:"name"`
+	Description string   `mapstructure:"description"`
+	Paths       []string `mapstructure:"paths"`
+	PreHook     string   `mapstructure:"pre-hook"`
+	PostHook    string   `mapstructure:"post-hook"`
 }
 
 func LoadRecipeManifests(dir string) ([]RecipeManifestV1, error) {

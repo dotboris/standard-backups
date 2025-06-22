@@ -1,4 +1,4 @@
 version: 1
 name: rsync
-bin: /todo/path/to/rsync-backend # TODO
+bin: ./dist/standard-backups-rsync-backend
 protocol-version: 1

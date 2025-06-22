@@ -1,6 +1,9 @@
 package config
 
-import "path"
+import (
+	"fmt"
+	"path"
+)
 
 // Config describes the entire configuration of `standard-backups` across all config files.
 type Config struct {
@@ -31,4 +34,22 @@ func LoadConfig(dir string) (*Config, error) {
 		Recipes:    recipes,
 		MainConfig: *mainConfig,
 	}, nil
+}
+
+func (c *Config) GetBackendManifest(name string) (*BackendManifestV1, error) {
+	for _, m := range c.Backends {
+		if m.Name == name {
+			return &m, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find backend named %s", name)
+}
+
+func (c *Config) GetRecipeManifest(name string) (*RecipeManifestV1, error) {
+	for _, m := range c.Recipes {
+		if m.Name == name {
+			return &m, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find recipe named %s", name)
 }

@@ -11,7 +11,8 @@ build $cmd:
 # Build all binaries
 [group("build")]
 build-all: \
-  (build "standard-backups")
+  (build "standard-backups") \
+  (build "standard-backups-rsync-backend")
 
 # Run standard-backups
 run *args:
@@ -26,3 +27,7 @@ test:
 [group("test")]
 e2e: build-all
   go test -v $(go list ./... | grep 'standard-backups/e2e')
+
+# Runs all tests
+[group("test")]
+test-all: test e2e

@@ -9,6 +9,8 @@ backends:
 destinations:
   local:
     backend: rsync
+    options:
+      destination-dir: ./dist/backups/local
   s3:
     backend: restic
 
@@ -19,3 +21,6 @@ jobs:
   paperless:
     recipe: paperless
     backup-to: [s3] # only to s3
+  test:
+    recipe: examples
+    backup-to: [local]
