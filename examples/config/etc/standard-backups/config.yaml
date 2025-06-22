@@ -12,7 +12,7 @@ destinations:
   s3:
     backend: restic
 
-sources:
+jobs:
   nextcloud:
     recipe: nextcloud
     backup-to: [local, s3]

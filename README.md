@@ -42,7 +42,7 @@ So what's left for system administrators? Simple high level configuration. Using
 
 - choose which backup tools to use,
 - define destinations which are different instances of those backup tools (ex: local vs remote),
-- define sources which connect recipes with one or more targets.
+- define jobs which connect recipes with one or more targets.
 
 From there, they run `standard-backups` on a schedule and leave it to do all the hard work.
 

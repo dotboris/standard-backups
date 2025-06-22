@@ -21,7 +21,7 @@ type DestinationConfigV1 struct {
 	Backend string
 }
 
-type SourceConfigV1 struct {
+type JobConfigV1 struct {
 	Recipe   string
 	BackupTo []string `mapstructure:"backup-to"`
 }
@@ -32,7 +32,7 @@ type MainConfig struct {
 	Version      int
 	Backends     map[string]BackendConfigV1
 	Destinations map[string]DestinationConfigV1
-	Sources      map[string]SourceConfigV1
+	Jobs         map[string]JobConfigV1
 }
 
 func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifestV1) (*jsonschema.Schema, error) {
@@ -76,7 +76,7 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 					},
 				},
 			},
-			"sources": map[string]any{
+			"jobs": map[string]any{
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{

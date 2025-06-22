@@ -131,7 +131,7 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 	}
 }
 
-func TestLoadMainConfigBadSourceKey(t *testing.T) {
+func TestLoadMainConfigBadJobKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
 
@@ -141,7 +141,7 @@ func TestLoadMainConfigBadSourceKey(t *testing.T) {
 				configPath,
 				[]byte(testutils.DedentYaml(fmt.Sprintf(`
 					version: 1
-					sources:
+					jobs:
 						%s:
 							recipe: bogus
 							backup-to: []
@@ -161,7 +161,7 @@ func TestLoadMainConfigBadSourceKey(t *testing.T) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
 						jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
-						- at '/sources': additional properties '%s' not allowed
+						- at '/jobs': additional properties '%s' not allowed
 					`, key)),
 					validationErr.Error(),
 				)
@@ -177,7 +177,7 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 		configPath,
 		[]byte(testutils.DedentYaml(`
 			version: 1
-			sources:
+			jobs:
 				test:
 					recipe: nope
 					backup-to: []
@@ -197,7 +197,7 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 		assert.Equal(t,
 			testutils.Dedent(`
 				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
-				- at '/sources/test/recipe': value must be one of 'bogus', 'other'
+				- at '/jobs/test/recipe': value must be one of 'bogus', 'other'
 			`),
 			validationErr.Error(),
 		)
