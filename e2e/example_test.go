@@ -83,7 +83,12 @@ func TestBackupRsyncLocal(t *testing.T) {
 			return nil
 		}
 
-		sourcePath := filepath.Join(root, "internal", strings.TrimPrefix(p, newBackup))
+		sourcePath := filepath.Join(
+			root,
+			// TODO: shouldn't have to do this. Smells like a bug in the rsync backend. Trailing slash issue?
+			"internal",
+			strings.TrimPrefix(p, newBackup),
+		)
 		source, err := os.ReadFile(sourcePath)
 		if !assert.NoError(t, err) {
 			return nil
