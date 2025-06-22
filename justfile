@@ -11,7 +11,8 @@ build $cmd:
 # Build all binaries
 [group("build")]
 build-all: \
-  (build "standard-backups")
+  (build "standard-backups") \
+  (build "standard-backups-rsync-backend")
 
 # Run standard-backups
 run *args:

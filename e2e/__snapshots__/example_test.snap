@@ -14,11 +14,19 @@ Using config in examples/config/etc/standard-backups
       Version:         1,
       Name:            "rsync",
       Description:     "",
-      Bin:             "/todo/path/to/rsync-backend",
+      Bin:             "./dist/standard-backups-rsync-backend",
       ProtocolVersion: 1,
     },
   },
   Recipes: []config.RecipeManifestV1{
+    config.RecipeManifestV1{
+      Version:     1,
+      Name:        "internal-code",
+      Description: "Backs up all the internal go code in this repository as an example",
+      Directory:   "internal/",
+      PreHook:     "",
+      PostHook:    "",
+    },
     config.RecipeManifestV1{
       Version:     1,
       Name:        "nextcloud",
@@ -49,9 +57,13 @@ Using config in examples/config/etc/standard-backups
     Destinations: map[string]config.DestinationConfigV1{
       "local": config.DestinationConfigV1{
         Backend: "rsync",
+        Options: map[string]interface {}{
+          "destination-dir": "./dist/backups/local",
+        },
       },
       "s3": config.DestinationConfigV1{
         Backend: "restic",
+        Options: map[string]interface {}{},
       },
     },
     Jobs: map[string]config.JobConfigV1{
@@ -66,6 +78,12 @@ Using config in examples/config/etc/standard-backups
         Recipe:   "paperless",
         BackupTo: []string{
           "s3",
+        },
+      },
+      "test": config.JobConfigV1{
+        Recipe:   "internal-code",
+        BackupTo: []string{
+          "local",
         },
       },
     },

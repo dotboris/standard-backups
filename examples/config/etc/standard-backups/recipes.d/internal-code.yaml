@@ -1,0 +1,4 @@
+version: 1
+name: internal-code
+description: Backs up all the internal go code in this repository as an example
+directory: internal/

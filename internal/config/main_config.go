@@ -19,6 +19,7 @@ type BackendConfigV1 struct {
 
 type DestinationConfigV1 struct {
 	Backend string
+	Options map[string]any
 }
 
 type JobConfigV1 struct {
@@ -72,6 +73,10 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 						"required": []any{"backend"},
 						"properties": map[string]any{
 							"backend": map[string]any{"enum": backendNames},
+							// TODO: allow backend to setup schema here
+							"options": map[string]any{
+								"type": "object",
+							},
 						},
 					},
 				},
@@ -97,7 +102,11 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 			},
 		},
 		"$defs": map[string]any{
-			"backend": map[string]any{},
+			"backend": map[string]any{
+				"enabled": map[string]any{
+					"type": "boolean",
+				},
+			},
 		},
 	})
 	if err != nil {

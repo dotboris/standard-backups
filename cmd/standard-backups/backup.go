@@ -1,36 +1,34 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 
+	"github.com/dotboris/standard-backups/internal"
+	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/spf13/cobra"
 )
 
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
-	Use:   "backup",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("backup called")
+	Use:   "backup <job>",
+	Short: "Perform a backup for the given job",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires at least one argument")
+		}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		jobName := args[0]
+		cfg, err := config.LoadConfig(ConfigDir)
+		if err != nil {
+			return err
+		}
+		err = internal.Backup(*cfg, jobName)
+		return err
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(backupCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// backupCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// backupCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

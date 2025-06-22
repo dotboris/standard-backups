@@ -31,6 +31,7 @@
 
           # Misc tooling
           pkgs.just
+          pkgs.rsync
         ];
       };
     });
