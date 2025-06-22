@@ -2,15 +2,27 @@
 default:
   @just --list
 
-# Build standard-backups binary in dist/
-build-standard-backups:
+# Build a command
+[group("build")]
+build $cmd:
   mkdir -p dist
-  go build -o dist/standard-backups ./cmd/standard-backups
+  go build -o dist/{{ cmd }} ./cmd/{{ cmd }}
 
 # Build all binaries
-build: \
-  build-standard-backups
+[group("build")]
+build-all: \
+  (build "standard-backups")
 
 # Run standard-backups
 run *args:
   @go run ./cmd/standard-backups {{ args }}
+
+# Run unit tests
+[group("test")]
+test:
+  go test -v $(go list ./... | grep -v 'standard-backups/e2e')
+
+# Run end-to-end tests
+[group("test")]
+e2e: build-all
+  go test -v $(go list ./... | grep 'standard-backups/e2e')
