@@ -1,3 +1,4 @@
 version: 1
 name: nextcloud
-directory: /path/to/nextcloud
+paths:
+  - /path/to/nextcloud

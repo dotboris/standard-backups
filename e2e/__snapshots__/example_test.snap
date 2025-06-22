@@ -21,27 +21,33 @@ Using config in examples/config/etc/standard-backups
   Recipes: []config.RecipeManifestV1{
     config.RecipeManifestV1{
       Version:     1,
-      Name:        "internal-code",
-      Description: "Backs up all the internal go code in this repository as an example",
-      Directory:   "internal/",
-      PreHook:     "",
-      PostHook:    "",
+      Name:        "examples",
+      Description: "Backs up all the example files in this repository",
+      Paths:       []string{
+        "examples",
+      },
+      PreHook:  "",
+      PostHook: "",
     },
     config.RecipeManifestV1{
       Version:     1,
       Name:        "nextcloud",
       Description: "",
-      Directory:   "/path/to/nextcloud",
-      PreHook:     "",
-      PostHook:    "",
+      Paths:       []string{
+        "/path/to/nextcloud",
+      },
+      PreHook:  "",
+      PostHook: "",
     },
     config.RecipeManifestV1{
       Version:     1,
       Name:        "paperless",
       Description: "",
-      Directory:   "/path/to/paperless",
-      PreHook:     "",
-      PostHook:    "",
+      Paths:       []string{
+        "/path/to/paperless",
+      },
+      PreHook:  "",
+      PostHook: "",
     },
   },
   MainConfig: config.MainConfig{
@@ -81,7 +87,7 @@ Using config in examples/config/etc/standard-backups
         },
       },
       "test": config.JobConfigV1{
-        Recipe:   "internal-code",
+        Recipe:   "examples",
         BackupTo: []string{
           "local",
         },

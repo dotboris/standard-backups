@@ -22,5 +22,5 @@ jobs:
     recipe: paperless
     backup-to: [s3] # only to s3
   test:
-    recipe: internal-code
+    recipe: examples
     backup-to: [local]

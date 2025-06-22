@@ -49,7 +49,7 @@ func Backup(cfg config.Config, jobName string) error {
 			fmt.Printf("skipping backend %s, it's disabled", invocation.BackendName)
 			continue
 		}
-		err = invocation.Backend.Backup([]string{recipe.Directory}, invocation.Destination.Options)
+		err = invocation.Backend.Backup(recipe.Paths, invocation.Destination.Options)
 		if err != nil {
 			errCount += 1
 			errs = errors.Join(err)
