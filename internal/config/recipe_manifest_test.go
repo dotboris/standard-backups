@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLoadAppManifestsSingleFile(t *testing.T) {
+func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "example.yaml"), []byte(`version: 1
 name: example 1
@@ -17,9 +17,9 @@ directory: /app/to/backup/1
 pre-hook: echo before
 post-hook: echo after
 `), 0644)
-	appManifests, err := LoadAppManifests(d)
+	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{
+		assert.Equal(t, []RecipeManifestV1{
 			{
 				Version:     1,
 				Name:        "example 1",
@@ -28,11 +28,11 @@ post-hook: echo after
 				PreHook:     "echo before",
 				PostHook:    "echo after",
 			},
-		}, appManifests)
+		}, manifests)
 	}
 }
 
-func TestLoadAppManifestsMultipleFiles(t *testing.T) {
+func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app1.yaml"), []byte(`version: 1
 name: app1
@@ -48,9 +48,9 @@ directory: /app/to/backup/2
 pre-hook: echo before app2
 post-hook: echo after app2
 `), 0644)
-	appManifests, err := LoadAppManifests(d)
+	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{
+		assert.Equal(t, []RecipeManifestV1{
 			{
 				Version:     1,
 				Name:        "app1",
@@ -67,45 +67,45 @@ post-hook: echo after app2
 				PreHook:     "echo before app2",
 				PostHook:    "echo after app2",
 			},
-		}, appManifests)
+		}, manifests)
 	}
 }
 
-func TestLoadAppManifestsIgnoreNonYaml(t *testing.T) {
+func TestLoadRecipeManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0644)
-	appManifests, err := LoadAppManifests(d)
+	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{}, appManifests)
+		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
 }
 
-func TestLoadAppManifestsEmptyDir(t *testing.T) {
+func TestLoadRecipeManifestsEmptyDir(t *testing.T) {
 	d := t.TempDir()
-	appManifests, err := LoadAppManifests(d)
+	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{}, appManifests)
+		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
 }
 
-func TestLoadAppManifestsMissingDir(t *testing.T) {
+func TestLoadRecipeManifestsMissingDir(t *testing.T) {
 	d := t.TempDir()
-	appManifests, err := LoadAppManifests(path.Join(d, "does-not-exist"))
+	manifests, err := LoadRecipeManifests(path.Join(d, "does-not-exist"))
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{}, appManifests)
+		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
 }
 
-func TestLoadAppManifestsNoHooks(t *testing.T) {
+func TestLoadRecipeManifestsNoHooks(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app.yaml"), []byte(`version: 1
 name: app
 description: app description
 directory: /app/to/backup
 `), 0644)
-	appManifests, err := LoadAppManifests(d)
+	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
-		assert.Equal(t, []AppManifestV1{
+		assert.Equal(t, []RecipeManifestV1{
 			{
 				Version:     1,
 				Name:        "app",
@@ -114,24 +114,24 @@ directory: /app/to/backup
 				PreHook:     "",
 				PostHook:    "",
 			},
-		}, appManifests)
+		}, manifests)
 	}
 }
 
-func TestLoadAppManifestsInvalidEmptyFile(t *testing.T) {
+func TestLoadRecipeManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app.yaml"), []byte(""), 0644)
-	_, err := LoadAppManifests(d)
+	_, err := LoadRecipeManifests(d)
 	assert.Error(t, err)
 }
 
-func TestLoadAppManifestsInvalidBadVersion(t *testing.T) {
+func TestLoadRecipeManifestsInvalidBadVersion(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app.yaml"), []byte(`version: -1
 name: app
 description: app description
 directory: /app/to/backup
 `), 0644)
-	_, err := LoadAppManifests(d)
+	_, err := LoadRecipeManifests(d)
 	assert.Error(t, err)
 }

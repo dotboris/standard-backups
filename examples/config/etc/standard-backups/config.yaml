@@ -12,10 +12,10 @@ destinations:
   s3:
     backend: restic
 
-sources:
+jobs:
   nextcloud:
-    app: nextcloud
+    recipe: nextcloud
     backup-to: [local, s3]
   paperless:
-    app: paperless
+    recipe: paperless
     backup-to: [s3] # only to s3

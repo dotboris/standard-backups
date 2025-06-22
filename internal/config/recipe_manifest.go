@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	appManifestV1SchemaUrl = "standard-backups://app-manifest-v1.schema.json"
-	_appManifestV1Schema   = map[string]any{
+	recipeManifestV1SchemaUrl = "standard-backups://recipe-manifest-v1.schema.json"
+	_recipeManifestV1Schema   = map[string]any{
 		"$schama": "https://json-schema.org/draft/2020-12/schema",
-		"$id":     appManifestV1SchemaUrl,
+		"$id":     recipeManifestV1SchemaUrl,
 		"type":    "object",
 		"required": []any{
 			"version", "name", "directory",
@@ -31,16 +31,16 @@ var (
 			"post-hook":   map[string]any{"type": "string"},
 		},
 	}
-	appManifestV1Schema jsonschema.Schema
+	recipeManifestV1Schema jsonschema.Schema
 )
 
-func loadAppManifestV1Schema() (*jsonschema.Schema, error) {
+func loadRecipeManifestV1Schema() (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
-	err := compiler.AddResource(appManifestV1SchemaUrl, _appManifestV1Schema)
+	err := compiler.AddResource(recipeManifestV1SchemaUrl, _recipeManifestV1Schema)
 	if err != nil {
 		return nil, err
 	}
-	schema, err := compiler.Compile(appManifestV1SchemaUrl)
+	schema, err := compiler.Compile(recipeManifestV1SchemaUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +48,14 @@ func loadAppManifestV1Schema() (*jsonschema.Schema, error) {
 }
 
 func init() {
-	res, err := loadAppManifestV1Schema()
+	res, err := loadRecipeManifestV1Schema()
 	if err != nil {
-		log.Panicf("[internal error] failed to load app manifest v1 schema: %v", err)
+		log.Panicf("[internal error] failed to load recipe manifest v1 schema: %v", err)
 	}
-	appManifestV1Schema = *res
+	recipeManifestV1Schema = *res
 }
 
-type AppManifestV1 struct {
+type RecipeManifestV1 struct {
 	Version     int    `mapstructure:"version"`
 	Name        string `mapstructure:"name"`
 	Description string `mapstructure:"description"`
@@ -64,51 +64,51 @@ type AppManifestV1 struct {
 	PostHook    string `mapstructure:"post-hook"`
 }
 
-func LoadAppManifests(dir string) ([]AppManifestV1, error) {
+func LoadRecipeManifests(dir string) ([]RecipeManifestV1, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return []AppManifestV1{}, nil
+			return []RecipeManifestV1{}, nil
 		}
-		return nil, fmt.Errorf("failed to list app manifest in %s: %w", dir, err)
+		return nil, fmt.Errorf("failed to list recipe manifest in %s: %w", dir, err)
 	}
 
-	appManifests := make([]AppManifestV1, 0)
+	manifests := make([]RecipeManifestV1, 0)
 	for _, entry := range entries {
 		if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
 			fullPath := path.Join(dir, entry.Name())
-			appManifest, err := loadAppManifest(fullPath)
+			manifest, err := loadRecipeManifest(fullPath)
 			if err != nil {
 				return nil, err
 			}
-			appManifests = append(appManifests, *appManifest)
+			manifests = append(manifests, *manifest)
 		}
 	}
 
-	return appManifests, nil
+	return manifests, nil
 }
 
-func loadAppManifest(path string) (*AppManifestV1, error) {
+func loadRecipeManifest(path string) (*RecipeManifestV1, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read app manifest %s: %w", path, err)
+		return nil, fmt.Errorf("failed to read recipe manifest %s: %w", path, err)
 	}
 
 	rawManifest := map[string]any{}
 	err = yaml.Unmarshal(bytes, &rawManifest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load app manifest %s: %w", path, err)
+		return nil, fmt.Errorf("failed to load recipe manifest %s: %w", path, err)
 	}
 
-	err = appManifestV1Schema.Validate(rawManifest)
+	err = recipeManifestV1Schema.Validate(rawManifest)
 	if err != nil {
-		return nil, fmt.Errorf("app manifest %s is invalid: %w", path, err)
+		return nil, fmt.Errorf("recipe manifest %s is invalid: %w", path, err)
 	}
 
-	var res AppManifestV1
+	var res RecipeManifestV1
 	err = mapstructure.Decode(rawManifest, &res)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode app manifest %s: %w", path, err)
+		return nil, fmt.Errorf("failed to decode recipe manifest %s: %w", path, err)
 	}
 
 	return &res, nil

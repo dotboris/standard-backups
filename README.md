@@ -22,7 +22,7 @@ This ends up being a lot of programs that all pretty much do the same thing. Som
 
 The idea behind `standard-backups` is to implement a standardized backup orchestration process once and then integrate backup tools in a pluggable way. We save on all the custom scripts and different orchestration tools. This addresses point 1 above.
 
-### Pluggable and Pre-defined Application Backup Steps
+### Pluggable and Pre-defined Backup Recipes
 
 As a general rule of thumb, backing up an app or service usually involves a few simple steps:
 
@@ -42,7 +42,7 @@ So what's left for system administrators? Simple high level configuration. Using
 
 - choose which backup tools to use,
 - define destinations which are different instances of those backup tools (ex: local vs remote),
-- define sources which connect apps with one or more targets.
+- define jobs which connect recipes with one or more targets.
 
 From there, they run `standard-backups` on a schedule and leave it to do all the hard work.
 
