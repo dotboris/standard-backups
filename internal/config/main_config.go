@@ -22,7 +22,7 @@ type DestinationConfigV1 struct {
 }
 
 type SourceConfigV1 struct {
-	App      string
+	Recipe   string
 	BackupTo []string `mapstructure:"backup-to"`
 }
 
@@ -35,7 +35,7 @@ type MainConfig struct {
 	Sources      map[string]SourceConfigV1
 }
 
-func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*jsonschema.Schema, error) {
+func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifestV1) (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 
 	backendsProperties := map[string]any{}
@@ -45,9 +45,9 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 		backendNames = append(backendNames, backend.Name)
 	}
 
-	appNames := []any{}
-	for _, app := range apps {
-		appNames = append(appNames, app.Name)
+	recipeNames := []any{}
+	for _, recipe := range recipes {
+		recipeNames = append(recipeNames, recipe.Name)
 	}
 
 	err := compiler.AddResource(mainConfigV1SchemaUrl, map[string]any{
@@ -82,9 +82,9 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 				"patternProperties": map[string]any{
 					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
 						"type":     "object",
-						"required": []any{"app", "backup-to"},
+						"required": []any{"recipe", "backup-to"},
 						"properties": map[string]any{
-							"app": map[string]any{"enum": appNames},
+							"recipe": map[string]any{"enum": recipeNames},
 							"backup-to": map[string]any{
 								"type": "array",
 								"items": map[string]any{
@@ -110,8 +110,8 @@ func makeMainConfigSchema(backends []BackendManifestV1, apps []AppManifestV1) (*
 	return schema, nil
 }
 
-func LoadMainConfig(path string, backends []BackendManifestV1, apps []AppManifestV1) (*MainConfig, error) {
-	schema, err := makeMainConfigSchema(backends, apps)
+func LoadMainConfig(path string, backends []BackendManifestV1, recipes []RecipeManifestV1) (*MainConfig, error) {
+	schema, err := makeMainConfigSchema(backends, recipes)
 	if err != nil {
 		return nil, fmt.Errorf("[internal error] failed to build main config schema: %w", err)
 	}

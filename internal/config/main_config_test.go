@@ -16,7 +16,7 @@ func TestLoadMainConfigMinimalConfig(t *testing.T) {
 	configPath := path.Join(d, "config.yaml")
 	os.WriteFile(configPath, []byte(`version: 1`), 0644)
 
-	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []AppManifestV1{})
+	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	if assert.NoError(t, err) {
 		assert.Equal(t, &MainConfig{
 			Version: 1,
@@ -29,7 +29,7 @@ func TestLoadMainConfigBadVersion(t *testing.T) {
 	configPath := path.Join(d, "config.yaml")
 	os.WriteFile(configPath, []byte(`version: -1`), 0644)
 
-	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []AppManifestV1{})
+	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
 	var validationErr *jsonschema.ValidationError
 	assert.ErrorAs(t, err, &validationErr)
@@ -47,7 +47,7 @@ func TestLoadMainConfigEmptyConfig(t *testing.T) {
 	configPath := path.Join(d, "config.yaml")
 	os.WriteFile(configPath, []byte(``), 0644)
 
-	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []AppManifestV1{})
+	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
 	var validationErr *jsonschema.ValidationError
 	assert.ErrorAs(t, err, &validationErr)
@@ -82,7 +82,7 @@ func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 				[]BackendManifestV1{
 					{Version: 1, Name: "bogus", ProtocolVersion: 1, Bin: "bogus"},
 				},
-				[]AppManifestV1{},
+				[]RecipeManifestV1{},
 			)
 			var validationErr *jsonschema.ValidationError
 			if assert.Error(t, err) && assert.ErrorAs(t, err, &validationErr) {
@@ -117,7 +117,7 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 			{Version: 1, Name: "bogus", ProtocolVersion: 1, Bin: "bogus"},
 			{Version: 1, Name: "other", ProtocolVersion: 1, Bin: "other"},
 		},
-		[]AppManifestV1{},
+		[]RecipeManifestV1{},
 	)
 	var validationErr *jsonschema.ValidationError
 	if assert.Error(t, err) && assert.ErrorAs(t, err, &validationErr) {
@@ -143,7 +143,7 @@ func TestLoadMainConfigBadSourceKey(t *testing.T) {
 					version: 1
 					sources:
 						%s:
-							app: bogus
+							recipe: bogus
 							backup-to: []
 				`, key))),
 				0644,
@@ -152,7 +152,7 @@ func TestLoadMainConfigBadSourceKey(t *testing.T) {
 			_, err := LoadMainConfig(
 				configPath,
 				[]BackendManifestV1{},
-				[]AppManifestV1{
+				[]RecipeManifestV1{
 					{Version: 1, Name: "bogus"},
 				},
 			)
@@ -170,7 +170,7 @@ func TestLoadMainConfigBadSourceKey(t *testing.T) {
 	}
 }
 
-func TestLoadMainConfigTargetBadApp(t *testing.T) {
+func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
 	os.WriteFile(
@@ -179,7 +179,7 @@ func TestLoadMainConfigTargetBadApp(t *testing.T) {
 			version: 1
 			sources:
 				test:
-					app: nope
+					recipe: nope
 					backup-to: []
 		`)),
 		0644,
@@ -187,7 +187,7 @@ func TestLoadMainConfigTargetBadApp(t *testing.T) {
 	_, err := LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
-		[]AppManifestV1{
+		[]RecipeManifestV1{
 			{Version: 1, Name: "bogus"},
 			{Version: 1, Name: "other"},
 		},
@@ -197,7 +197,7 @@ func TestLoadMainConfigTargetBadApp(t *testing.T) {
 		assert.Equal(t,
 			testutils.Dedent(`
 				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
-				- at '/sources/test/app': value must be one of 'bogus', 'other'
+				- at '/sources/test/recipe': value must be one of 'bogus', 'other'
 			`),
 			validationErr.Error(),
 		)
