@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	noColorFlag bool
+)
+
 var configDumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Print out the contents of the configuration",
@@ -18,7 +22,7 @@ var configDumpCmd = &cobra.Command{
 			return err
 		}
 		pp := pp.New()
-		pp.SetColoringEnabled(true)
+		pp.SetColoringEnabled(!noColorFlag)
 		pp.SetExportedOnly(true)
 		pp.SetOmitEmpty(false)
 		pp.Println(config)
@@ -27,5 +31,6 @@ var configDumpCmd = &cobra.Command{
 }
 
 func init() {
+	configDumpCmd.Flags().BoolVar(&noColorFlag, "no-color", false, "disable color output")
 	configCmd.AddCommand(configDumpCmd)
 }

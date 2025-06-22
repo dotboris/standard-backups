@@ -1,0 +1,75 @@
+
+[TestExampleConfigDump - 1]
+Using config in examples/config/etc/standard-backups
+&config.Config{
+  Backends: []config.BackendManifestV1{
+    config.BackendManifestV1{
+      Version:         1,
+      Name:            "restic",
+      Description:     "",
+      Bin:             "/todo/path/to/restic-backend",
+      ProtocolVersion: 1,
+    },
+    config.BackendManifestV1{
+      Version:         1,
+      Name:            "rsync",
+      Description:     "",
+      Bin:             "/todo/path/to/rsync-backend",
+      ProtocolVersion: 1,
+    },
+  },
+  Recipes: []config.RecipeManifestV1{
+    config.RecipeManifestV1{
+      Version:     1,
+      Name:        "nextcloud",
+      Description: "",
+      Directory:   "/path/to/nextcloud",
+      PreHook:     "",
+      PostHook:    "",
+    },
+    config.RecipeManifestV1{
+      Version:     1,
+      Name:        "paperless",
+      Description: "",
+      Directory:   "/path/to/paperless",
+      PreHook:     "",
+      PostHook:    "",
+    },
+  },
+  MainConfig: config.MainConfig{
+    Version:  1,
+    Backends: map[string]config.BackendConfigV1{
+      "restic": config.BackendConfigV1{
+        Enable: true,
+      },
+      "rsync": config.BackendConfigV1{
+        Enable: true,
+      },
+    },
+    Destinations: map[string]config.DestinationConfigV1{
+      "local": config.DestinationConfigV1{
+        Backend: "rsync",
+      },
+      "s3": config.DestinationConfigV1{
+        Backend: "restic",
+      },
+    },
+    Jobs: map[string]config.JobConfigV1{
+      "nextcloud": config.JobConfigV1{
+        Recipe:   "nextcloud",
+        BackupTo: []string{
+          "local",
+          "s3",
+        },
+      },
+      "paperless": config.JobConfigV1{
+        Recipe:   "paperless",
+        BackupTo: []string{
+          "s3",
+        },
+      },
+    },
+  },
+}
+
+---
