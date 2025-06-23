@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/gkampitakis/go-snaps v0.5.13
-	github.com/go-viper/mapstructure/v2 v2.2.1
+	github.com/go-viper/mapstructure/v2 v2.3.0
 	github.com/k0kubun/pp/v3 v3.4.1
 	github.com/lithammer/dedent v1.1.0
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
