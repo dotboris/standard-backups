@@ -90,6 +90,6 @@ func init() {
 	configDumpCmd.PersistentFlags().BoolVar(&noColor,
 		"no-color",
 		false,
-		"disable color output",
+		"Disable color output",
 	)
 }
