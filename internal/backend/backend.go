@@ -49,7 +49,7 @@ func (b *Backend) Backup(paths []string, options map[string]any) error {
 		fmt.Sprintf("STANDARD_BACKUPS_PATHS=%s", strings.Join(paths, ":")),
 		fmt.Sprintf("STANDARD_BACKUPS_OPTIONS=%s", jsonOptions),
 	)
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = os.Stderr
 	cmd.Stderr = os.Stderr
 
 	err = cmd.Run()

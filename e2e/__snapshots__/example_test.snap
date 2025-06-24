@@ -1,6 +1,5 @@
 
 [TestExampleConfigDump - 1]
-Using config in examples/config/etc/standard-backups
 &config.Config{
   Backends: []config.BackendManifestV1{
     config.BackendManifestV1{

@@ -1,28 +1,24 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/k0kubun/pp/v3"
 	"github.com/spf13/cobra"
 )
 
-var (
-	noColorFlag bool
-)
-
 var configDumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Print out the contents of the configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("Using config in %s\n", ConfigDir)
-		config, err := config.LoadConfig(ConfigDir)
+		slog.Info("loading config", slog.String("configDir", configDir))
+		config, err := config.LoadConfig(configDir)
 		if err != nil {
 			return err
 		}
 		pp := pp.New()
-		pp.SetColoringEnabled(!noColorFlag)
+		pp.SetColoringEnabled(!noColor)
 		pp.SetExportedOnly(true)
 		pp.SetOmitEmpty(false)
 		pp.Println(config)
@@ -31,6 +27,5 @@ var configDumpCmd = &cobra.Command{
 }
 
 func init() {
-	configDumpCmd.Flags().BoolVar(&noColorFlag, "no-color", false, "disable color output")
 	configCmd.AddCommand(configDumpCmd)
 }

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -24,11 +25,17 @@ func TestExampleConfigDump(t *testing.T) {
 		"--no-color",
 	)
 	cmd.Dir = testutils.GetRepoRoot(t)
-	output, err := cmd.CombinedOutput()
-	if !assert.NoError(t, err, string(output)) {
+	stdout := bytes.Buffer{}
+	cmd.Stdout = &stdout
+	stderr := bytes.Buffer{}
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if !assert.NoError(t, err,
+		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
+			stdout.String(), stderr.String())) {
 		return
 	}
-	snaps.MatchSnapshot(t, string(output))
+	snaps.MatchSnapshot(t, stdout.String())
 }
 
 func TestBackupRsyncLocal(t *testing.T) {

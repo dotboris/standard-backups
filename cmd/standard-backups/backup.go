@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-
 	"github.com/dotboris/standard-backups/internal"
 	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/spf13/cobra"
@@ -12,15 +10,10 @@ import (
 var backupCmd = &cobra.Command{
 	Use:   "backup <job>",
 	Short: "Perform a backup for the given job",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("requires at least one argument")
-		}
-		return nil
-	},
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jobName := args[0]
-		cfg, err := config.LoadConfig(ConfigDir)
+		cfg, err := config.LoadConfig(configDir)
 		if err != nil {
 			return err
 		}
