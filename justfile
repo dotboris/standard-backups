@@ -8,14 +8,19 @@ build $cmd:
   mkdir -p dist
   go build -o dist/{{ cmd }} ./cmd/{{ cmd }}
 
+# Build all backends
+[group("build")]
+build-backends: \
+  (build "standard-backups-rsync-backend")
+
 # Build all binaries
 [group("build")]
 build-all: \
-  (build "standard-backups") \
-  (build "standard-backups-rsync-backend")
+  build-backends \
+  (build "standard-backups")
 
 # Run standard-backups
-run *args:
+run *args: build-backends
   @go run ./cmd/standard-backups {{ args }}
 
 # Run unit tests
