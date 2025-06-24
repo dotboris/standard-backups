@@ -3,15 +3,18 @@ package internal
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/dotboris/standard-backups/internal/backend"
 	"github.com/dotboris/standard-backups/internal/config"
 )
 
 type backupInvocation struct {
-	Backend     *backend.Backend
-	BackendName string
-	Destination config.DestinationConfigV1
+	Backend         *backend.Backend
+	BackendName     string
+	Destination     config.DestinationConfigV1
+	DestinationName string
 }
 
 func Backup(cfg config.Config, jobName string) error {
@@ -36,21 +39,35 @@ func Backup(cfg config.Config, jobName string) error {
 			return err
 		}
 		invocations = append(invocations, backupInvocation{
-			Backend:     b,
-			BackendName: dest.Backend,
-			Destination: dest,
+			Backend:         b,
+			BackendName:     dest.Backend,
+			Destination:     dest,
+			DestinationName: destName,
 		})
 	}
 
 	var errs error
 	errCount := 0
 	for _, invocation := range invocations {
+		logger := slog.With(
+			slog.String("destination", invocation.DestinationName),
+			slog.String("job", jobName),
+			slog.String("recipe", job.Recipe),
+			slog.String("backend", invocation.BackendName),
+		)
 		if !invocation.Backend.Enabled() {
-			fmt.Printf("skipping backend %s, it's disabled", invocation.BackendName)
+			logger.Warn("skipping backup, backend is disabled")
 			continue
 		}
+		logger.Info("starting backup")
+		startTime := time.Now()
 		err = invocation.Backend.Backup(recipe.Paths, invocation.Destination.Options)
+		logger.Info("completed backup", slog.Duration("duration", time.Since(startTime)))
 		if err != nil {
+			logger.Error("backup failed",
+				slog.Duration("duration", time.Since(startTime)),
+				slog.Any("error", err),
+			)
 			errCount += 1
 			errs = errors.Join(err)
 		}
