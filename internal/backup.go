@@ -50,9 +50,9 @@ func Backup(cfg config.Config, jobName string) error {
 	errCount := 0
 	for _, invocation := range invocations {
 		logger := slog.With(
-			slog.String("destination", invocation.DestinationName),
 			slog.String("job", jobName),
 			slog.String("recipe", job.Recipe),
+			slog.String("destination", invocation.DestinationName),
 			slog.String("backend", invocation.BackendName),
 		)
 		if !invocation.Backend.Enabled() {
