@@ -12,13 +12,28 @@ import (
 
 func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "example.yaml"), []byte(`version: 1
-name: example 1
-description: the first example
-paths: [/app/to/backup/1]
-pre-hook: echo before
-post-hook: echo after
-`), 0644)
+	os.WriteFile(
+		path.Join(d, "example.yaml"),
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			name: example 1
+			description: the first example
+			paths: [/app/to/backup/1]
+			hooks:
+				before:
+					shell: bash
+					command: echo before
+				after:
+					shell: sh
+					command: echo after
+				on-success:
+					shell: bash
+					command: echo success
+				on-failure:
+					shell: bash
+					command: echo failure
+		`)),
+		0644)
 	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
@@ -27,8 +42,24 @@ post-hook: echo after
 				Name:        "example 1",
 				Description: "the first example",
 				Paths:       []string{"/app/to/backup/1"},
-				PreHook:     "echo before",
-				PostHook:    "echo after",
+				Hooks: HooksV1{
+					Before: &HookV1{
+						Shell:   "bash",
+						Command: "echo before",
+					},
+					After: &HookV1{
+						Shell:   "sh",
+						Command: "echo after",
+					},
+					OnSuccess: &HookV1{
+						Shell:   "bash",
+						Command: "echo success",
+					},
+					OnFailure: &HookV1{
+						Shell:   "bash",
+						Command: "echo failure",
+					},
+				},
 			},
 		}, manifests)
 	}
@@ -36,20 +67,50 @@ post-hook: echo after
 
 func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "app1.yaml"), []byte(`version: 1
-name: app1
-description: the app1
-paths: [/app/to/backup/1]
-pre-hook: echo before app1
-post-hook: echo after app1
-`), 0644)
-	os.WriteFile(path.Join(d, "app2.yaml"), []byte(`version: 1
-name: app2
-description: the app2
-paths: [/app/to/backup/2]
-pre-hook: echo before app2
-post-hook: echo after app2
-`), 0644)
+	os.WriteFile(
+		path.Join(d, "app1.yaml"),
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			name: app1
+			description: the app1
+			paths: [/app/to/backup/1]
+			hooks:
+				before:
+					shell: bash
+					command: echo before 1
+				after:
+					shell: sh
+					command: echo after 1
+				on-success:
+					shell: bash
+					command: echo success 1
+				on-failure:
+					shell: bash
+					command: echo failure 1
+		`)),
+		0644)
+	os.WriteFile(
+		path.Join(d, "app2.yaml"),
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			name: app2
+			description: the app2
+			paths: [/app/to/backup/2]
+			hooks:
+				before:
+					shell: bash
+					command: echo before 2
+				after:
+					shell: sh
+					command: echo after 2
+				on-success:
+					shell: bash
+					command: echo success 2
+				on-failure:
+					shell: bash
+					command: echo failure 2
+		`)),
+		0644)
 	manifests, err := LoadRecipeManifests(d)
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
@@ -58,16 +119,48 @@ post-hook: echo after app2
 				Name:        "app1",
 				Description: "the app1",
 				Paths:       []string{"/app/to/backup/1"},
-				PreHook:     "echo before app1",
-				PostHook:    "echo after app1",
+				Hooks: HooksV1{
+					Before: &HookV1{
+						Shell:   "bash",
+						Command: "echo before 1",
+					},
+					After: &HookV1{
+						Shell:   "sh",
+						Command: "echo after 1",
+					},
+					OnSuccess: &HookV1{
+						Shell:   "bash",
+						Command: "echo success 1",
+					},
+					OnFailure: &HookV1{
+						Shell:   "bash",
+						Command: "echo failure 1",
+					},
+				},
 			},
 			{
 				Version:     1,
 				Name:        "app2",
 				Description: "the app2",
 				Paths:       []string{"/app/to/backup/2"},
-				PreHook:     "echo before app2",
-				PostHook:    "echo after app2",
+				Hooks: HooksV1{
+					Before: &HookV1{
+						Shell:   "bash",
+						Command: "echo before 2",
+					},
+					After: &HookV1{
+						Shell:   "sh",
+						Command: "echo after 2",
+					},
+					OnSuccess: &HookV1{
+						Shell:   "bash",
+						Command: "echo success 2",
+					},
+					OnFailure: &HookV1{
+						Shell:   "bash",
+						Command: "echo failure 2",
+					},
+				},
 			},
 		}, manifests)
 	}
@@ -113,8 +206,6 @@ paths: [/app/to/backup]
 				Name:        "app",
 				Description: "app description",
 				Paths:       []string{"/app/to/backup"},
-				PreHook:     "",
-				PostHook:    "",
 			},
 		}, manifests)
 	}
@@ -183,4 +274,91 @@ func TestLoadRecipeManifestsInvalidEmptyPaths(t *testing.T) {
 		`, p)),
 		err.Error(),
 	)
+}
+
+func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
+	for _, hook := range []string{"before", "after", "on-success", "on-failure"} {
+		t.Run(fmt.Sprintf("%s/bad_shell", hook), func(t *testing.T) {
+			d := t.TempDir()
+			p := path.Join(d, "app.yaml")
+			os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					name: app
+					description: app description
+					paths: [bogus]
+					hooks:
+						%s:
+							shell: nope
+							command: echo test
+				`, hook))),
+				0644,
+			)
+			_, err := LoadRecipeManifests(d)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
+						- at '/hooks/%s/shell': value must be one of 'bash', 'sh'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+		t.Run(fmt.Sprintf("%s/no_shell", hook), func(t *testing.T) {
+			d := t.TempDir()
+			p := path.Join(d, "app.yaml")
+			os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					name: app
+					description: app description
+					paths: [bogus]
+					hooks:
+						%s:
+							command: echo test
+				`, hook))),
+				0644,
+			)
+			_, err := LoadRecipeManifests(d)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
+						- at '/hooks/%s': missing property 'shell'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+		t.Run(fmt.Sprintf("%s/no_command", hook), func(t *testing.T) {
+			d := t.TempDir()
+			p := path.Join(d, "app.yaml")
+			os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					name: app
+					description: app description
+					paths: [bogus]
+					hooks:
+						%s:
+							shell: sh
+				`, hook))),
+				0644,
+			)
+			_, err := LoadRecipeManifests(d)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
+						- at '/hooks/%s': missing property 'command'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+	}
 }
