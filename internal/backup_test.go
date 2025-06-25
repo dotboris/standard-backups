@@ -2,11 +2,13 @@ package internal
 
 import (
 	"bytes"
+	"errors"
 	"log/slog"
 	"testing"
 
 	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func newTestLogger() (bytes.Buffer, *slog.Logger) {
@@ -66,4 +68,21 @@ func TestBackupSingleSkip(t *testing.T) {
 	if assert.NoError(t, err) {
 		b.AssertNotCalled(t, "Backup")
 	}
+}
+
+func TestBackupSingleBackupError(t *testing.T) {
+	expectedErr := errors.New("oops")
+	b := NewMockbackupBackend(t)
+	b.EXPECT().Enabled().Return(true)
+	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(expectedErr)
+
+	_, logger := newTestLogger()
+	err := backupSingle(
+		logger,
+		&config.RecipeManifestV1{},
+		config.DestinationConfigV1{},
+		b,
+	)
+
+	assert.ErrorIs(t, err, expectedErr)
 }
