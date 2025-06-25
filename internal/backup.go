@@ -37,7 +37,7 @@ func Backup(cfg config.Config, jobName string) error {
 			if err != nil {
 				return err
 			}
-			return backupToSingleDestination(logger, recipe, dest, b)
+			return backupSingle(logger, recipe, dest, b)
 		}()
 		if err != nil {
 			errCount += 1
@@ -58,7 +58,7 @@ type backupBackend interface {
 	Backup([]string, map[string]any) error
 }
 
-func backupToSingleDestination(
+func backupSingle(
 	logger *slog.Logger,
 	recipe *config.RecipeManifestV1,
 	destination config.DestinationConfigV1,
