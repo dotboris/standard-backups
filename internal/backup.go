@@ -68,17 +68,62 @@ func backupSingle(
 		logger.Warn("skipping backup, backend is disabled")
 		return nil
 	}
-	logger.Info("starting backup")
 	startTime := time.Now()
-	err := b.Backup(recipe.Paths, destination.Options)
-	if err != nil {
+
+	errs := func() error {
+		if recipe.Hooks.Before != nil {
+			logger.Info("running before hook",
+				slog.Any("hook", recipe.Hooks.Before))
+			err := runHook(*recipe.Hooks.Before)
+			if err != nil {
+				return err
+			}
+		}
+
+		var errs error
+		logger.Info("performing backup")
+		err := b.Backup(recipe.Paths, destination.Options)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("backup failed: %w", err))
+		}
+
+		if recipe.Hooks.After != nil {
+			logger.Info("running after hook",
+				slog.Any("hook", recipe.Hooks.After))
+			err := runHook(*recipe.Hooks.After)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("after hook failed: %w", err))
+			}
+		}
+
+		return errs
+	}()
+
+	if errs == nil {
+		logger.Info("completed backup",
+			slog.Duration("duration", time.Since(startTime)))
+		if recipe.Hooks.OnSuccess != nil {
+			logger.Info("running on-success hook",
+				slog.Any("hook", recipe.Hooks.OnSuccess))
+			err := runHook(*recipe.Hooks.OnSuccess)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("on-success hook failed: %w", err))
+			}
+		}
+	} else {
 		logger.Error("backup failed",
 			slog.Duration("duration", time.Since(startTime)),
-			slog.Any("error", err),
+			slog.Any("error", errs),
 		)
-		return err
+		if recipe.Hooks.OnFailure != nil {
+			logger.Info("running on-failure hook",
+				slog.Any("hook", recipe.Hooks.OnFailure))
+			err := runHook(*recipe.Hooks.OnFailure)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("on-failure hook failed: %w", err))
+			}
+		}
 	}
-	logger.Info("completed backup",
-		slog.Duration("duration", time.Since(startTime)))
-	return nil
+
+	return errs
 }
