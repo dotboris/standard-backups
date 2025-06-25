@@ -36,3 +36,8 @@ e2e: build-all
 # Runs all tests
 [group("test")]
 test-all: test e2e
+
+# Generate mocks
+[group("test")]
+generate-mocks:
+  mockery
