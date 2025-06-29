@@ -283,3 +283,136 @@ func TestBackupSingleOnFailureHookError(t *testing.T) {
 		assert.Equal(t, exitError.ExitCode(), 42)
 	}
 }
+
+func TestBackupSingleBackupAndHooksError(t *testing.T) {
+	b := NewMockbackupBackend(t)
+	b.EXPECT().Enabled().Return(true)
+	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(errors.New("oops"))
+
+	err := backupSingle(
+		newTestLogger(),
+		&config.RecipeManifestV1{
+			Hooks: config.HooksV1{
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 43",
+				},
+				OnSuccess: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 44",
+				},
+				OnFailure: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 45",
+				},
+			},
+		},
+		config.DestinationConfigV1{},
+		b,
+	)
+
+	assert.EqualError(t, err, testutils.Dedent(`
+		backup failed: oops
+		after hook failed: exit status 43
+		on-failure hook failed: exit status 45
+	`))
+}
+
+func TestBackupSingleOnlyHooksError(t *testing.T) {
+	b := NewMockbackupBackend(t)
+	b.EXPECT().Enabled().Return(true)
+	b.EXPECT().Backup(mock.Anything, mock.Anything).Maybe().Return(nil)
+
+	err := backupSingle(
+		newTestLogger(),
+		&config.RecipeManifestV1{
+			Hooks: config.HooksV1{
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 42",
+				},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 43",
+				},
+				OnSuccess: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 44",
+				},
+				OnFailure: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 45",
+				},
+			},
+		},
+		config.DestinationConfigV1{},
+		b,
+	)
+
+	assert.EqualError(t, err, testutils.Dedent(`
+		before hook failed: exit status 42
+		on-failure hook failed: exit status 45
+	`))
+}
+
+func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
+	tests := []struct {
+		name  string
+		hooks config.HooksV1
+	}{
+		{
+			name: "before",
+			hooks: config.HooksV1{
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 1",
+				},
+			},
+		},
+		{
+			name: "after",
+			hooks: config.HooksV1{
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 1",
+				},
+			},
+		},
+		{
+			name: "on-success",
+			hooks: config.HooksV1{
+				OnSuccess: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 1",
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			b := NewMockbackupBackend(t)
+			b.EXPECT().Enabled().Return(true)
+			b.EXPECT().Backup(mock.Anything, mock.Anything).Maybe().Return(nil)
+
+			d := t.TempDir()
+			outFile := path.Join(d, "out.txt")
+			test.hooks.OnFailure = &config.HookV1{
+				Shell:   "bash",
+				Command: fmt.Sprintf("echo hello from on-failure > %s", outFile),
+			}
+
+			err := backupSingle(
+				newTestLogger(),
+				&config.RecipeManifestV1{Hooks: test.hooks},
+				config.DestinationConfigV1{},
+				b,
+			)
+
+			assert.Error(t, err)
+			output, err := os.ReadFile(outFile)
+			if assert.NoError(t, err) {
+				assert.Equal(t, string(output), "hello from on-failure\n")
+			}
+		})
+	}
+}

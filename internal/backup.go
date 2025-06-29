@@ -76,7 +76,7 @@ func backupSingle(
 				slog.Any("hook", recipe.Hooks.Before))
 			err := runHook(*recipe.Hooks.Before)
 			if err != nil {
-				return err
+				return fmt.Errorf("before hook failed: %w", err)
 			}
 		}
 
@@ -110,7 +110,8 @@ func backupSingle(
 				errs = errors.Join(errs, fmt.Errorf("on-success hook failed: %w", err))
 			}
 		}
-	} else {
+	}
+	if errs != nil {
 		logger.Error("backup failed",
 			slog.Duration("duration", time.Since(startTime)),
 			slog.Any("error", errs),
