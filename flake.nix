@@ -28,6 +28,7 @@
           # Go
           pkgs.go
           pkgs.cobra-cli
+          pkgs.go-mockery
 
           # Misc tooling
           pkgs.just

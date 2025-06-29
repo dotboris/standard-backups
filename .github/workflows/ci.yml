@@ -34,3 +34,15 @@ jobs:
           go-version-file: go.mod
       - uses: extractions/setup-just@v3
       - run: just e2e
+
+  check-mocks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Use nix because it installs `mockery` for us
+      - uses: cachix/install-nix-action@v31
+        with:
+          # Helps avoid rate limiting
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop -L -c just generate-mocks
+      - run: git diff --color=always --exit-code

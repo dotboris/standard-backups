@@ -25,8 +25,12 @@
       Paths:       []string{
         "examples",
       },
-      PreHook:  "",
-      PostHook: "",
+      Hooks: config.HooksV1{
+        Before:    (*config.HookV1)(nil),
+        After:     (*config.HookV1)(nil),
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
+      },
     },
     config.RecipeManifestV1{
       Version:     1,
@@ -35,8 +39,12 @@
       Paths:       []string{
         "/path/to/nextcloud",
       },
-      PreHook:  "",
-      PostHook: "",
+      Hooks: config.HooksV1{
+        Before:    (*config.HookV1)(nil),
+        After:     (*config.HookV1)(nil),
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
+      },
     },
     config.RecipeManifestV1{
       Version:     1,
@@ -45,8 +53,12 @@
       Paths:       []string{
         "/path/to/paperless",
       },
-      PreHook:  "",
-      PostHook: "",
+      Hooks: config.HooksV1{
+        Before:    (*config.HookV1)(nil),
+        After:     (*config.HookV1)(nil),
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
+      },
     },
   },
   MainConfig: config.MainConfig{
