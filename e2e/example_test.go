@@ -68,6 +68,7 @@ func TestBackupRsyncLocal(t *testing.T) {
 		"./dist/standard-backups",
 		"backup", "test",
 		"--config-dir", "examples/config/etc/standard-backups",
+		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
 	)
 	cmd.Dir = root
 	output, err := cmd.CombinedOutput()

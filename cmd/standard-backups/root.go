@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/phsym/console-slog"
 	"github.com/spf13/cobra"
@@ -14,6 +15,8 @@ var (
 	logLevelFlag string
 	logJson      bool
 	noColor      bool
+	lockfilePath string
+	lockTimeout  time.Duration
 )
 
 func setupLogging() error {
@@ -87,9 +90,19 @@ func init() {
 		"info",
 		"Set logging level",
 	)
-	configDumpCmd.PersistentFlags().BoolVar(&noColor,
+	rootCmd.PersistentFlags().BoolVar(&noColor,
 		"no-color",
 		false,
 		"Disable color output",
+	)
+	rootCmd.PersistentFlags().StringVarP(&lockfilePath,
+		"lockfile", "L",
+		"/var/run/standard-backups.pid",
+		"Prevents multiple instances from running at once",
+	)
+	rootCmd.PersistentFlags().DurationVar(&lockTimeout,
+		"lock-timeout",
+		5*time.Minute,
+		"How long to wait to acquire lock",
 	)
 }

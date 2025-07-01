@@ -12,6 +12,11 @@ var backupCmd = &cobra.Command{
 	Short: "Perform a backup for the given job",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		unlock, err := acquireLock()
+		if err != nil {
+			return err
+		}
+		defer unlock()
 		jobName := args[0]
 		cfg, err := config.LoadConfig(configDir)
 		if err != nil {
