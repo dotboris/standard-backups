@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"encoding/json"
@@ -6,10 +6,6 @@ import (
 	"os"
 	"strings"
 )
-
-type Options struct {
-	DestinationDir string `json:"destination-dir"`
-}
 
 func requireEnv(name string) (string, error) {
 	value, ok := os.LookupEnv(name)
@@ -40,16 +36,16 @@ func readPaths() ([]string, error) {
 	return paths, nil
 }
 
-func readOptions() (*Options, error) {
+func readOptions() (map[string]any, error) {
 	rawOptions, err := requireEnv("STANDARD_BACKUPS_OPTIONS")
 	if err != nil {
 		return nil, err
 	}
-	var options Options
+	var options map[string]any
 	err = json.Unmarshal([]byte(rawOptions), &options)
 	if err != nil {
 		return nil, err
 	}
 
-	return &options, nil
+	return options, nil
 }

@@ -6,9 +6,41 @@ import (
 	"os/exec"
 	"path"
 	"time"
+
+	"github.com/dotboris/standard-backups/pkg/backend"
+	"github.com/go-viper/mapstructure/v2"
 )
 
 const TIME_FORMAT = "2006-01-02_15-04-05Z07-00" // limited special chars
+
+type Options struct {
+	DestinationDir string `mapstructure:"destination-dir"`
+}
+
+var Backend = &backend.Backend{
+	Backup: func(paths []string, rawOptions map[string]any) error {
+		var options Options
+		err := mapstructure.Decode(rawOptions, &options)
+		if err != nil {
+			return err
+		}
+
+		dest := path.Join(options.DestinationDir, time.Now().Format(TIME_FORMAT))
+		err = os.MkdirAll(dest, 0755)
+		if err != nil {
+			return err
+		}
+		err = rsync(paths, dest)
+		if err != nil {
+			return err
+		}
+		return nil
+	},
+}
+
+func main() {
+	Backend.Execute()
+}
 
 func rsync(sources []string, dest string) error {
 	args := []string{"-av"}
@@ -20,48 +52,4 @@ func rsync(sources []string, dest string) error {
 	fmt.Printf("running rsync: %s\n", cmd.String())
 	err := cmd.Run()
 	return err
-}
-
-func backup() error {
-	paths, err := readPaths()
-	if err != nil {
-		return err
-	}
-	options, err := readOptions()
-	if err != nil {
-		return err
-	}
-
-	dest := path.Join(options.DestinationDir, time.Now().Format(TIME_FORMAT))
-	err = os.MkdirAll(dest, 0755)
-	if err != nil {
-		return err
-	}
-	err = rsync(paths, dest)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func Execute() error {
-	command, err := readCommand()
-	if err != nil {
-		return err
-	}
-	switch command {
-	case "backup":
-		return backup()
-	default:
-		return fmt.Errorf("unhandled command %s", command)
-	}
-}
-
-func main() {
-	err := Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
 }
