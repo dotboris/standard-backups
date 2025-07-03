@@ -13,6 +13,12 @@ destinations:
       destination-dir: ./dist/backups/local
   s3:
     backend: restic
+  local-restic:
+    backend: restic
+    options:
+      repo: ./dist/backups/restic-local
+      env:
+        RESTIC_PASSWORD: supersecret2
 
 jobs:
   nextcloud:
@@ -24,3 +30,6 @@ jobs:
   test:
     recipe: examples
     backup-to: [local]
+  test-restic:
+    recipe: examples
+    backup-to: [local-restic]

@@ -1,4 +1,4 @@
 version: 1
 name: restic
-bin: /todo/path/to/restic-backend # TODO
+bin: ./dist/standard-backups-restic-backend
 protocol-version: 1

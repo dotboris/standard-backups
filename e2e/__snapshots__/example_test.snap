@@ -6,7 +6,7 @@
       Version:         1,
       Name:            "restic",
       Description:     "",
-      Bin:             "/todo/path/to/restic-backend",
+      Bin:             "./dist/standard-backups-restic-backend",
       ProtocolVersion: 1,
     },
     config.BackendManifestV1{
@@ -78,6 +78,15 @@
           "destination-dir": "./dist/backups/local",
         },
       },
+      "local-restic": config.DestinationConfigV1{
+        Backend: "restic",
+        Options: map[string]interface {}{
+          "env": map[string]interface {}{
+            "RESTIC_PASSWORD": "supersecret2",
+          },
+          "repo": "./dist/backups/restic-local",
+        },
+      },
       "s3": config.DestinationConfigV1{
         Backend: "restic",
         Options: map[string]interface {}{},
@@ -101,6 +110,12 @@
         Recipe:   "examples",
         BackupTo: []string{
           "local",
+        },
+      },
+      "test-restic": config.JobConfigV1{
+        Recipe:   "examples",
+        BackupTo: []string{
+          "local-restic",
         },
       },
     },
