@@ -10,8 +10,10 @@ import (
 type BackupFunc func(req *BackupRequest) error
 
 type BackupRequest struct {
-	Paths      []string
-	RawOptions map[string]any
+	Paths           []string
+	DestinationName string
+	JobName         string
+	RawOptions      map[string]any
 }
 
 func NewBackupRequestFromEnv() (*BackupRequest, error) {
@@ -20,6 +22,16 @@ func NewBackupRequestFromEnv() (*BackupRequest, error) {
 		return nil, err
 	}
 	paths := strings.Split(rawPaths, ":")
+
+	destinationName, err := requireEnv("STANDARD_BACKUPS_DESTINATION_NAME")
+	if err != nil {
+		return nil, err
+	}
+
+	jobName, err := requireEnv("STANDARD_BACKUPS_JOB_NAME")
+	if err != nil {
+		return nil, err
+	}
 
 	rawOptions, err := requireEnv("STANDARD_BACKUPS_OPTIONS")
 	if err != nil {
@@ -32,8 +44,10 @@ func NewBackupRequestFromEnv() (*BackupRequest, error) {
 	}
 
 	return &BackupRequest{
-		Paths:      paths,
-		RawOptions: options,
+		Paths:           paths,
+		DestinationName: destinationName,
+		JobName:         jobName,
+		RawOptions:      options,
 	}, nil
 }
 
@@ -46,6 +60,8 @@ func (br *BackupRequest) ToEnv() ([]string, error) {
 	return []string{
 		fmt.Sprintf("STANDARD_BACKUPS_PATHS=%s",
 			strings.Join(br.Paths, ":")),
+		fmt.Sprintf("STANDARD_BACKUPS_DESTINATION_NAME=%s", br.DestinationName),
+		fmt.Sprintf("STANDARD_BACKUPS_JOB_NAME=%s", br.JobName),
 		fmt.Sprintf("STANDARD_BACKUPS_OPTIONS=%s",
 			jsonOptions),
 	}, nil

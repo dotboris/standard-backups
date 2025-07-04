@@ -37,6 +37,8 @@ var Backend = &proto.BackendImpl{
 		}
 
 		backupArgs := []string{"backup"}
+		backupArgs = append(backupArgs, "--tag", fmt.Sprintf("sb:dest:%s", req.DestinationName))
+		backupArgs = append(backupArgs, "--tag", fmt.Sprintf("sb:job:%s", req.JobName))
 		backupArgs = append(backupArgs, req.Paths...)
 		err = restic(options.Repo, options.Env, backupArgs...)
 		if err != nil {

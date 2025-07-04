@@ -37,7 +37,7 @@ func Backup(cfg config.Config, jobName string) error {
 			if err != nil {
 				return err
 			}
-			return backupSingle(logger, recipe, dest, client)
+			return backupSingle(client, logger, jobName, recipe, dest, destName)
 		}()
 		if err != nil {
 			errCount += 1
@@ -59,10 +59,12 @@ type backupClient interface {
 }
 
 func backupSingle(
-	logger *slog.Logger,
-	recipe *config.RecipeManifestV1,
-	destination config.DestinationConfigV1,
 	client backupClient,
+	logger *slog.Logger,
+	jobName string,
+	recipe *config.RecipeManifestV1,
+	dest config.DestinationConfigV1,
+	destName string,
 ) error {
 	if !client.Enabled() {
 		logger.Warn("skipping backup, backend is disabled")
@@ -83,8 +85,10 @@ func backupSingle(
 		var errs error
 		logger.Info("performing backup")
 		err := client.Backup(&proto.BackupRequest{
-			Paths:      recipe.Paths,
-			RawOptions: destination.Options,
+			Paths:           recipe.Paths,
+			DestinationName: destName,
+			JobName:         jobName,
+			RawOptions:      dest.Options,
 		})
 		if err != nil {
 			errs = errors.Join(errs, fmt.Errorf("backup failed: %w", err))

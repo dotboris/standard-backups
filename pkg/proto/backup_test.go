@@ -8,25 +8,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBackupRequestE2E(t *testing.T) {
-	req := &BackupRequest{
-		Paths: []string{"/foo", "/bar"},
-		RawOptions: map[string]any{
-			"key":    "value",
-			"bool":   true,
-			"number": 42.0,
-			"array":  []any{1.0, 2.0, 3.0},
-			"object": map[string]any{"foo": "bar"},
-		},
-	}
+var testReq = &BackupRequest{
+	Paths:           []string{"/foo", "/bar"},
+	DestinationName: "my-dest",
+	JobName:         "my-job",
+	RawOptions: map[string]any{
+		"key":    "value",
+		"bool":   true,
+		"number": 42.0,
+		"array":  []any{1.0, 2.0, 3.0},
+		"object": map[string]any{"foo": "bar"},
+	},
+}
+
+func setBackupRequestToTestEnv(t *testing.T, req *BackupRequest) {
+	t.Helper()
 	env, err := req.ToEnv()
 	if !assert.NoError(t, err) {
+		t.Error(err)
+		t.FailNow()
 		return
 	}
 	for _, entry := range env {
 		key, value, _ := strings.Cut(entry, "=")
 		t.Setenv(key, value)
 	}
+}
+
+func TestBackupRequestE2E(t *testing.T) {
+	setBackupRequestToTestEnv(t, testReq)
 	var (
 		gotReq *BackupRequest
 		called bool
@@ -39,17 +49,16 @@ func TestBackupRequestE2E(t *testing.T) {
 		},
 	}
 	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
-	err = b.execute()
+	err := b.execute()
 	if assert.NoError(t, err) {
 		assert.True(t, called, "Backup func was not called")
-		assert.Equal(t, req, gotReq)
+		assert.Equal(t, testReq, gotReq)
 	}
 }
 
 func TestBackupError(t *testing.T) {
 	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
-	t.Setenv("STANDARD_BACKUPS_PATHS", "/bogus")
-	t.Setenv("STANDARD_BACKUPS_OPTIONS", "{}")
+	setBackupRequestToTestEnv(t, testReq)
 	expectedErr := errors.New("oops")
 	b := &BackendImpl{
 		Backup: func(req *BackupRequest) error {
@@ -60,7 +69,7 @@ func TestBackupError(t *testing.T) {
 	assert.ErrorIs(t, err, expectedErr)
 }
 
-func TestBackendBackupNotImplemented(t *testing.T) {
+func TestBackupNotImplemented(t *testing.T) {
 	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
 	b := &BackendImpl{}
 	err := b.execute()

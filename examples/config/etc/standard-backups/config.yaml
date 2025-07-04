@@ -18,7 +18,7 @@ destinations:
     options:
       repo: ./dist/backups/restic-local
       env:
-        RESTIC_PASSWORD: supersecret2
+        RESTIC_PASSWORD: supersecret
 
 jobs:
   nextcloud:
