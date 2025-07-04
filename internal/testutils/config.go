@@ -73,7 +73,7 @@ func (tc *TestConfig) AddRecipe(name string, content string) {
 	}
 }
 
-func (tc *TestConfig) AddBogusRecipe(t *testing.T, name string) {
+func (tc *TestConfig) AddBogusRecipe(t *testing.T, name string) string {
 	d := t.TempDir()
 	err := os.WriteFile(
 		path.Join(d, "back-me-up.txt"),
@@ -83,7 +83,7 @@ func (tc *TestConfig) AddBogusRecipe(t *testing.T, name string) {
 	if err != nil {
 		tc.t.Error(err)
 		tc.t.FailNow()
-		return
+		return ""
 	}
 	tc.AddRecipe(name, DedentYaml(fmt.Sprintf(`
 		version: 1
@@ -91,6 +91,7 @@ func (tc *TestConfig) AddBogusRecipe(t *testing.T, name string) {
 		paths:
 			- %s
 	`, name, d)))
+	return d
 }
 
 func (tc *TestConfig) WriteConfig(content string) {
