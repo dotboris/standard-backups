@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -36,6 +37,33 @@ func TestExampleConfigDump(t *testing.T) {
 		return
 	}
 	snaps.MatchSnapshot(t, stdout.String())
+}
+
+func assertTreesMatch(t *testing.T, expectedPath string, actualPath string) bool {
+	err := filepath.WalkDir(actualPath, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		sourcePath := filepath.Join(expectedPath, strings.TrimPrefix(p, actualPath))
+		source, err := os.ReadFile(sourcePath)
+		if !assert.NoError(t, err) {
+			return nil
+		}
+		dest, err := os.ReadFile(p)
+		if !assert.NoError(t, err) {
+			return nil
+		}
+
+		assert.Equal(t, source, dest, fmt.Sprintf("expected content of %s to match %s", sourcePath, dest))
+
+		return nil
+	})
+	return assert.NoError(t, err)
 }
 
 func TestBackupRsyncLocal(t *testing.T) {
@@ -82,28 +110,58 @@ func TestBackupRsyncLocal(t *testing.T) {
 	newBackup, ok := diff.Pop()
 	assert.Equal(t, true, ok)
 
-	err = filepath.WalkDir(newBackup, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
+	assertTreesMatch(t, root, newBackup)
+}
 
-		if d.IsDir() {
-			return nil
-		}
+func TestExampleResticLocal(t *testing.T) {
+	root := testutils.GetRepoRoot(t)
+	destDir := path.Join(root, "dist/backups/restic-local")
+	_ = os.RemoveAll(path.Join(destDir))
 
-		sourcePath := filepath.Join(root, strings.TrimPrefix(p, newBackup))
-		source, err := os.ReadFile(sourcePath)
-		if !assert.NoError(t, err) {
-			return nil
-		}
-		dest, err := os.ReadFile(p)
-		if !assert.NoError(t, err) {
-			return nil
-		}
+	cmd := exec.Command(
+		"./dist/standard-backups",
+		"backup", "test-restic",
+		"--config-dir", "examples/config/etc/standard-backups",
+		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
+	)
+	cmd.Dir = root
+	output, err := cmd.CombinedOutput()
+	if !assert.NoError(t, err, string(output)) {
+		return
+	}
 
-		assert.Equal(t, source, dest, fmt.Sprintf("expected content of %s to match %s", sourcePath, dest))
+	cmd = exec.Command("restic", "-v", "-r", destDir, "snapshots", "--json")
+	cmd.Env = append(
+		os.Environ(),
+		"RESTIC_PASSWORD=supersecret",
+	)
+	stderr := bytes.NewBufferString("")
+	cmd.Stderr = stderr
+	resticOutput, err := cmd.Output()
+	if !assert.NoError(t, err, stderr.String()) {
+		return
+	}
+	var parsedOutput []map[string]any
+	err = json.Unmarshal(resticOutput, &parsedOutput)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Len(t, parsedOutput, 1)
+	assert.Equal(t, []any{
+		"sb:dest:local-restic",
+		"sb:job:test-restic",
+	}, parsedOutput[0]["tags"])
 
-		return nil
-	})
-	assert.NoError(t, err)
+	d := t.TempDir()
+	cmd = exec.Command("restic", "-v", "-r", destDir, "restore", "latest", "--target", d)
+	cmd.Env = append(
+		os.Environ(),
+		"RESTIC_PASSWORD=supersecret",
+	)
+	resticOutput, err = cmd.CombinedOutput()
+	if !assert.NoError(t, err, string(resticOutput)) {
+		return
+	}
+
+	assertTreesMatch(t, root, d)
 }
