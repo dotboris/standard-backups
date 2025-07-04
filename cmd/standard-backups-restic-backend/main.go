@@ -10,9 +10,15 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
+type Forget struct {
+	Enable  bool
+	Options map[string]any
+}
+
 type Options struct {
-	Repo string
-	Env  map[string]string
+	Repo   string
+	Forget Forget
+	Env    map[string]string
 }
 
 var Backend = &proto.BackendImpl{
@@ -36,14 +42,33 @@ var Backend = &proto.BackendImpl{
 			}
 		}
 
+		tagArgs := []string{
+			"--tag", fmt.Sprintf("sb:dest:%s", req.DestinationName),
+			"--tag", fmt.Sprintf("sb:job:%s", req.JobName),
+		}
+
 		backupArgs := []string{"backup"}
-		backupArgs = append(backupArgs, "--tag", fmt.Sprintf("sb:dest:%s", req.DestinationName))
-		backupArgs = append(backupArgs, "--tag", fmt.Sprintf("sb:job:%s", req.JobName))
+		backupArgs = append(backupArgs, tagArgs...)
 		backupArgs = append(backupArgs, req.Paths...)
 		err = restic(options.Repo, options.Env, backupArgs...)
 		if err != nil {
 			return fmt.Errorf("failed to backup %v to repo %s: %w",
 				req.Paths, options.Repo, err)
+		}
+
+		if options.Forget.Enable {
+			forgetArgs := []string{"forget"}
+			forgetArgs = append(forgetArgs, tagArgs...)
+			forgetOptionArgs, err := optionsToArgs(options.Forget.Options)
+			if err != nil {
+				return err
+			}
+			forgetArgs = append(forgetArgs, forgetOptionArgs...)
+			err = restic(options.Repo, options.Env, forgetArgs...)
+			if err != nil {
+				return fmt.Errorf("failed to forget %v to repo %s: %w",
+					req.Paths, options.Repo, err)
+			}
 		}
 
 		return nil
@@ -91,4 +116,23 @@ func checkRepoExists(repo string, env map[string]string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func optionsToArgs(options map[string]any) ([]string, error) {
+	res := []string{}
+	for key, value := range options {
+		flag := fmt.Sprintf("--%s", key)
+		if b, ok := value.(bool); ok && b {
+			res = append(res, flag)
+		} else if s, ok := value.(string); ok {
+			res = append(res, flag, s)
+		} else if i, ok := value.(int); ok {
+			res = append(res, flag, fmt.Sprint(i))
+		} else if f, ok := value.(float64); ok {
+			res = append(res, flag, fmt.Sprint(f))
+		} else {
+			return nil, fmt.Errorf("could not convert option %s: %s to restic flags", key, value)
+		}
+	}
+	return res, nil
 }
