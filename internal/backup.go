@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/dotboris/standard-backups/internal/backend"
 	"github.com/dotboris/standard-backups/internal/config"
+	"github.com/dotboris/standard-backups/pkg/proto"
 )
 
 func Backup(cfg config.Config, jobName string) error {
@@ -33,11 +33,11 @@ func Backup(cfg config.Config, jobName string) error {
 			if !ok {
 				return fmt.Errorf("could not find destination named %s", destName)
 			}
-			b, err := backend.NewBackend(cfg, dest.Backend)
+			client, err := proto.NewBackendClient(cfg, dest.Backend)
 			if err != nil {
 				return err
 			}
-			return backupSingle(logger, recipe, dest, b)
+			return backupSingle(client, logger, jobName, recipe, dest, destName)
 		}()
 		if err != nil {
 			errCount += 1
@@ -53,18 +53,20 @@ func Backup(cfg config.Config, jobName string) error {
 	return nil
 }
 
-type backupBackend interface {
+type backupClient interface {
 	Enabled() bool
-	Backup([]string, map[string]any) error
+	Backup(req *proto.BackupRequest) error
 }
 
 func backupSingle(
+	client backupClient,
 	logger *slog.Logger,
+	jobName string,
 	recipe *config.RecipeManifestV1,
-	destination config.DestinationConfigV1,
-	b backupBackend,
+	dest config.DestinationConfigV1,
+	destName string,
 ) error {
-	if !b.Enabled() {
+	if !client.Enabled() {
 		logger.Warn("skipping backup, backend is disabled")
 		return nil
 	}
@@ -82,7 +84,12 @@ func backupSingle(
 
 		var errs error
 		logger.Info("performing backup")
-		err := b.Backup(recipe.Paths, destination.Options)
+		err := client.Backup(&proto.BackupRequest{
+			Paths:           recipe.Paths,
+			DestinationName: destName,
+			JobName:         jobName,
+			RawOptions:      dest.Options,
+		})
 		if err != nil {
 			errs = errors.Join(errs, fmt.Errorf("backup failed: %w", err))
 		}
