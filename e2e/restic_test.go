@@ -186,3 +186,65 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	assert.NotZero(t, actualRepoId)
 	assert.Equal(t, expectedRepoId, actualRepoId)
 }
+
+func TestResticBackupForget(t *testing.T) {
+	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
+	repoDir := t.TempDir()
+
+	tc := testutils.NewTestConfig(t)
+	tc.AddBackend("restic", "dist/standard-backups-restic-backend")
+	tc.AddBogusRecipe(t, "bogus")
+	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		backends:
+			restic: {enable: true}
+		destinations:
+			my-dest:
+				backend: restic
+				options:
+					repo: %s
+					forget:
+						enable: true
+						options:
+							keep-last: 1
+					env:
+						RESTIC_PASSWORD: supersecret
+		jobs:
+			my-job:
+				recipe: bogus
+				backup-to: [my-dest]
+	`, repoDir)))
+
+	for range 2 {
+		cmd := exec.Command("./dist/standard-backups",
+			"backup", "my-job",
+			"--config-dir", tc.Dir,
+			"--lockfile", lockFile,
+		)
+		cmd.Dir = testutils.GetRepoRoot(t)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if !assert.NoError(t, err) {
+			return
+		}
+
+		// Count number of snapshots
+		cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
+		cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
+		cmd.Dir = testutils.GetRepoRoot(t)
+		stdout := bytes.NewBuffer(nil)
+		cmd.Stdout = stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if !assert.NoError(t, err) {
+			return
+		}
+		var output []map[string]any
+		err = json.Unmarshal(stdout.Bytes(), &output)
+		if !assert.NoError(t, err) {
+			return
+		}
+		assert.Len(t, output, 1)
+	}
+}
