@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/dotboris/standard-backups/pkg/backend"
+	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/go-viper/mapstructure/v2"
 )
 
@@ -15,10 +15,10 @@ type Options struct {
 	Env  map[string]string
 }
 
-var Backend = &backend.Backend{
-	Backup: func(paths []string, rawOptions map[string]any) error {
+var Backend = &proto.BackendImpl{
+	Backup: func(req *proto.BackupRequest) error {
 		var options Options
-		err := mapstructure.Decode(rawOptions, &options)
+		err := mapstructure.Decode(req.RawOptions, &options)
 		if err != nil {
 			return err
 		}
@@ -37,11 +37,11 @@ var Backend = &backend.Backend{
 		}
 
 		backupArgs := []string{"backup"}
-		backupArgs = append(backupArgs, paths...)
+		backupArgs = append(backupArgs, req.Paths...)
 		err = restic(options.Repo, options.Env, backupArgs...)
 		if err != nil {
 			return fmt.Errorf("failed to backup %v to repo %s: %w",
-				paths, options.Repo, err)
+				req.Paths, options.Repo, err)
 		}
 
 		return nil

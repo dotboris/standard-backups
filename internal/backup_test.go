@@ -12,6 +12,7 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/dotboris/standard-backups/internal/testutils"
+	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -21,13 +22,15 @@ func newTestLogger() *slog.Logger {
 }
 
 func TestBackupSingleSimple(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
 	b.EXPECT().Backup(
-		[]string{"path1", "path2"},
-		map[string]any{
-			"foo": "bar",
-			"biz": 42,
+		&proto.BackupRequest{
+			Paths: []string{"path1", "path2"},
+			RawOptions: map[string]any{
+				"foo": "bar",
+				"biz": 42,
+			},
 		},
 	).Return(nil)
 
@@ -49,7 +52,7 @@ func TestBackupSingleSimple(t *testing.T) {
 }
 
 func TestBackupSingleSkip(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(false)
 
 	err := backupSingle(
@@ -73,9 +76,9 @@ func TestBackupSingleSkip(t *testing.T) {
 
 func TestBackupSingleBackupError(t *testing.T) {
 	expectedErr := errors.New("oops")
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(expectedErr)
+	b.EXPECT().Backup(mock.Anything).Return(expectedErr)
 
 	err := backupSingle(
 		newTestLogger(),
@@ -88,9 +91,9 @@ func TestBackupSingleBackupError(t *testing.T) {
 }
 
 func TestBackupSingleHooksSuccess(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(nil)
+	b.EXPECT().Backup(mock.Anything).Return(nil)
 
 	d := t.TempDir()
 	hooksLog := path.Join(d, "hooks.log")
@@ -137,9 +140,9 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 }
 
 func TestBackupSingleHooksFailure(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(errors.New("oops"))
+	b.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	d := t.TempDir()
 	hooksLog := path.Join(d, "hooks.log")
@@ -185,7 +188,7 @@ func TestBackupSingleHooksFailure(t *testing.T) {
 }
 
 func TestBackupSingleBeforeHookError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
 
 	err := backupSingle(
@@ -210,9 +213,9 @@ func TestBackupSingleBeforeHookError(t *testing.T) {
 }
 
 func TestBackupSingleAfterHookError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(nil)
+	b.EXPECT().Backup(mock.Anything).Return(nil)
 
 	err := backupSingle(
 		newTestLogger(),
@@ -235,9 +238,9 @@ func TestBackupSingleAfterHookError(t *testing.T) {
 }
 
 func TestBackupSingleOnSuccessHookError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(nil)
+	b.EXPECT().Backup(mock.Anything).Return(nil)
 
 	err := backupSingle(
 		newTestLogger(),
@@ -260,9 +263,9 @@ func TestBackupSingleOnSuccessHookError(t *testing.T) {
 }
 
 func TestBackupSingleOnFailureHookError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(errors.New("oops"))
+	b.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	err := backupSingle(
 		newTestLogger(),
@@ -285,9 +288,9 @@ func TestBackupSingleOnFailureHookError(t *testing.T) {
 }
 
 func TestBackupSingleBackupAndHooksError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Return(errors.New("oops"))
+	b.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	err := backupSingle(
 		newTestLogger(),
@@ -319,9 +322,9 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 }
 
 func TestBackupSingleOnlyHooksError(t *testing.T) {
-	b := NewMockbackupBackend(t)
+	b := NewMockbackupClient(t)
 	b.EXPECT().Enabled().Return(true)
-	b.EXPECT().Backup(mock.Anything, mock.Anything).Maybe().Return(nil)
+	b.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 
 	err := backupSingle(
 		newTestLogger(),
@@ -390,9 +393,9 @@ func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			b := NewMockbackupBackend(t)
+			b := NewMockbackupClient(t)
 			b.EXPECT().Enabled().Return(true)
-			b.EXPECT().Backup(mock.Anything, mock.Anything).Maybe().Return(nil)
+			b.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 
 			d := t.TempDir()
 			outFile := path.Join(d, "out.txt")

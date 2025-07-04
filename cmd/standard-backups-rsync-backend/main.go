@@ -7,7 +7,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/dotboris/standard-backups/pkg/backend"
+	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/go-viper/mapstructure/v2"
 )
 
@@ -17,10 +17,10 @@ type Options struct {
 	DestinationDir string `mapstructure:"destination-dir"`
 }
 
-var Backend = &backend.Backend{
-	Backup: func(paths []string, rawOptions map[string]any) error {
+var Backend = &proto.BackendImpl{
+	Backup: func(req *proto.BackupRequest) error {
 		var options Options
-		err := mapstructure.Decode(rawOptions, &options)
+		err := mapstructure.Decode(req.RawOptions, &options)
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ var Backend = &backend.Backend{
 		if err != nil {
 			return err
 		}
-		err = rsync(paths, dest)
+		err = rsync(req.Paths, dest)
 		if err != nil {
 			return err
 		}
