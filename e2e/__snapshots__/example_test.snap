@@ -82,7 +82,7 @@
         Backend: "restic",
         Options: map[string]interface {}{
           "env": map[string]interface {}{
-            "RESTIC_PASSWORD": "supersecret2",
+            "RESTIC_PASSWORD": "supersecret",
           },
           "repo": "./dist/backups/restic-local",
         },
