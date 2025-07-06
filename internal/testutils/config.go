@@ -8,7 +8,7 @@ import (
 )
 
 type TestConfig struct {
-	Dir         string
+	ConfigPath  string
 	BackendsDir string
 	RecipesDir  string
 	t           *testing.T
@@ -35,10 +35,18 @@ func NewTestConfig(t *testing.T) *TestConfig {
 	}
 
 	return &TestConfig{
-		Dir:         configDir,
+		ConfigPath:  path.Join(configDir, "config.yaml"),
 		BackendsDir: backendsDir,
 		RecipesDir:  recipesDir,
 		t:           t,
+	}
+}
+
+func (tc *TestConfig) Args() []string {
+	return []string{
+		"--config", tc.ConfigPath,
+		"--backend-dirs", tc.BackendsDir,
+		"--recipe-dirs", tc.RecipesDir,
 	}
 }
 
@@ -95,11 +103,7 @@ func (tc *TestConfig) AddBogusRecipe(t *testing.T, name string) string {
 }
 
 func (tc *TestConfig) WriteConfig(content string) {
-	err := os.WriteFile(
-		path.Join(tc.Dir, "config.yaml"),
-		[]byte(content),
-		0o644,
-	)
+	err := os.WriteFile(tc.ConfigPath, []byte(content), 0o644)
 	if err != nil {
 		tc.t.Error(err)
 		tc.t.FailNow()

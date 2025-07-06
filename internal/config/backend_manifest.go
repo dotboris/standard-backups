@@ -62,28 +62,29 @@ type BackendManifestV1 struct {
 	ProtocolVersion int    `mapstructure:"protocol-version"`
 }
 
-func LoadBackendManifests(dir string) ([]BackendManifestV1, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return []BackendManifestV1{}, nil
-		}
-		return nil, fmt.Errorf("failed to list backend manifest in %s: %w", dir, err)
-	}
-
-	backendManifests := make([]BackendManifestV1, 0)
-	for _, entry := range entries {
-		if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
-			fullPath := path.Join(dir, entry.Name())
-			backendManifest, err := loadBackendManifest(fullPath)
-			if err != nil {
-				return nil, err
+func LoadBackendManifests(dirs []string) ([]BackendManifestV1, error) {
+	manifests := make([]BackendManifestV1, 0)
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
 			}
-			backendManifests = append(backendManifests, *backendManifest)
+			return nil, fmt.Errorf("failed to list backend manifest in %s: %w", dir, err)
+		}
+
+		for _, entry := range entries {
+			if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
+				fullPath := path.Join(dir, entry.Name())
+				backendManifest, err := loadBackendManifest(fullPath)
+				if err != nil {
+					return nil, err
+				}
+				manifests = append(manifests, *backendManifest)
+			}
 		}
 	}
-
-	return backendManifests, nil
+	return manifests, nil
 }
 
 func loadBackendManifest(path string) (*BackendManifestV1, error) {

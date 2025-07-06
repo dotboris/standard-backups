@@ -12,8 +12,12 @@ var configDumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Print out the contents of the configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		slog.Info("loading config", slog.String("configDir", configDir))
-		config, err := config.LoadConfig(configDir)
+		slog.Info("loading config",
+			slog.String("configPath", configPath),
+			slog.Any("backendDirs", backendDirs),
+			slog.Any("recipeDirs", recipeDirs),
+		)
+		config, err := config.LoadConfig(configPath, backendDirs, recipeDirs)
 		if err != nil {
 			return err
 		}

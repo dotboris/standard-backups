@@ -16,7 +16,7 @@ description: the first example
 bin: /path/to/backend
 protocol-version: 1
 `), 0644)
-	backendManifests, err := LoadBackendManifests(d)
+	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
@@ -44,7 +44,7 @@ description: the backend2
 bin: /path/to/backend2
 protocol-version: 1
 `), 0644)
-	backendManifests, err := LoadBackendManifests(d)
+	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
@@ -68,7 +68,7 @@ protocol-version: 1
 func TestLoadBackendManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0644)
-	backendManifests, err := LoadBackendManifests(d)
+	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{}, backendManifests)
 	}
@@ -76,7 +76,7 @@ func TestLoadBackendManifestsIgnoreNonYaml(t *testing.T) {
 
 func TestLoadBackendManifestsEmptyDir(t *testing.T) {
 	d := t.TempDir()
-	backendManifests, err := LoadBackendManifests(d)
+	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{}, backendManifests)
 	}
@@ -84,7 +84,7 @@ func TestLoadBackendManifestsEmptyDir(t *testing.T) {
 
 func TestLoadBackendManifestsMissingDir(t *testing.T) {
 	d := t.TempDir()
-	backendManifests, err := LoadBackendManifests(path.Join(d, "does-not-exist"))
+	backendManifests, err := LoadBackendManifests([]string{path.Join(d, "does-not-exist")})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{}, backendManifests)
 	}
@@ -97,7 +97,7 @@ name: backend
 bin: /usr/bin/my-backend
 protocol-version: 1
 `), 0644)
-	backendManifests, err := LoadBackendManifests(d)
+	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
@@ -113,7 +113,7 @@ protocol-version: 1
 func TestLoadBackendManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "backend.yaml"), []byte(""), 0644)
-	_, err := LoadBackendManifests(d)
+	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
 
@@ -124,7 +124,7 @@ name: backend
 bin: /usr/bin/backend
 protocol-version: 1
 `), 0644)
-	_, err := LoadBackendManifests(d)
+	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
 
@@ -135,6 +135,6 @@ name: backend
 bin: /usr/bin/backend
 protocol-version: -1
 `), 0644)
-	_, err := LoadBackendManifests(d)
+	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }

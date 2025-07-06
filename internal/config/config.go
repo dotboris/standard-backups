@@ -2,30 +2,25 @@ package config
 
 import (
 	"fmt"
-	"path"
 )
 
 // Config describes the entire configuration of `standard-backups` across all config files.
 type Config struct {
 	Backends   []BackendManifestV1
 	Recipes    []RecipeManifestV1
-	MainConfig MainConfig // TODO
+	MainConfig MainConfig
 }
 
-// LoadConfig loads the entire `standard-backups` config from a given directory.
-// Different parts of the config are loaded like so: Backends are loaded from
-// `$dir/backends.d/*.yaml`. Recipes are loaded from `$dir/recipes.d/*.yaml`. Main
-// Config is loaded from `$dir/config.yaml`.
-func LoadConfig(dir string) (*Config, error) {
-	backends, err := LoadBackendManifests(path.Join(dir, "backends.d"))
+func LoadConfig(configPath string, backendsSearchDirs []string, recipesSearchDirs []string) (*Config, error) {
+	backends, err := LoadBackendManifests(backendsSearchDirs)
 	if err != nil {
 		return nil, err
 	}
-	recipes, err := LoadRecipeManifests(path.Join(dir, "recipes.d"))
+	recipes, err := LoadRecipeManifests(recipesSearchDirs)
 	if err != nil {
 		return nil, err
 	}
-	mainConfig, err := LoadMainConfig(path.Join(dir, "config.yaml"), backends, recipes)
+	mainConfig, err := LoadMainConfig(configPath, backends, recipes)
 	if err != nil {
 		return nil, err
 	}

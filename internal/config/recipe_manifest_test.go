@@ -34,7 +34,7 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 					command: echo failure
 		`)),
 		0644)
-	manifests, err := LoadRecipeManifests(d)
+	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
@@ -111,7 +111,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 					command: echo failure 2
 		`)),
 		0644)
-	manifests, err := LoadRecipeManifests(d)
+	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
@@ -169,7 +169,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 func TestLoadRecipeManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0644)
-	manifests, err := LoadRecipeManifests(d)
+	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
@@ -177,7 +177,7 @@ func TestLoadRecipeManifestsIgnoreNonYaml(t *testing.T) {
 
 func TestLoadRecipeManifestsEmptyDir(t *testing.T) {
 	d := t.TempDir()
-	manifests, err := LoadRecipeManifests(d)
+	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
@@ -185,7 +185,7 @@ func TestLoadRecipeManifestsEmptyDir(t *testing.T) {
 
 func TestLoadRecipeManifestsMissingDir(t *testing.T) {
 	d := t.TempDir()
-	manifests, err := LoadRecipeManifests(path.Join(d, "does-not-exist"))
+	manifests, err := LoadRecipeManifests([]string{path.Join(d, "does-not-exist")})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{}, manifests)
 	}
@@ -198,7 +198,7 @@ name: app
 description: app description
 paths: [/app/to/backup]
 `), 0644)
-	manifests, err := LoadRecipeManifests(d)
+	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
@@ -214,7 +214,7 @@ paths: [/app/to/backup]
 func TestLoadRecipeManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
 	os.WriteFile(path.Join(d, "app.yaml"), []byte(""), 0644)
-	_, err := LoadRecipeManifests(d)
+	_, err := LoadRecipeManifests([]string{d})
 	assert.Error(t, err)
 }
 
@@ -225,7 +225,7 @@ name: app
 description: app description
 paths: [/app/to/backup]
 `), 0644)
-	_, err := LoadRecipeManifests(d)
+	_, err := LoadRecipeManifests([]string{d})
 	assert.Error(t, err)
 }
 
@@ -241,7 +241,7 @@ func TestLoadRecipeManifestsInvalidNoPaths(t *testing.T) {
 		`)),
 		0644,
 	)
-	_, err := LoadRecipeManifests(d)
+	_, err := LoadRecipeManifests([]string{d})
 	assert.Equal(
 		t,
 		testutils.Dedent(fmt.Sprintf(`
@@ -265,7 +265,7 @@ func TestLoadRecipeManifestsInvalidEmptyPaths(t *testing.T) {
 		`)),
 		0644,
 	)
-	_, err := LoadRecipeManifests(d)
+	_, err := LoadRecipeManifests([]string{d})
 	assert.Equal(
 		t,
 		testutils.Dedent(fmt.Sprintf(`
@@ -295,7 +295,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0644,
 			)
-			_, err := LoadRecipeManifests(d)
+			_, err := LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
@@ -322,7 +322,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0644,
 			)
-			_, err := LoadRecipeManifests(d)
+			_, err := LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
@@ -349,7 +349,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0644,
 			)
-			_, err := LoadRecipeManifests(d)
+			_, err := LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`

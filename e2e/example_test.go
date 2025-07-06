@@ -19,13 +19,11 @@ import (
 )
 
 func TestExampleConfigDump(t *testing.T) {
-	cmd := exec.Command(
-		"./dist/standard-backups",
+	cmd := testutils.StandardBackups(t,
 		"config", "dump",
-		"--config-dir", "examples/config/etc/standard-backups",
 		"--no-color",
 	)
-	cmd.Dir = testutils.GetRepoRoot(t)
+	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout
 	stderr := bytes.Buffer{}
@@ -92,15 +90,13 @@ func TestBackupRsyncLocal(t *testing.T) {
 
 	backupsBefore := listBackups()
 
-	cmd := exec.Command(
-		"./dist/standard-backups",
+	cmd := testutils.StandardBackups(t,
 		"backup", "test",
-		"--config-dir", "examples/config/etc/standard-backups",
 		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
 	)
-	cmd.Dir = root
-	output, err := cmd.CombinedOutput()
-	if !assert.NoError(t, err, string(output)) {
+	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
+	err = cmd.Run()
+	if !assert.NoError(t, err) {
 		return
 	}
 
@@ -118,15 +114,13 @@ func TestExampleResticLocal(t *testing.T) {
 	destDir := path.Join(root, "dist/backups/restic-local")
 	_ = os.RemoveAll(path.Join(destDir))
 
-	cmd := exec.Command(
-		"./dist/standard-backups",
+	cmd := testutils.StandardBackups(t,
 		"backup", "test-restic",
-		"--config-dir", "examples/config/etc/standard-backups",
 		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
 	)
-	cmd.Dir = root
-	output, err := cmd.CombinedOutput()
-	if !assert.NoError(t, err, string(output)) {
+	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
+	err := cmd.Run()
+	if !assert.NoError(t, err) {
 		return
 	}
 

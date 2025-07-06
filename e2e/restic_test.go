@@ -56,14 +56,11 @@ func TestResticBackup(t *testing.T) {
 				backup-to: [my-dest]
 	`, repoDir)))
 
-	cmd := exec.Command("./dist/standard-backups",
+	cmd := testutils.StandardBackups(t,
 		"backup", "my-job",
-		"--config-dir", tc.Dir,
 		"--lockfile", lockFile,
 	)
-	cmd.Dir = testutils.GetRepoRoot(t)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Args = append(cmd.Args, tc.Args()...)
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
 		return
@@ -166,14 +163,11 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 				backup-to: [my-dest]
 	`, repoDir)))
 
-	cmd = exec.Command("./dist/standard-backups",
+	cmd = testutils.StandardBackups(t,
 		"backup", "my-job",
-		"--config-dir", tc.Dir,
 		"--lockfile", lockFile,
 	)
-	cmd.Dir = testutils.GetRepoRoot(t)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Args = append(cmd.Args, tc.Args()...)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
 		return
@@ -216,14 +210,11 @@ func TestResticBackupForget(t *testing.T) {
 	`, repoDir)))
 
 	for range 2 {
-		cmd := exec.Command("./dist/standard-backups",
+		cmd := testutils.StandardBackups(t,
 			"backup", "my-job",
-			"--config-dir", tc.Dir,
 			"--lockfile", lockFile,
 		)
-		cmd.Dir = testutils.GetRepoRoot(t)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Args = append(cmd.Args, tc.Args()...)
 		err := cmd.Run()
 		if !assert.NoError(t, err) {
 			return
