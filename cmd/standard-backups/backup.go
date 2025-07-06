@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/dotboris/standard-backups/internal"
-	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +17,7 @@ var backupCmd = &cobra.Command{
 		}
 		defer unlock()
 		jobName := args[0]
-		cfg, err := config.LoadConfig(configPath, backendDirs, recipeDirs)
+		cfg, err := loadConfig()
 		if err != nil {
 			return err
 		}
