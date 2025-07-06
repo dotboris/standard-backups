@@ -66,9 +66,9 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 }
 
 func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
-	d := t.TempDir()
+	d1 := t.TempDir()
 	os.WriteFile(
-		path.Join(d, "app1.yaml"),
+		path.Join(d1, "app1.yaml"),
 		[]byte(testutils.DedentYaml(`
 			version: 1
 			name: app1
@@ -89,8 +89,9 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 					command: echo failure 1
 		`)),
 		0644)
+	d2 := t.TempDir()
 	os.WriteFile(
-		path.Join(d, "app2.yaml"),
+		path.Join(d2, "app2.yaml"),
 		[]byte(testutils.DedentYaml(`
 			version: 1
 			name: app2
@@ -111,7 +112,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 					command: echo failure 2
 		`)),
 		0644)
-	manifests, err := LoadRecipeManifests([]string{d})
+	manifests, err := LoadRecipeManifests([]string{d1, d2})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{

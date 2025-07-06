@@ -31,20 +31,21 @@ protocol-version: 1
 }
 
 func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
-	d := t.TempDir()
-	os.WriteFile(path.Join(d, "backend1.yaml"), []byte(`version: 1
+	d1 := t.TempDir()
+	os.WriteFile(path.Join(d1, "backend1.yaml"), []byte(`version: 1
 name: backend1
 description: the backend1
 bin: /path/to/backend1
 protocol-version: 1
 `), 0644)
-	os.WriteFile(path.Join(d, "backend2.yaml"), []byte(`version: 1
+	d2 := t.TempDir()
+	os.WriteFile(path.Join(d2, "backend2.yaml"), []byte(`version: 1
 name: backend2
 description: the backend2
 bin: /path/to/backend2
 protocol-version: 1
 `), 0644)
-	backendManifests, err := LoadBackendManifests([]string{d})
+	backendManifests, err := LoadBackendManifests([]string{d1, d2})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
