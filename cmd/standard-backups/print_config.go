@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configDumpCmd = &cobra.Command{
-	Use:   "dump",
+var printConfigCmd = &cobra.Command{
+	Use:   "print-config",
 	Short: "Print out the contents of the configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		slog.Info("loading config",
@@ -31,5 +31,5 @@ var configDumpCmd = &cobra.Command{
 }
 
 func init() {
-	configCmd.AddCommand(configDumpCmd)
+	rootCmd.AddCommand(printConfigCmd)
 }
