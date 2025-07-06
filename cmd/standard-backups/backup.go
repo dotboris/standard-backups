@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// backupCmd represents the backup command
 var backupCmd = &cobra.Command{
 	Use:   "backup <job>",
 	Short: "Perform a backup for the given job",
