@@ -98,27 +98,28 @@ type RecipeManifestV1 struct {
 	Hooks       HooksV1  `mapstructure:"hooks"`
 }
 
-func LoadRecipeManifests(dir string) ([]RecipeManifestV1, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return []RecipeManifestV1{}, nil
-		}
-		return nil, fmt.Errorf("failed to list recipe manifest in %s: %w", dir, err)
-	}
-
-	manifests := make([]RecipeManifestV1, 0)
-	for _, entry := range entries {
-		if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
-			fullPath := path.Join(dir, entry.Name())
-			manifest, err := loadRecipeManifest(fullPath)
-			if err != nil {
-				return nil, err
+func LoadRecipeManifests(dirs []string) ([]RecipeManifestV1, error) {
+	manifests := []RecipeManifestV1{}
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
 			}
-			manifests = append(manifests, *manifest)
+			return nil, fmt.Errorf("failed to list recipe manifest in %s: %w", dir, err)
+		}
+
+		for _, entry := range entries {
+			if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
+				fullPath := path.Join(dir, entry.Name())
+				manifest, err := loadRecipeManifest(fullPath)
+				if err != nil {
+					return nil, err
+				}
+				manifests = append(manifests, *manifest)
+			}
 		}
 	}
-
 	return manifests, nil
 }
 

@@ -43,20 +43,15 @@ func TestBackupLock(t *testing.T) {
 	`))
 
 	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
-	root := testutils.GetRepoRoot(t)
 
 	startCmd := func(jobName string) *exec.Cmd {
 		t.Helper()
-		cmd := exec.Command(
-			"./dist/standard-backups",
+		cmd := testutils.StandardBackups(t,
 			"backup", jobName,
 			"--log-level", "debug",
-			"--config-dir", tc.Dir,
 			"--lockfile", lockFile,
 		)
-		cmd.Dir = root
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Args = append(cmd.Args, tc.Args()...)
 		err := cmd.Start()
 		if err != nil {
 			t.Error(err)
@@ -133,21 +128,17 @@ func TestBackupLockTimeout(t *testing.T) {
 	`))
 
 	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
-	root := testutils.GetRepoRoot(t)
 
 	startCmd := func(jobName string, stderr io.Writer) *exec.Cmd {
 		t.Helper()
-		cmd := exec.Command(
-			"./dist/standard-backups",
+		cmd := testutils.StandardBackups(t,
 			"backup", jobName,
 			"--log-level", "debug",
-			"--config-dir", tc.Dir,
 			"--lockfile", lockFile,
 			"--lock-timeout", "1s",
 			"--no-color",
 		)
-		cmd.Dir = root
-		cmd.Stdout = os.Stdout
+		cmd.Args = append(cmd.Args, tc.Args()...)
 		cmd.Stderr = stderr
 		err := cmd.Start()
 		if err != nil {

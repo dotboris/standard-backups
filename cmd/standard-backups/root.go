@@ -11,7 +11,9 @@ import (
 )
 
 var (
-	configDir    string
+	configPath   string
+	backendDirs  []string
+	recipeDirs   []string
 	logLevelFlag string
 	logJson      bool
 	noColor      bool
@@ -75,11 +77,30 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&configDir,
-		"config-dir", "c",
-		"",
-		"Directory where the configuration is stored",
+	rootCmd.PersistentFlags().StringVarP(&configPath,
+		"config", "c",
+		"/etc/standard-backups/config.yaml",
+		"Configuration file path",
 	)
+	rootCmd.PersistentFlags().StringSliceVarP(&backendDirs,
+		"backend-dirs", "B",
+		[]string{
+			"/usr/local/share/standard-backups/backends",
+			"/usr/share/standard-backups/backends",
+			"/etc/standard-backups/backends.d",
+		},
+		"Directories where to search for backends",
+	)
+	rootCmd.PersistentFlags().StringSliceVarP(&recipeDirs,
+		"recipe-dirs", "R",
+		[]string{
+			"/usr/local/share/standard-backups/recipes",
+			"/usr/share/standard-backups/recipes",
+			"/etc/standard-backups/recipes.d",
+		},
+		"Directories where to search for recipes",
+	)
+
 	rootCmd.PersistentFlags().BoolVarP(&logJson,
 		"log-json", "j",
 		false,
@@ -95,6 +116,7 @@ func init() {
 		false,
 		"Disable color output",
 	)
+
 	rootCmd.PersistentFlags().StringVarP(&lockfilePath,
 		"lockfile", "L",
 		"/var/run/standard-backups.pid",
