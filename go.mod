@@ -7,7 +7,7 @@ require (
 	github.com/gkampitakis/go-snaps v0.5.13
 	github.com/go-viper/mapstructure/v2 v2.3.0
 	github.com/goccy/go-yaml v1.18.0
-	github.com/k0kubun/pp/v3 v3.4.1
+	github.com/k0kubun/pp/v3 v3.5.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/phsym/console-slog v0.3.1
@@ -24,8 +24,8 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/maruel/natural v1.1.1 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
@@ -34,7 +34,7 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
