@@ -91,6 +91,7 @@ type HooksV1 struct {
 }
 
 type RecipeManifestV1 struct {
+	path        string
 	Version     int      `mapstructure:"version"`
 	Name        string   `mapstructure:"name"`
 	Description string   `mapstructure:"description"`
@@ -145,6 +146,7 @@ func loadRecipeManifest(path string) (*RecipeManifestV1, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode recipe manifest %s: %w", path, err)
 	}
+	res.path = path
 
 	return &res, nil
 }

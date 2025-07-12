@@ -19,6 +19,7 @@ func TestLoadMainConfigMinimalConfig(t *testing.T) {
 	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	if assert.NoError(t, err) {
 		assert.Equal(t, &MainConfig{
+			path:    configPath,
 			Version: 1,
 		}, mainConfig)
 	}

@@ -55,6 +55,7 @@ func init() {
 }
 
 type BackendManifestV1 struct {
+	path            string
 	Version         int    `mapstructure:"version"`
 	Name            string `mapstructure:"name"`
 	Description     string `mapstructure:"description"`
@@ -109,6 +110,7 @@ func loadBackendManifest(path string) (*BackendManifestV1, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode backend manifest %s: %w", path, err)
 	}
+	res.path = path
 
 	return &res, nil
 }

@@ -30,6 +30,7 @@ type JobConfigV1 struct {
 // MainConfig is the configuration file that system administrators are expected
 // to write. In other words, it's `$dir/config.yaml`.
 type MainConfig struct {
+	path         string
 	Version      int
 	Backends     map[string]BackendConfigV1
 	Destinations map[string]DestinationConfigV1
@@ -146,6 +147,7 @@ func LoadMainConfig(path string, backends []BackendManifestV1, recipes []RecipeM
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode main config %s: %w", path, err)
 	}
+	res.path = path
 
 	return &res, nil
 }

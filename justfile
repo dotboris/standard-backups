@@ -22,7 +22,15 @@ build-all: \
 
 # Run standard-backups
 run *args: build-backends
-  @go run ./cmd/standard-backups {{ args }}
+  go run ./cmd/standard-backups {{ args }}
+
+# Run standard-backups using config in `example/config/`
+run-example *args: build-backends
+  go run ./cmd/standard-backups \
+    --config examples/config/etc/standard-backups/config.yaml \
+    --backend-dirs examples/config/etc/standard-backups/backends.d \
+    --recipe-dirs examples/config/etc/standard-backups/recipes.d \
+    {{ args }}
 
 # Run unit tests
 [group("test")]
