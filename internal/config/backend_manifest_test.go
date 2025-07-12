@@ -10,7 +10,8 @@ import (
 
 func TestLoadBackendManifestsSingleFile(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "example.yaml"), []byte(`version: 1
+	p := path.Join(d, "example.yaml")
+	os.WriteFile(p, []byte(`version: 1
 name: example 1
 description: the first example
 bin: /path/to/backend
@@ -20,6 +21,7 @@ protocol-version: 1
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
+				path:            p,
 				Version:         1,
 				Name:            "example 1",
 				Description:     "the first example",
@@ -32,14 +34,16 @@ protocol-version: 1
 
 func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 	d1 := t.TempDir()
-	os.WriteFile(path.Join(d1, "backend1.yaml"), []byte(`version: 1
+	p1 := path.Join(d1, "backend1.yaml")
+	os.WriteFile(p1, []byte(`version: 1
 name: backend1
 description: the backend1
 bin: /path/to/backend1
 protocol-version: 1
 `), 0644)
 	d2 := t.TempDir()
-	os.WriteFile(path.Join(d2, "backend2.yaml"), []byte(`version: 1
+	p2 := path.Join(d2, "backend2.yaml")
+	os.WriteFile(p2, []byte(`version: 1
 name: backend2
 description: the backend2
 bin: /path/to/backend2
@@ -49,6 +53,7 @@ protocol-version: 1
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
+				path:            p1,
 				Version:         1,
 				Name:            "backend1",
 				Description:     "the backend1",
@@ -56,6 +61,7 @@ protocol-version: 1
 				ProtocolVersion: 1,
 			},
 			{
+				path:            p2,
 				Version:         1,
 				Name:            "backend2",
 				Description:     "the backend2",
@@ -93,7 +99,8 @@ func TestLoadBackendManifestsMissingDir(t *testing.T) {
 
 func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "backend.yaml"), []byte(`version: 1
+	p := path.Join(d, "backend.yaml")
+	os.WriteFile(p, []byte(`version: 1
 name: backend
 bin: /usr/bin/my-backend
 protocol-version: 1
@@ -102,6 +109,7 @@ protocol-version: 1
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
+				path:            p,
 				Version:         1,
 				Name:            "backend",
 				Bin:             "/usr/bin/my-backend",

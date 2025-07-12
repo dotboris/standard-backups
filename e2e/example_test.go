@@ -18,11 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExampleConfigDump(t *testing.T) {
-	cmd := testutils.StandardBackups(t,
-		"config", "dump",
-		"--no-color",
-	)
+func TestExamplePrintConfig(t *testing.T) {
+	cmd := testutils.StandardBackups(t, "print-config", "--no-color")
 	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout

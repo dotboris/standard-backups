@@ -12,8 +12,9 @@ import (
 
 func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(
-		path.Join(d, "example.yaml"),
+	p :=
+		path.Join(d, "example.yaml")
+	os.WriteFile(p,
 		[]byte(testutils.DedentYaml(`
 			version: 1
 			name: example 1
@@ -38,6 +39,7 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
+				path:        p,
 				Version:     1,
 				Name:        "example 1",
 				Description: "the first example",
@@ -67,8 +69,9 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 
 func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	d1 := t.TempDir()
-	os.WriteFile(
-		path.Join(d1, "app1.yaml"),
+	p1 :=
+		path.Join(d1, "app1.yaml")
+	os.WriteFile(p1,
 		[]byte(testutils.DedentYaml(`
 			version: 1
 			name: app1
@@ -90,8 +93,8 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 		`)),
 		0644)
 	d2 := t.TempDir()
-	os.WriteFile(
-		path.Join(d2, "app2.yaml"),
+	p2 := path.Join(d2, "app2.yaml")
+	os.WriteFile(p2,
 		[]byte(testutils.DedentYaml(`
 			version: 1
 			name: app2
@@ -116,6 +119,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
+				path:        p1,
 				Version:     1,
 				Name:        "app1",
 				Description: "the app1",
@@ -140,6 +144,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				},
 			},
 			{
+				path:        p2,
 				Version:     1,
 				Name:        "app2",
 				Description: "the app2",
@@ -194,7 +199,8 @@ func TestLoadRecipeManifestsMissingDir(t *testing.T) {
 
 func TestLoadRecipeManifestsNoHooks(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "app.yaml"), []byte(`version: 1
+	p := path.Join(d, "app.yaml")
+	os.WriteFile(p, []byte(`version: 1
 name: app
 description: app description
 paths: [/app/to/backup]
@@ -203,6 +209,7 @@ paths: [/app/to/backup]
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
+				path:        p,
 				Version:     1,
 				Name:        "app",
 				Description: "app description",

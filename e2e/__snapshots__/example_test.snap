@@ -1,5 +1,5 @@
 
-[TestExampleConfigDump - 1]
+[TestExamplePrintConfig - 1]
 &config.Config{
   Backends: []config.BackendManifestV1{
     config.BackendManifestV1{
