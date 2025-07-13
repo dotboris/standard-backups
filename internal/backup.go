@@ -10,7 +10,29 @@ import (
 	"github.com/dotboris/standard-backups/pkg/proto"
 )
 
-func Backup(cfg config.Config, jobName string) error {
+type backupClient interface {
+	Enabled() bool
+	Backup(req *proto.BackupRequest) error
+}
+type backendClientFactory struct{}
+type newBackendClienter interface {
+	NewBackendClient(cfg config.Config, name string) (backupClient, error)
+}
+type backupService struct {
+	backendClientFactory newBackendClienter
+}
+
+func (f *backendClientFactory) NewBackendClient(cfg config.Config, name string) (backupClient, error) {
+	return proto.NewBackendClient(cfg, name)
+}
+
+func NewBackupService() backupService {
+	return backupService{
+		backendClientFactory: &backendClientFactory{},
+	}
+}
+
+func (s *backupService) Backup(cfg config.Config, jobName string) error {
 	job, ok := cfg.MainConfig.Jobs[jobName]
 	if !ok {
 		return fmt.Errorf("could not find a job named %s", jobName)
@@ -33,7 +55,7 @@ func Backup(cfg config.Config, jobName string) error {
 			if !ok {
 				return fmt.Errorf("could not find destination named %s", destName)
 			}
-			client, err := proto.NewBackendClient(cfg, dest.Backend)
+			client, err := s.backendClientFactory.NewBackendClient(cfg, dest.Backend)
 			if err != nil {
 				return err
 			}
@@ -51,11 +73,6 @@ func Backup(cfg config.Config, jobName string) error {
 	}
 
 	return nil
-}
-
-type backupClient interface {
-	Enabled() bool
-	Backup(req *proto.BackupRequest) error
 }
 
 func backupSingle(
