@@ -54,3 +54,23 @@ test-all: test e2e
 [group("test")]
 generate-mocks:
   mockery
+
+# Run static code checks
+[group("checks")]
+lint:
+  golangci-lint run
+
+# Apply automated fixes for static code checks
+[group("checks")]
+lint-fix:
+  golangci-lint run --fix
+
+# Format code
+[group("checks")]
+fmt:
+  golangci-lint fmt
+
+# Check if code is formatted
+[group("checks")]
+fmt-check:
+  golangci-lint fmt -d

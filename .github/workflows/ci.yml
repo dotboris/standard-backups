@@ -19,11 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      # Use nix because it installs backup tools for us
+      - uses: cachix/install-nix-action@v31
         with:
-          go-version-file: go.mod
-      - uses: extractions/setup-just@v3
-      - run: just test
+          # Helps avoid rate limiting
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop -L -c just test
 
   e2e:
     runs-on: ubuntu-latest
@@ -47,3 +48,25 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix develop -L -c just generate-mocks
       - run: git diff --color=always --exit-code
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Use nix because it installs backup tools for us
+      - uses: cachix/install-nix-action@v31
+        with:
+          # Helps avoid rate limiting
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop -L -c just lint
+
+  fmt-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Use nix because it installs backup tools for us
+      - uses: cachix/install-nix-action@v31
+        with:
+          # Helps avoid rate limiting
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop -L -c just fmt-check
