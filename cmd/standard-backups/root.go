@@ -33,7 +33,10 @@ func setupLogging() error {
 	case "error":
 		level = slog.LevelError
 	default:
-		return fmt.Errorf("unexpected value for --log-level. Got %s expected on of debug, info, warn, error", logLevelFlag)
+		return fmt.Errorf(
+			"unexpected value for --log-level. Got %s expected on of debug, info, warn, error",
+			logLevelFlag,
+		)
 	}
 
 	var handler slog.Handler

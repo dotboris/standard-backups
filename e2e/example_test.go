@@ -54,7 +54,12 @@ func assertTreesMatch(t *testing.T, expectedPath string, actualPath string) bool
 			return nil
 		}
 
-		assert.Equal(t, source, dest, fmt.Sprintf("expected content of %s to match %s", sourcePath, dest))
+		assert.Equal(
+			t,
+			source,
+			dest,
+			fmt.Sprintf("expected content of %s to match %s", sourcePath, dest),
+		)
 
 		return nil
 	})
@@ -64,7 +69,7 @@ func assertTreesMatch(t *testing.T, expectedPath string, actualPath string) bool
 func TestBackupRsyncLocal(t *testing.T) {
 	root := testutils.GetRepoRoot(t)
 	destDir := filepath.Join(root, "dist/backups/local/")
-	err := os.MkdirAll(destDir, 0755)
+	err := os.MkdirAll(destDir, 0o755)
 	if !assert.NoError(t, err) {
 		return
 	}

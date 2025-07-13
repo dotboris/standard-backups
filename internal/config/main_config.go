@@ -9,9 +9,7 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-var (
-	mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
-)
+var mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
 
 type DestinationConfigV1 struct {
 	Backend string
@@ -32,7 +30,10 @@ type MainConfig struct {
 	Jobs         map[string]JobConfigV1
 }
 
-func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifestV1) (*jsonschema.Schema, error) {
+func makeMainConfigSchema(
+	backends []BackendManifestV1,
+	recipes []RecipeManifestV1,
+) (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 
 	backendNames := []any{}
@@ -101,7 +102,11 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 	return schema, nil
 }
 
-func LoadMainConfig(path string, backends []BackendManifestV1, recipes []RecipeManifestV1) (*MainConfig, error) {
+func LoadMainConfig(
+	path string,
+	backends []BackendManifestV1,
+	recipes []RecipeManifestV1,
+) (*MainConfig, error) {
 	schema, err := makeMainConfigSchema(backends, recipes)
 	if err != nil {
 		return nil, fmt.Errorf("[internal error] failed to build main config schema: %w", err)

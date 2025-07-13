@@ -8,9 +8,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/config"
 )
 
-var (
-	errUnsupportedShell = errors.New("unsupported shell")
-)
+var errUnsupportedShell = errors.New("unsupported shell")
 
 func runHook(hook config.HookV1) error {
 	var (

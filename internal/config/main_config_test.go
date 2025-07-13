@@ -14,7 +14,7 @@ import (
 func TestLoadMainConfigMinimalConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(`version: 1`), 0644)
+	os.WriteFile(configPath, []byte(`version: 1`), 0o644)
 
 	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	if assert.NoError(t, err) {
@@ -28,7 +28,7 @@ func TestLoadMainConfigMinimalConfig(t *testing.T) {
 func TestLoadMainConfigBadVersion(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(`version: -1`), 0644)
+	os.WriteFile(configPath, []byte(`version: -1`), 0o644)
 
 	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
@@ -46,7 +46,7 @@ func TestLoadMainConfigBadVersion(t *testing.T) {
 func TestLoadMainConfigEmptyConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(``), 0644)
+	os.WriteFile(configPath, []byte(``), 0o644)
 
 	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
@@ -64,7 +64,6 @@ func TestLoadMainConfigEmptyConfig(t *testing.T) {
 func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
-
 			d := t.TempDir()
 			configPath := path.Join(d, "config.yaml")
 			os.WriteFile(
@@ -75,7 +74,7 @@ func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 						%s:
 							backend: bogus
 				`, key))),
-				0644,
+				0o644,
 			)
 
 			_, err := LoadMainConfig(
@@ -110,7 +109,7 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 				test:
 					backend: nope
 		`)),
-		0644,
+		0o644,
 	)
 	_, err := LoadMainConfig(
 		configPath,
@@ -135,7 +134,6 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 func TestLoadMainConfigBadJobKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
-
 			d := t.TempDir()
 			configPath := path.Join(d, "config.yaml")
 			os.WriteFile(
@@ -147,7 +145,7 @@ func TestLoadMainConfigBadJobKey(t *testing.T) {
 							recipe: bogus
 							backup-to: []
 				`, key))),
-				0644,
+				0o644,
 			)
 
 			_, err := LoadMainConfig(
@@ -183,7 +181,7 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 					recipe: nope
 					backup-to: []
 		`)),
-		0644,
+		0o644,
 	)
 	_, err := LoadMainConfig(
 		configPath,

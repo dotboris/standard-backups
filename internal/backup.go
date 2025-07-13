@@ -13,10 +13,13 @@ import (
 type backuper interface {
 	Backup(req *proto.BackupRequest) error
 }
-type backendClientFactory struct{}
-type newBackendClienter interface {
-	NewBackendClient(cfg config.Config, name string) (backuper, error)
-}
+type (
+	backendClientFactory struct{}
+	newBackendClienter   interface {
+		NewBackendClient(cfg config.Config, name string) (backuper, error)
+	}
+)
+
 type backupService struct {
 	backendClientFactory newBackendClienter
 }

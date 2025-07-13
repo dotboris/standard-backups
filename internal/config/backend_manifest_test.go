@@ -16,7 +16,7 @@ name: example 1
 description: the first example
 bin: /path/to/backend
 protocol-version: 1
-`), 0644)
+`), 0o644)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -40,7 +40,7 @@ name: backend1
 description: the backend1
 bin: /path/to/backend1
 protocol-version: 1
-`), 0644)
+`), 0o644)
 	d2 := t.TempDir()
 	p2 := path.Join(d2, "backend2.yaml")
 	os.WriteFile(p2, []byte(`version: 1
@@ -48,7 +48,7 @@ name: backend2
 description: the backend2
 bin: /path/to/backend2
 protocol-version: 1
-`), 0644)
+`), 0o644)
 	backendManifests, err := LoadBackendManifests([]string{d1, d2})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -74,7 +74,7 @@ protocol-version: 1
 
 func TestLoadBackendManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0644)
+	os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0o644)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{}, backendManifests)
@@ -104,7 +104,7 @@ func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 name: backend
 bin: /usr/bin/my-backend
 protocol-version: 1
-`), 0644)
+`), 0o644)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -121,7 +121,7 @@ protocol-version: 1
 
 func TestLoadBackendManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
-	os.WriteFile(path.Join(d, "backend.yaml"), []byte(""), 0644)
+	os.WriteFile(path.Join(d, "backend.yaml"), []byte(""), 0o644)
 	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -132,7 +132,7 @@ func TestLoadBackendManifestsInvalidBadVersion(t *testing.T) {
 name: backend
 bin: /usr/bin/backend
 protocol-version: 1
-`), 0644)
+`), 0o644)
 	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -143,7 +143,7 @@ func TestLoadBackendManifestsInvalidBadProtocolVersion(t *testing.T) {
 name: backend
 bin: /usr/bin/backend
 protocol-version: -1
-`), 0644)
+`), 0o644)
 	_, err := LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
