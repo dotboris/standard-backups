@@ -31,6 +31,7 @@
           pkgs.go-mockery
 
           # Misc tooling
+          pkgs.gotestsum
           pkgs.just
           pkgs.rsync
           pkgs.restic
