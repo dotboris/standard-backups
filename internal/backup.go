@@ -10,18 +10,18 @@ import (
 	"github.com/dotboris/standard-backups/pkg/proto"
 )
 
-type backupClient interface {
+type backuper interface {
 	Backup(req *proto.BackupRequest) error
 }
 type backendClientFactory struct{}
 type newBackendClienter interface {
-	NewBackendClient(cfg config.Config, name string) (backupClient, error)
+	NewBackendClient(cfg config.Config, name string) (backuper, error)
 }
 type backupService struct {
 	backendClientFactory newBackendClienter
 }
 
-func (f *backendClientFactory) NewBackendClient(cfg config.Config, name string) (backupClient, error) {
+func (f *backendClientFactory) NewBackendClient(cfg config.Config, name string) (backuper, error) {
 	return proto.NewBackendClient(cfg, name)
 }
 
@@ -75,7 +75,7 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 }
 
 func backupSingle(
-	client backupClient,
+	client backuper,
 	logger *slog.Logger,
 	jobName string,
 	recipe *config.RecipeManifestV1,

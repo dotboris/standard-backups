@@ -21,23 +21,23 @@ func (_m *MocknewBackendClienter) EXPECT() *MocknewBackendClienter_Expecter {
 }
 
 // NewBackendClient provides a mock function with given fields: cfg, name
-func (_m *MocknewBackendClienter) NewBackendClient(cfg config.Config, name string) (backupClient, error) {
+func (_m *MocknewBackendClienter) NewBackendClient(cfg config.Config, name string) (backuper, error) {
 	ret := _m.Called(cfg, name)
 
 	if len(ret) == 0 {
 		panic("no return value specified for NewBackendClient")
 	}
 
-	var r0 backupClient
+	var r0 backuper
 	var r1 error
-	if rf, ok := ret.Get(0).(func(config.Config, string) (backupClient, error)); ok {
+	if rf, ok := ret.Get(0).(func(config.Config, string) (backuper, error)); ok {
 		return rf(cfg, name)
 	}
-	if rf, ok := ret.Get(0).(func(config.Config, string) backupClient); ok {
+	if rf, ok := ret.Get(0).(func(config.Config, string) backuper); ok {
 		r0 = rf(cfg, name)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(backupClient)
+			r0 = ret.Get(0).(backuper)
 		}
 	}
 
@@ -69,12 +69,12 @@ func (_c *MocknewBackendClienter_NewBackendClient_Call) Run(run func(cfg config.
 	return _c
 }
 
-func (_c *MocknewBackendClienter_NewBackendClient_Call) Return(_a0 backupClient, _a1 error) *MocknewBackendClienter_NewBackendClient_Call {
+func (_c *MocknewBackendClienter_NewBackendClient_Call) Return(_a0 backuper, _a1 error) *MocknewBackendClienter_NewBackendClient_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MocknewBackendClienter_NewBackendClient_Call) RunAndReturn(run func(config.Config, string) (backupClient, error)) *MocknewBackendClienter_NewBackendClient_Call {
+func (_c *MocknewBackendClienter_NewBackendClient_Call) RunAndReturn(run func(config.Config, string) (backuper, error)) *MocknewBackendClienter_NewBackendClient_Call {
 	_c.Call.Return(run)
 	return _c
 }
