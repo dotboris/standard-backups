@@ -41,8 +41,6 @@ func TestResticBackup(t *testing.T) {
 	sourceDir := tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
-		backends:
-			restic: {enable: true}
 		destinations:
 			my-dest:
 				backend: restic
@@ -148,8 +146,6 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
-		backends:
-			restic: {enable: true}
 		destinations:
 			my-dest:
 				backend: restic
@@ -190,8 +186,6 @@ func TestResticBackupForget(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
-		backends:
-			restic: {enable: true}
 		destinations:
 			my-dest:
 				backend: restic

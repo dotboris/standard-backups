@@ -23,7 +23,6 @@ func newTestLogger() *slog.Logger {
 
 func TestBackupSingleSimple(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(
 		&proto.BackupRequest{
 			Paths:           []string{"path1", "path2"},
@@ -55,35 +54,9 @@ func TestBackupSingleSimple(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestBackupSingleSkip(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(false)
-
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Paths: []string{"path1", "path2"},
-		},
-		config.DestinationConfigV1{
-			Options: map[string]any{
-				"foo": "bar",
-				"biz": 42,
-			},
-		},
-		"bogus",
-	)
-
-	if assert.NoError(t, err) {
-		client.AssertNotCalled(t, "Backup")
-	}
-}
-
 func TestBackupSingleBackupError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(expectedErr)
 
 	err := backupSingle(
@@ -100,7 +73,6 @@ func TestBackupSingleBackupError(t *testing.T) {
 
 func TestBackupSingleHooksSuccess(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(nil)
 
 	d := t.TempDir()
@@ -151,7 +123,6 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 
 func TestBackupSingleHooksFailure(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	d := t.TempDir()
@@ -201,7 +172,6 @@ func TestBackupSingleHooksFailure(t *testing.T) {
 
 func TestBackupSingleBeforeHookError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 
 	err := backupSingle(
 		client,
@@ -228,7 +198,6 @@ func TestBackupSingleBeforeHookError(t *testing.T) {
 
 func TestBackupSingleAfterHookError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(nil)
 
 	err := backupSingle(
@@ -255,7 +224,6 @@ func TestBackupSingleAfterHookError(t *testing.T) {
 
 func TestBackupSingleOnSuccessHookError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(nil)
 
 	err := backupSingle(
@@ -282,7 +250,6 @@ func TestBackupSingleOnSuccessHookError(t *testing.T) {
 
 func TestBackupSingleOnFailureHookError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	err := backupSingle(
@@ -309,7 +276,6 @@ func TestBackupSingleOnFailureHookError(t *testing.T) {
 
 func TestBackupSingleBackupAndHooksError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 
 	err := backupSingle(
@@ -345,7 +311,6 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 
 func TestBackupSingleOnlyHooksError(t *testing.T) {
 	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
 	client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 
 	err := backupSingle(
@@ -418,7 +383,6 @@ func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := NewMockbackupClient(t)
-			client.EXPECT().Enabled().Return(true)
 			client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 
 			d := t.TempDir()

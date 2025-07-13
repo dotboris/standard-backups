@@ -11,7 +11,6 @@ import (
 )
 
 type backupClient interface {
-	Enabled() bool
 	Backup(req *proto.BackupRequest) error
 }
 type backendClientFactory struct{}
@@ -83,10 +82,6 @@ func backupSingle(
 	dest config.DestinationConfigV1,
 	destName string,
 ) error {
-	if !client.Enabled() {
-		logger.Warn("skipping backup, backend is disabled")
-		return nil
-	}
 	startTime := time.Now()
 
 	errs := func() error {

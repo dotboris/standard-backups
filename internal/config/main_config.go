@@ -13,10 +13,6 @@ var (
 	mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
 )
 
-type BackendConfigV1 struct {
-	Enable bool
-}
-
 type DestinationConfigV1 struct {
 	Backend string
 	Options map[string]any
@@ -32,7 +28,6 @@ type JobConfigV1 struct {
 type MainConfig struct {
 	path         string
 	Version      int
-	Backends     map[string]BackendConfigV1
 	Destinations map[string]DestinationConfigV1
 	Jobs         map[string]JobConfigV1
 }
@@ -40,13 +35,10 @@ type MainConfig struct {
 func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifestV1) (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 
-	backendsProperties := map[string]any{}
 	backendNames := []any{}
 	for _, backend := range backends {
-		backendsProperties[backend.Name] = map[string]any{"$ref": "#/$defs/backend"}
 		backendNames = append(backendNames, backend.Name)
 	}
-
 	recipeNames := []any{}
 	for _, recipe := range recipes {
 		recipeNames = append(recipeNames, recipe.Name)
@@ -61,10 +53,6 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 		},
 		"properties": map[string]any{
 			"version": map[string]any{"const": 1},
-			"backends": map[string]any{
-				"type":       "object",
-				"properties": backendsProperties,
-			},
 			"destinations": map[string]any{
 				"type":                 "object",
 				"additionalProperties": false,
@@ -99,13 +87,6 @@ func makeMainConfigSchema(backends []BackendManifestV1, recipes []RecipeManifest
 							},
 						},
 					},
-				},
-			},
-		},
-		"$defs": map[string]any{
-			"backend": map[string]any{
-				"enabled": map[string]any{
-					"type": "boolean",
 				},
 			},
 		},

@@ -66,51 +66,6 @@ func (_c *MockbackupClient_Backup_Call) RunAndReturn(run func(*proto.BackupReque
 	return _c
 }
 
-// Enabled provides a mock function with no fields
-func (_m *MockbackupClient) Enabled() bool {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for Enabled")
-	}
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// MockbackupClient_Enabled_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Enabled'
-type MockbackupClient_Enabled_Call struct {
-	*mock.Call
-}
-
-// Enabled is a helper method to define mock.On call
-func (_e *MockbackupClient_Expecter) Enabled() *MockbackupClient_Enabled_Call {
-	return &MockbackupClient_Enabled_Call{Call: _e.mock.On("Enabled")}
-}
-
-func (_c *MockbackupClient_Enabled_Call) Run(run func()) *MockbackupClient_Enabled_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MockbackupClient_Enabled_Call) Return(_a0 bool) *MockbackupClient_Enabled_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MockbackupClient_Enabled_Call) RunAndReturn(run func() bool) *MockbackupClient_Enabled_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // NewMockbackupClient creates a new instance of MockbackupClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockbackupClient(t interface {

@@ -41,11 +41,6 @@ func TestValidateSuccess(t *testing.T) {
 		MainConfig: MainConfig{
 			path:    "bogus/config.yaml",
 			Version: 1,
-			Backends: map[string]BackendConfigV1{
-				"b": {
-					Enable: true,
-				},
-			},
 			Destinations: map[string]DestinationConfigV1{
 				"d": {
 					Backend: "b",
