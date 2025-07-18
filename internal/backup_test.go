@@ -102,12 +102,14 @@ func TestBackupSingleBackupError(t *testing.T) {
 
 func TestBackupSingleHooksSuccess(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
-	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
-		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
-			client.EXPECT().Backup(mock.Anything).Return(nil)
-			return client, nil
-		})
+	for _, name := range []string{"b1", "b2"} {
+		fac.EXPECT().NewBackendClient(mock.Anything, name).
+			RunAndReturn(func(c config.Config, s string) (backuper, error) {
+				client := NewMockbackuper(t)
+				client.EXPECT().Backup(mock.Anything).Return(nil)
+				return client, nil
+			})
+	}
 	svc := backupService{backendClientFactory: fac}
 
 	d := t.TempDir()
@@ -138,14 +140,17 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 			}},
 			MainConfig: config.MainConfig{
 				Destinations: map[string]config.DestinationConfigV1{
-					"bogus": {
-						Backend: "the-backend",
+					"d1": {
+						Backend: "b1",
+					},
+					"d2": {
+						Backend: "b2",
 					},
 				},
 				Jobs: map[string]config.JobConfigV1{
 					"do-it": {
 						Recipe:   "r",
-						BackupTo: []string{"bogus"},
+						BackupTo: []string{"d1", "d2"},
 					},
 				},
 			},
@@ -157,12 +162,12 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 		log, err := os.ReadFile(hooksLog)
 		if assert.NoError(t, err) {
 			assert.Equal(t,
-				strings.Trim(string(log), "\n"),
 				testutils.Dedent(`
 					before
 					after
 					on-success
 				`),
+				strings.Trim(string(log), "\n"),
 			)
 		}
 	}
@@ -170,12 +175,14 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 
 func TestBackupSingleHooksFailure(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
-	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
-		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
-			client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
-			return client, nil
-		})
+	for _, name := range []string{"b1", "b2"} {
+		fac.EXPECT().NewBackendClient(mock.Anything, name).
+			RunAndReturn(func(c config.Config, s string) (backuper, error) {
+				client := NewMockbackuper(t)
+				client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+				return client, nil
+			})
+	}
 	svc := backupService{backendClientFactory: fac}
 
 	d := t.TempDir()
@@ -206,14 +213,17 @@ func TestBackupSingleHooksFailure(t *testing.T) {
 			}},
 			MainConfig: config.MainConfig{
 				Destinations: map[string]config.DestinationConfigV1{
-					"bogus": {
-						Backend: "the-backend",
+					"d1": {
+						Backend: "b1",
+					},
+					"d2": {
+						Backend: "b2",
 					},
 				},
 				Jobs: map[string]config.JobConfigV1{
 					"do-it": {
 						Recipe:   "r",
-						BackupTo: []string{"bogus"},
+						BackupTo: []string{"d1", "d2"},
 					},
 				},
 			},
@@ -225,23 +235,18 @@ func TestBackupSingleHooksFailure(t *testing.T) {
 	log, err := os.ReadFile(hooksLog)
 	if assert.NoError(t, err) {
 		assert.Equal(t,
-			strings.Trim(string(log), "\n"),
 			testutils.Dedent(`
 				before
 				after
 				on-failure
 			`),
+			strings.Trim(string(log), "\n"),
 		)
 	}
 }
 
 func TestBackupSingleBeforeHookError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
-	client := NewMockbackuper(t)
-	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
-		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			return client, nil
-		})
 	svc := backupService{backendClientFactory: fac}
 
 	err := svc.Backup(
@@ -275,7 +280,6 @@ func TestBackupSingleBeforeHookError(t *testing.T) {
 	var exitError *exec.ExitError
 	if assert.Error(t, err) && assert.ErrorAs(t, err, &exitError) {
 		assert.Equal(t, exitError.ExitCode(), 42)
-		client.AssertNotCalled(t, "Backup")
 	}
 }
 
@@ -459,7 +463,7 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 	)
 
 	assert.EqualError(t, err, testutils.Dedent(`
-		1/1 backup operation failed: backup failed: oops
+		backup failed: oops
 		after hook failed: exit status 43
 		on-failure hook failed: exit status 45
 	`))
@@ -467,10 +471,6 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 
 func TestBackupSingleOnlyHooksError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
-	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
-		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			return NewMockbackuper(t), nil
-		})
 	svc := backupService{backendClientFactory: fac}
 
 	err := svc.Backup(
@@ -514,7 +514,8 @@ func TestBackupSingleOnlyHooksError(t *testing.T) {
 	)
 
 	assert.EqualError(t, err, testutils.Dedent(`
-		1/1 backup operation failed: before hook failed: exit status 42
+		before hook failed: exit status 42
+		after hook failed: exit status 43
 		on-failure hook failed: exit status 45
 	`))
 }
@@ -560,7 +561,7 @@ func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
 					client := NewMockbackuper(t)
 					client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 					return client, nil
-				})
+				}).Maybe()
 			svc := backupService{backendClientFactory: fac}
 
 			d := t.TempDir()

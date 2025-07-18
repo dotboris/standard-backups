@@ -35,6 +35,7 @@ func NewBackupService() backupService {
 }
 
 func (s *backupService) Backup(cfg config.Config, jobName string) error {
+	startTime := time.Now()
 	job, ok := cfg.MainConfig.Jobs[jobName]
 	if !ok {
 		return fmt.Errorf("could not find a job named %s", jobName)
@@ -45,102 +46,69 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 		return err
 	}
 
+	logger := slog.With(
+		slog.String("job", jobName),
+		slog.String("recipe", recipe.Name),
+	)
+
 	var errs error
-	errCount := 0
-	for _, destName := range job.BackupTo {
-		logger := slog.With(
-			slog.String("recipe", recipe.Name),
-			slog.String("destination", destName),
-		)
-		err := func() error {
+
+	if recipe.Hooks.Before != nil {
+		logger.Info("running before hook", slog.Any("hook", recipe.Hooks.Before))
+		err := runHook(*recipe.Hooks.Before)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("before hook failed: %w", err))
+		}
+	}
+
+	if errs == nil {
+		for _, destName := range job.BackupTo {
 			dest, ok := cfg.MainConfig.Destinations[destName]
 			if !ok {
-				return fmt.Errorf("could not find destination named %s", destName)
+				errs = errors.Join(errs,
+					fmt.Errorf("could not find destination named %s", destName))
+				continue
 			}
 			client, err := s.backendClientFactory.NewBackendClient(cfg, dest.Backend)
 			if err != nil {
-				return err
+				errs = errors.Join(errs, err)
+				continue
 			}
-			return backupSingle(client, logger, jobName, recipe, dest, destName)
-		}()
-		if err != nil {
-			errCount += 1
-			errs = errors.Join(err)
+			logger.Info("performing backup",
+				slog.String("destination", destName),
+				slog.String("backend", dest.Backend))
+			err = client.Backup(&proto.BackupRequest{Paths: recipe.Paths, DestinationName: destName, JobName: jobName, RawOptions: dest.Options})
+			if err != nil {
+				errs = errors.Join(errs,
+					fmt.Errorf("backup failed: %w", err))
+				continue
+			}
 		}
 	}
 
-	if errs != nil {
-		return fmt.Errorf("%d/%d backup operation failed: %w",
-			errCount, len(job.BackupTo), errs)
-	}
-
-	return nil
-}
-
-func backupSingle(
-	client backuper,
-	logger *slog.Logger,
-	jobName string,
-	recipe *config.RecipeManifestV1,
-	dest config.DestinationConfigV1,
-	destName string,
-) error {
-	startTime := time.Now()
-
-	errs := func() error {
-		if recipe.Hooks.Before != nil {
-			logger.Info("running before hook",
-				slog.Any("hook", recipe.Hooks.Before))
-			err := runHook(*recipe.Hooks.Before)
-			if err != nil {
-				return fmt.Errorf("before hook failed: %w", err)
-			}
-		}
-
-		var errs error
-		logger.Info("performing backup")
-		err := client.Backup(&proto.BackupRequest{
-			Paths:           recipe.Paths,
-			DestinationName: destName,
-			JobName:         jobName,
-			RawOptions:      dest.Options,
-		})
+	if recipe.Hooks.After != nil {
+		logger.Info("running after hook", slog.Any("hook", recipe.Hooks.After))
+		err := runHook(*recipe.Hooks.After)
 		if err != nil {
-			errs = errors.Join(errs, fmt.Errorf("backup failed: %w", err))
+			errs = errors.Join(errs, fmt.Errorf("after hook failed: %w", err))
 		}
-
-		if recipe.Hooks.After != nil {
-			logger.Info("running after hook",
-				slog.Any("hook", recipe.Hooks.After))
-			err := runHook(*recipe.Hooks.After)
-			if err != nil {
-				errs = errors.Join(errs, fmt.Errorf("after hook failed: %w", err))
-			}
-		}
-
-		return errs
-	}()
+	}
 
 	if errs == nil {
-		logger.Info("completed backup",
-			slog.Duration("duration", time.Since(startTime)))
+		logger.Info("completed backup", slog.Duration("duration", time.Since(startTime)))
 		if recipe.Hooks.OnSuccess != nil {
-			logger.Info("running on-success hook",
-				slog.Any("hook", recipe.Hooks.OnSuccess))
+			logger.Info("running on-success hook", slog.Any("hook", recipe.Hooks.OnSuccess))
 			err := runHook(*recipe.Hooks.OnSuccess)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-success hook failed: %w", err))
 			}
 		}
 	}
+
 	if errs != nil {
-		logger.Error("backup failed",
-			slog.Duration("duration", time.Since(startTime)),
-			slog.Any("error", errs),
-		)
+		logger.Error("backup failed", slog.Duration("duration", time.Since(startTime)), slog.Any("error", errs))
 		if recipe.Hooks.OnFailure != nil {
-			logger.Info("running on-failure hook",
-				slog.Any("hook", recipe.Hooks.OnFailure))
+			logger.Info("running on-failure hook", slog.Any("hook", recipe.Hooks.OnFailure))
 			err := runHook(*recipe.Hooks.OnFailure)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-failure hook failed: %w", err))
