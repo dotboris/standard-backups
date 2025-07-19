@@ -70,14 +70,27 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			}
 			client, err := s.backendClientFactory.NewBackendClient(cfg, dest.Backend)
 			if err != nil {
-				errs = errors.Join(errs,
-					fmt.Errorf("failed to create backup client for destination named %s: %w", destName, err))
+				errs = errors.Join(
+					errs,
+					fmt.Errorf(
+						"failed to create backup client for destination named %s: %w",
+						destName,
+						err,
+					),
+				)
 				continue
 			}
 			logger.Info("performing backup",
 				slog.String("destination", destName),
 				slog.String("backend", dest.Backend))
-			err = client.Backup(&proto.BackupRequest{Paths: recipe.Paths, DestinationName: destName, JobName: jobName, RawOptions: dest.Options})
+			err = client.Backup(
+				&proto.BackupRequest{
+					Paths:           recipe.Paths,
+					DestinationName: destName,
+					JobName:         jobName,
+					RawOptions:      dest.Options,
+				},
+			)
 			if err != nil {
 				errs = errors.Join(errs,
 					fmt.Errorf("failed to backup destination named %s: %w", destName, err))
@@ -106,7 +119,11 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 	}
 
 	if errs != nil {
-		logger.Error("backup failed", slog.Duration("duration", time.Since(startTime)), slog.Any("error", errs))
+		logger.Error(
+			"backup failed",
+			slog.Duration("duration", time.Since(startTime)),
+			slog.Any("error", errs),
+		)
 		if recipe.Hooks.OnFailure != nil {
 			logger.Info("running on-failure hook", slog.Any("hook", recipe.Hooks.OnFailure))
 			err := runHook(*recipe.Hooks.OnFailure)
