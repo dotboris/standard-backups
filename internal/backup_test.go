@@ -100,7 +100,7 @@ func TestBackupSingleBackupError(t *testing.T) {
 	assert.ErrorIs(t, err, expectedErr)
 }
 
-func TestBackupSingleHooksSuccess(t *testing.T) {
+func TestBackupHooksSuccess(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	for _, name := range []string{"b1", "b2"} {
 		fac.EXPECT().NewBackendClient(mock.Anything, name).
@@ -173,7 +173,7 @@ func TestBackupSingleHooksSuccess(t *testing.T) {
 	}
 }
 
-func TestBackupSingleHooksFailure(t *testing.T) {
+func TestBackupHooksFailure(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	for _, name := range []string{"b1", "b2"} {
 		fac.EXPECT().NewBackendClient(mock.Anything, name).
@@ -280,6 +280,52 @@ func TestBackupSingleBeforeHookError(t *testing.T) {
 	var exitError *exec.ExitError
 	if assert.Error(t, err) && assert.ErrorAs(t, err, &exitError) {
 		assert.Equal(t, exitError.ExitCode(), 42)
+	}
+}
+
+func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	svc := backupService{backendClientFactory: fac}
+
+	outPath := path.Join(t.TempDir(), "out.txt")
+
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo hello from after > %s", outPath),
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
+				},
+			},
+			Backends: []config.BackendManifestV1{},
+		},
+		"do-it",
+	)
+
+	assert.Error(t, err)
+	contents, err := os.ReadFile(outPath)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "hello from after\n", string(contents))
 	}
 }
 
@@ -463,7 +509,7 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 	)
 
 	assert.EqualError(t, err, testutils.Dedent(`
-		backup failed: oops
+		failed to backup destination named bogus: oops
 		after hook failed: exit status 43
 		on-failure hook failed: exit status 45
 	`))

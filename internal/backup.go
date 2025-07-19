@@ -10,19 +10,18 @@ import (
 	"github.com/dotboris/standard-backups/pkg/proto"
 )
 
-type backuper interface {
-	Backup(req *proto.BackupRequest) error
-}
 type (
+	backuper interface {
+		Backup(req *proto.BackupRequest) error
+	}
 	backendClientFactory struct{}
 	newBackendClienter   interface {
 		NewBackendClient(cfg config.Config, name string) (backuper, error)
 	}
+	backupService struct {
+		backendClientFactory newBackendClienter
+	}
 )
-
-type backupService struct {
-	backendClientFactory newBackendClienter
-}
 
 func (f *backendClientFactory) NewBackendClient(cfg config.Config, name string) (backuper, error) {
 	return proto.NewBackendClient(cfg, name)
@@ -71,7 +70,8 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			}
 			client, err := s.backendClientFactory.NewBackendClient(cfg, dest.Backend)
 			if err != nil {
-				errs = errors.Join(errs, err)
+				errs = errors.Join(errs,
+					fmt.Errorf("failed to create backup client for destination named %s: %w", destName, err))
 				continue
 			}
 			logger.Info("performing backup",
@@ -80,7 +80,7 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			err = client.Backup(&proto.BackupRequest{Paths: recipe.Paths, DestinationName: destName, JobName: jobName, RawOptions: dest.Options})
 			if err != nil {
 				errs = errors.Join(errs,
-					fmt.Errorf("backup failed: %w", err))
+					fmt.Errorf("failed to backup destination named %s: %w", destName, err))
 				continue
 			}
 		}
