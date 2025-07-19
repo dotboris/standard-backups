@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestBackupSingleSimple(t *testing.T) {
+func TestBackupSimple(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
@@ -65,7 +65,7 @@ func TestBackupSingleSimple(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestBackupSingleBackupError(t *testing.T) {
+func TestBackupBackupError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
@@ -245,7 +245,7 @@ func TestBackupHooksFailure(t *testing.T) {
 	}
 }
 
-func TestBackupSingleBeforeHookError(t *testing.T) {
+func TestBackupBeforeHookError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	svc := backupService{backendClientFactory: fac}
 
@@ -329,7 +329,7 @@ func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleAfterHookError(t *testing.T) {
+func TestBackupAfterHookError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
@@ -373,7 +373,7 @@ func TestBackupSingleAfterHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleOnSuccessHookError(t *testing.T) {
+func TestBackupOnSuccessHookError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
@@ -417,7 +417,7 @@ func TestBackupSingleOnSuccessHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleOnFailureHookError(t *testing.T) {
+func TestBackupOnFailureHookError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
@@ -461,7 +461,7 @@ func TestBackupSingleOnFailureHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleBackupAndHooksError(t *testing.T) {
+func TestBackupBackupAndHooksError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
@@ -515,7 +515,7 @@ func TestBackupSingleBackupAndHooksError(t *testing.T) {
 	`))
 }
 
-func TestBackupSingleOnlyHooksError(t *testing.T) {
+func TestBackupOnlyHooksError(t *testing.T) {
 	fac := NewMocknewBackendClienter(t)
 	svc := backupService{backendClientFactory: fac}
 
@@ -566,7 +566,7 @@ func TestBackupSingleOnlyHooksError(t *testing.T) {
 	`))
 }
 
-func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
+func TestBackupOnFailureCalledOnError(t *testing.T) {
 	tests := []struct {
 		name  string
 		hooks config.HooksV1
