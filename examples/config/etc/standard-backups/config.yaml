@@ -1,11 +1,5 @@
 version: 1
 
-backends:
-  restic:
-    enable: true
-  rsync:
-    enable: true
-
 destinations:
   local:
     backend: rsync

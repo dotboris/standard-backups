@@ -10,7 +10,6 @@ import (
 
 type BackendClient struct {
 	Manifest config.BackendManifestV1
-	Config   config.BackendConfigV1
 }
 
 func NewBackendClient(cfg config.Config, name string) (*BackendClient, error) {
@@ -19,19 +18,9 @@ func NewBackendClient(cfg config.Config, name string) (*BackendClient, error) {
 		return nil, err
 	}
 
-	backendCfg, ok := cfg.MainConfig.Backends[name]
-	if !ok {
-		return nil, fmt.Errorf("could not find a configuration for backend %s", name)
-	}
-
 	return &BackendClient{
 		Manifest: *manifest,
-		Config:   backendCfg,
 	}, nil
-}
-
-func (bc *BackendClient) Enabled() bool {
-	return bc.Config.Enable
 }
 
 func (bc *BackendClient) cmd(command string, env []string) *exec.Cmd {

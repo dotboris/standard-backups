@@ -31,6 +31,8 @@
           pkgs.go-mockery
 
           # Misc tooling
+          pkgs.golangci-lint
+          pkgs.gotestsum
           pkgs.just
           pkgs.rsync
           pkgs.restic

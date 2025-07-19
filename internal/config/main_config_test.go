@@ -14,7 +14,10 @@ import (
 func TestLoadMainConfigMinimalConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(`version: 1`), 0644)
+	err := os.WriteFile(configPath, []byte(`version: 1`), 0o644)
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	if assert.NoError(t, err) {
@@ -28,9 +31,12 @@ func TestLoadMainConfigMinimalConfig(t *testing.T) {
 func TestLoadMainConfigBadVersion(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(`version: -1`), 0644)
+	err := os.WriteFile(configPath, []byte(`version: -1`), 0o644)
+	if !assert.NoError(t, err) {
+		return
+	}
 
-	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
+	_, err = LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
 	var validationErr *jsonschema.ValidationError
 	assert.ErrorAs(t, err, &validationErr)
@@ -46,9 +52,12 @@ func TestLoadMainConfigBadVersion(t *testing.T) {
 func TestLoadMainConfigEmptyConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(configPath, []byte(``), 0644)
+	err := os.WriteFile(configPath, []byte(``), 0o644)
+	if !assert.NoError(t, err) {
+		return
+	}
 
-	_, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
+	_, err = LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
 	var validationErr *jsonschema.ValidationError
 	assert.ErrorAs(t, err, &validationErr)
@@ -64,10 +73,9 @@ func TestLoadMainConfigEmptyConfig(t *testing.T) {
 func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
-
 			d := t.TempDir()
 			configPath := path.Join(d, "config.yaml")
-			os.WriteFile(
+			err := os.WriteFile(
 				configPath,
 				[]byte(testutils.DedentYaml(fmt.Sprintf(`
 					version: 1
@@ -75,10 +83,13 @@ func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 						%s:
 							backend: bogus
 				`, key))),
-				0644,
+				0o644,
 			)
+			if !assert.NoError(t, err) {
+				return
+			}
 
-			_, err := LoadMainConfig(
+			_, err = LoadMainConfig(
 				configPath,
 				[]BackendManifestV1{
 					{Version: 1, Name: "bogus", ProtocolVersion: 1, Bin: "bogus"},
@@ -102,7 +113,7 @@ func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(
+	err := os.WriteFile(
 		configPath,
 		[]byte(testutils.DedentYaml(`
 			version: 1
@@ -110,9 +121,12 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 				test:
 					backend: nope
 		`)),
-		0644,
+		0o644,
 	)
-	_, err := LoadMainConfig(
+	if !assert.NoError(t, err) {
+		return
+	}
+	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{
 			{Version: 1, Name: "bogus", ProtocolVersion: 1, Bin: "bogus"},
@@ -135,10 +149,9 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 func TestLoadMainConfigBadJobKey(t *testing.T) {
 	for _, key := range []string{"42", "-42", "-nope", "no/slash", "no:colon"} {
 		t.Run(key, func(t *testing.T) {
-
 			d := t.TempDir()
 			configPath := path.Join(d, "config.yaml")
-			os.WriteFile(
+			err := os.WriteFile(
 				configPath,
 				[]byte(testutils.DedentYaml(fmt.Sprintf(`
 					version: 1
@@ -147,10 +160,13 @@ func TestLoadMainConfigBadJobKey(t *testing.T) {
 							recipe: bogus
 							backup-to: []
 				`, key))),
-				0644,
+				0o644,
 			)
+			if !assert.NoError(t, err) {
+				return
+			}
 
-			_, err := LoadMainConfig(
+			_, err = LoadMainConfig(
 				configPath,
 				[]BackendManifestV1{},
 				[]RecipeManifestV1{
@@ -174,7 +190,7 @@ func TestLoadMainConfigBadJobKey(t *testing.T) {
 func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
-	os.WriteFile(
+	err := os.WriteFile(
 		configPath,
 		[]byte(testutils.DedentYaml(`
 			version: 1
@@ -183,9 +199,12 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 					recipe: nope
 					backup-to: []
 		`)),
-		0644,
+		0o644,
 	)
-	_, err := LoadMainConfig(
+	if !assert.NoError(t, err) {
+		return
+	}
+	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
 		[]RecipeManifestV1{

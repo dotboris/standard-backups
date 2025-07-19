@@ -26,7 +26,7 @@ var Backend = &proto.BackendImpl{
 		}
 
 		dest := path.Join(options.DestinationDir, time.Now().Format(TIME_FORMAT))
-		err = os.MkdirAll(dest, 0755)
+		err = os.MkdirAll(dest, 0o755)
 		if err != nil {
 			return err
 		}

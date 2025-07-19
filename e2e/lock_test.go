@@ -25,9 +25,6 @@ func TestBackupLock(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(`
 		version: 1
-		backends:
-			backend1: {enable: true}
-			backend2: {enable: true}
 		destinations:
 			dest1:
 				backend: backend1
@@ -110,9 +107,6 @@ func TestBackupLockTimeout(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(`
 		version: 1
-		backends:
-			backend1: {enable: true}
-			backend2: {enable: true}
 		destinations:
 			dest1:
 				backend: backend1

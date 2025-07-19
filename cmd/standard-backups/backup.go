@@ -20,7 +20,8 @@ var backupCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		err = internal.Backup(*cfg, jobName)
+		backupSvc := internal.NewBackupService()
+		err = backupSvc.Backup(*cfg, jobName)
 		return err
 	},
 }

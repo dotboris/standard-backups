@@ -62,15 +62,7 @@
     },
   },
   MainConfig: config.MainConfig{
-    Version:  1,
-    Backends: map[string]config.BackendConfigV1{
-      "restic": config.BackendConfigV1{
-        Enable: true,
-      },
-      "rsync": config.BackendConfigV1{
-        Enable: true,
-      },
-    },
+    Version:      1,
     Destinations: map[string]config.DestinationConfigV1{
       "local": config.DestinationConfigV1{
         Backend: "rsync",

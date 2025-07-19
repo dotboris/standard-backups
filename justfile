@@ -35,12 +35,16 @@ run-example *args: build-backends
 # Run unit tests
 [group("test")]
 test:
-  go test -v $(go list ./... | grep -v 'standard-backups/e2e')
+  gotestsum \
+    --format standard-verbose \
+    --packages $(go list ./... | grep -v 'standard-backups/e2e')
 
 # Run end-to-end tests
 [group("test")]
 e2e: build-all
-  go test -v $(go list ./... | grep 'standard-backups/e2e')
+  gotestsum \
+    --format standard-verbose \
+    --packages $(go list ./... | grep 'standard-backups/e2e')
 
 # Runs all tests
 [group("test")]
@@ -50,3 +54,23 @@ test-all: test e2e
 [group("test")]
 generate-mocks:
   mockery
+
+# Run static code checks
+[group("checks")]
+lint:
+  golangci-lint run
+
+# Apply automated fixes for static code checks
+[group("checks")]
+lint-fix:
+  golangci-lint run --fix
+
+# Format code
+[group("checks")]
+fmt:
+  golangci-lint fmt
+
+# Check if code is formatted
+[group("checks")]
+fmt-check:
+  golangci-lint fmt -d

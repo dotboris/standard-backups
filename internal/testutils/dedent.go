@@ -16,7 +16,7 @@ func Dedent(in string) string {
 
 func DedentYaml(in string) string {
 	res := in
-	res = Dedent(in)
+	res = Dedent(res)
 	res = strings.ReplaceAll(res, "\t", "  ")
 	return res
 }

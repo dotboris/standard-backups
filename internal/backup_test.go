@@ -3,7 +3,6 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -17,234 +16,265 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func newTestLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(os.Stderr, nil))
-}
+func TestBackupSimple(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(
+				&proto.BackupRequest{
+					Paths:           []string{"path1", "path2"},
+					DestinationName: "dest",
+					JobName:         "my-job",
+					RawOptions: map[string]any{
+						"foo": "bar",
+						"biz": 42,
+					},
+				},
+			).Return(nil)
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
 
-func TestBackupSingleSimple(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(
-		&proto.BackupRequest{
-			Paths:           []string{"path1", "path2"},
-			DestinationName: "dest-name",
-			JobName:         "job-name",
-			RawOptions: map[string]any{
-				"foo": "bar",
-				"biz": 42,
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name:  "back-me-up",
+				Paths: []string{"path1", "path2"},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"dest": {
+						Backend: "the-backend",
+						Options: map[string]any{
+							"foo": "bar",
+							"biz": 42,
+						},
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"my-job": {
+						Recipe:   "back-me-up",
+						BackupTo: []string{"dest"},
+					},
+				},
 			},
 		},
-	).Return(nil)
-
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"job-name",
-		&config.RecipeManifestV1{
-			Paths: []string{"path1", "path2"},
-		},
-		config.DestinationConfigV1{
-			Options: map[string]any{
-				"foo": "bar",
-				"biz": 42,
-			},
-		},
-		"dest-name",
+		"my-job",
 	)
-
 	assert.NoError(t, err)
 }
 
-func TestBackupSingleSkip(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(false)
+func TestBackupBackupError(t *testing.T) {
+	expectedErr := errors.New("oops")
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(mock.Anything).Return(expectedErr)
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Paths: []string{"path1", "path2"},
-		},
-		config.DestinationConfigV1{
-			Options: map[string]any{
-				"foo": "bar",
-				"biz": 42,
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "bogus",
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "bogus",
+						BackupTo: []string{"bogus"},
+					},
+				},
 			},
 		},
-		"bogus",
+		"do-it",
 	)
-
-	if assert.NoError(t, err) {
-		client.AssertNotCalled(t, "Backup")
-	}
-}
-
-func TestBackupSingleBackupError(t *testing.T) {
-	expectedErr := errors.New("oops")
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(expectedErr)
-
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{},
-		config.DestinationConfigV1{},
-		"bogus",
-	)
-
 	assert.ErrorIs(t, err, expectedErr)
 }
 
-func TestBackupSingleHooksSuccess(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(nil)
+func TestBackupHooksSuccess(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	for _, name := range []string{"b1", "b2"} {
+		fac.EXPECT().NewBackendClient(mock.Anything, name).
+			RunAndReturn(func(c config.Config, s string) (backuper, error) {
+				client := NewMockbackuper(t)
+				client.EXPECT().Backup(mock.Anything).Return(nil)
+				return client, nil
+			})
+	}
+	svc := backupService{backendClientFactory: fac}
 
 	d := t.TempDir()
 	hooksLog := path.Join(d, "hooks.log")
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				Before: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo before >> %s", hooksLog),
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo before >> %s", hooksLog),
+					},
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo after >> %s", hooksLog),
+					},
+					OnSuccess: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
+					},
+					OnFailure: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+					},
 				},
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo after >> %s", hooksLog),
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"d1": {
+						Backend: "b1",
+					},
+					"d2": {
+						Backend: "b2",
+					},
 				},
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
-				},
-				OnFailure: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"d1", "d2"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
 	)
 
 	if assert.NoError(t, err) {
 		log, err := os.ReadFile(hooksLog)
 		if assert.NoError(t, err) {
 			assert.Equal(t,
-				strings.Trim(string(log), "\n"),
 				testutils.Dedent(`
 					before
 					after
 					on-success
 				`),
+				strings.Trim(string(log), "\n"),
 			)
 		}
 	}
 }
 
-func TestBackupSingleHooksFailure(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+func TestBackupHooksFailure(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	for _, name := range []string{"b1", "b2"} {
+		fac.EXPECT().NewBackendClient(mock.Anything, name).
+			RunAndReturn(func(c config.Config, s string) (backuper, error) {
+				client := NewMockbackuper(t)
+				client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+				return client, nil
+			})
+	}
+	svc := backupService{backendClientFactory: fac}
 
 	d := t.TempDir()
 	hooksLog := path.Join(d, "hooks.log")
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				Before: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo before >> %s", hooksLog),
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo before >> %s", hooksLog),
+					},
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo after >> %s", hooksLog),
+					},
+					OnSuccess: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
+					},
+					OnFailure: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+					},
 				},
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo after >> %s", hooksLog),
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"d1": {
+						Backend: "b1",
+					},
+					"d2": {
+						Backend: "b2",
+					},
 				},
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
-				},
-				OnFailure: &config.HookV1{
-					Shell:   "bash",
-					Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"d1", "d2"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"dest-name",
+		"do-it",
 	)
 
 	assert.Error(t, err)
 	log, err := os.ReadFile(hooksLog)
 	if assert.NoError(t, err) {
 		assert.Equal(t,
-			strings.Trim(string(log), "\n"),
 			testutils.Dedent(`
 				before
 				after
 				on-failure
 			`),
+			strings.Trim(string(log), "\n"),
 		)
 	}
 }
 
-func TestBackupSingleBeforeHookError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
+func TestBackupBeforeHookError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				Before: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 42",
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
-	)
-
-	var exitError *exec.ExitError
-	if assert.Error(t, err) && assert.ErrorAs(t, err, &exitError) {
-		assert.Equal(t, exitError.ExitCode(), 42)
-		client.AssertNotCalled(t, "Backup")
-	}
-}
-
-func TestBackupSingleAfterHookError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(nil)
-
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 42",
-				},
-			},
-		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
 	)
 
 	var exitError *exec.ExitError
@@ -253,25 +283,88 @@ func TestBackupSingleAfterHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleOnSuccessHookError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(nil)
+func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 42",
+	outPath := path.Join(t.TempDir(), "out.txt")
+
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: fmt.Sprintf("echo hello from after > %s", outPath),
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
+				},
+			},
+			Backends: []config.BackendManifestV1{},
+		},
+		"do-it",
+	)
+
+	assert.Error(t, err)
+	contents, err := os.ReadFile(outPath)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "hello from after\n", string(contents))
+	}
+}
+
+func TestBackupAfterHookError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(mock.Anything).Return(nil)
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
+
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
 	)
 
 	var exitError *exec.ExitError
@@ -280,25 +373,42 @@ func TestBackupSingleOnSuccessHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleOnFailureHookError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+func TestBackupOnSuccessHookError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(mock.Anything).Return(nil)
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				OnFailure: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 42",
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					OnSuccess: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
 	)
 
 	var exitError *exec.ExitError
@@ -307,82 +417,156 @@ func TestBackupSingleOnFailureHookError(t *testing.T) {
 	}
 }
 
-func TestBackupSingleBackupAndHooksError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+func TestBackupOnFailureHookError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 43",
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					OnFailure: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
 				},
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 44",
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
 				},
-				OnFailure: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 45",
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
+	)
+
+	var exitError *exec.ExitError
+	if assert.Error(t, err) && assert.ErrorAs(t, err, &exitError) {
+		assert.Equal(t, exitError.ExitCode(), 42)
+	}
+}
+
+func TestBackupBackupAndHooksError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+		RunAndReturn(func(c config.Config, s string) (backuper, error) {
+			client := NewMockbackuper(t)
+			client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
+			return client, nil
+		})
+	svc := backupService{backendClientFactory: fac}
+
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					// We can't have Before fail otherwise, backup doesn't get performed
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 43",
+					},
+					OnSuccess: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 44",
+					},
+					OnFailure: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 45",
+					},
+				},
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
+				},
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
+				},
+			},
+		},
+		"do-it",
 	)
 
 	assert.EqualError(t, err, testutils.Dedent(`
-		backup failed: oops
+		failed to backup destination named bogus: oops
 		after hook failed: exit status 43
 		on-failure hook failed: exit status 45
 	`))
 }
 
-func TestBackupSingleOnlyHooksError(t *testing.T) {
-	client := NewMockbackupClient(t)
-	client.EXPECT().Enabled().Return(true)
-	client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
+func TestBackupOnlyHooksError(t *testing.T) {
+	fac := NewMocknewBackendClienter(t)
+	svc := backupService{backendClientFactory: fac}
 
-	err := backupSingle(
-		client,
-		newTestLogger(),
-		"bogus",
-		&config.RecipeManifestV1{
-			Hooks: config.HooksV1{
-				Before: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 42",
+	err := svc.Backup(
+		config.Config{
+			Recipes: []config.RecipeManifestV1{{
+				Name: "r",
+				Hooks: config.HooksV1{
+					Before: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 42",
+					},
+					After: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 43",
+					},
+					OnSuccess: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 44",
+					},
+					OnFailure: &config.HookV1{
+						Shell:   "bash",
+						Command: "exit 45",
+					},
 				},
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 43",
+			}},
+			MainConfig: config.MainConfig{
+				Destinations: map[string]config.DestinationConfigV1{
+					"bogus": {
+						Backend: "the-backend",
+					},
 				},
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 44",
-				},
-				OnFailure: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 45",
+				Jobs: map[string]config.JobConfigV1{
+					"do-it": {
+						Recipe:   "r",
+						BackupTo: []string{"bogus"},
+					},
 				},
 			},
 		},
-		config.DestinationConfigV1{},
-		"bogus",
+		"do-it",
 	)
 
 	assert.EqualError(t, err, testutils.Dedent(`
 		before hook failed: exit status 42
+		after hook failed: exit status 43
 		on-failure hook failed: exit status 45
 	`))
 }
 
-func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
+func TestBackupOnFailureCalledOnError(t *testing.T) {
 	tests := []struct {
 		name  string
 		hooks config.HooksV1
@@ -417,9 +601,14 @@ func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockbackupClient(t)
-			client.EXPECT().Enabled().Return(true)
-			client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
+			fac := NewMocknewBackendClienter(t)
+			fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
+				RunAndReturn(func(c config.Config, s string) (backuper, error) {
+					client := NewMockbackuper(t)
+					client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
+					return client, nil
+				}).Maybe()
+			svc := backupService{backendClientFactory: fac}
 
 			d := t.TempDir()
 			outFile := path.Join(d, "out.txt")
@@ -428,13 +617,27 @@ func TestBackupSingleOnFailureCalledOnError(t *testing.T) {
 				Command: fmt.Sprintf("echo hello from on-failure > %s", outFile),
 			}
 
-			err := backupSingle(
-				client,
-				newTestLogger(),
-				"bogus",
-				&config.RecipeManifestV1{Hooks: test.hooks},
-				config.DestinationConfigV1{},
-				"bogus",
+			err := svc.Backup(
+				config.Config{
+					Recipes: []config.RecipeManifestV1{{
+						Name:  "r",
+						Hooks: test.hooks,
+					}},
+					MainConfig: config.MainConfig{
+						Destinations: map[string]config.DestinationConfigV1{
+							"bogus": {
+								Backend: "the-backend",
+							},
+						},
+						Jobs: map[string]config.JobConfigV1{
+							"do-it": {
+								Recipe:   "r",
+								BackupTo: []string{"bogus"},
+							},
+						},
+					},
+				},
+				"do-it",
 			)
 
 			assert.Error(t, err)

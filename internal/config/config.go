@@ -11,7 +11,11 @@ type Config struct {
 	MainConfig MainConfig
 }
 
-func LoadConfig(configPath string, backendsSearchDirs []string, recipesSearchDirs []string) (*Config, error) {
+func LoadConfig(
+	configPath string,
+	backendsSearchDirs []string,
+	recipesSearchDirs []string,
+) (*Config, error) {
 	backends, err := LoadBackendManifests(backendsSearchDirs)
 	if err != nil {
 		return nil, err
