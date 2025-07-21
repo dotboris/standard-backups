@@ -1,15 +1,6 @@
-# mockery v3 compat
-resolve-type-alias: false
-disable-version-string: true
-issue-845-fix: true
-with-expecter: true
-
 all: true
-inpackage: true
-dir: "{{.InterfaceDir}}"
-mockname: "Mock{{.InterfaceName}}"
-outpkg: "{{.PackageName}}"
-filename: "mock_{{.InterfaceName}}_test.go"
+structname: "{{.Mock}}{{.InterfaceName | firstUpper}}"
+template: testify
 packages:
   github.com/dotboris/standard-backups/internal:
     config:
