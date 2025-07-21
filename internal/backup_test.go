@@ -17,10 +17,10 @@ import (
 )
 
 func TestBackupSimple(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(
 				&proto.BackupRequest{
 					Paths:           []string{"path1", "path2"},
@@ -67,10 +67,10 @@ func TestBackupSimple(t *testing.T) {
 
 func TestBackupBackupError(t *testing.T) {
 	expectedErr := errors.New("oops")
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(mock.Anything).Return(expectedErr)
 			return client, nil
 		})
@@ -101,11 +101,11 @@ func TestBackupBackupError(t *testing.T) {
 }
 
 func TestBackupHooksSuccess(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	for _, name := range []string{"b1", "b2"} {
 		fac.EXPECT().NewBackendClient(mock.Anything, name).
 			RunAndReturn(func(c config.Config, s string) (backuper, error) {
-				client := NewMockbackuper(t)
+				client := newMockBackuper(t)
 				client.EXPECT().Backup(mock.Anything).Return(nil)
 				return client, nil
 			})
@@ -174,11 +174,11 @@ func TestBackupHooksSuccess(t *testing.T) {
 }
 
 func TestBackupHooksFailure(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	for _, name := range []string{"b1", "b2"} {
 		fac.EXPECT().NewBackendClient(mock.Anything, name).
 			RunAndReturn(func(c config.Config, s string) (backuper, error) {
-				client := NewMockbackuper(t)
+				client := newMockBackuper(t)
 				client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 				return client, nil
 			})
@@ -246,7 +246,7 @@ func TestBackupHooksFailure(t *testing.T) {
 }
 
 func TestBackupBeforeHookError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	svc := backupService{backendClientFactory: fac}
 
 	err := svc.Backup(
@@ -284,7 +284,7 @@ func TestBackupBeforeHookError(t *testing.T) {
 }
 
 func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	svc := backupService{backendClientFactory: fac}
 
 	outPath := path.Join(t.TempDir(), "out.txt")
@@ -330,10 +330,10 @@ func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
 }
 
 func TestBackupAfterHookError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(mock.Anything).Return(nil)
 			return client, nil
 		})
@@ -374,10 +374,10 @@ func TestBackupAfterHookError(t *testing.T) {
 }
 
 func TestBackupOnSuccessHookError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(mock.Anything).Return(nil)
 			return client, nil
 		})
@@ -418,10 +418,10 @@ func TestBackupOnSuccessHookError(t *testing.T) {
 }
 
 func TestBackupOnFailureHookError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 			return client, nil
 		})
@@ -462,10 +462,10 @@ func TestBackupOnFailureHookError(t *testing.T) {
 }
 
 func TestBackupBackupAndHooksError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 		RunAndReturn(func(c config.Config, s string) (backuper, error) {
-			client := NewMockbackuper(t)
+			client := newMockBackuper(t)
 			client.EXPECT().Backup(mock.Anything).Return(errors.New("oops"))
 			return client, nil
 		})
@@ -516,7 +516,7 @@ func TestBackupBackupAndHooksError(t *testing.T) {
 }
 
 func TestBackupOnlyHooksError(t *testing.T) {
-	fac := NewMocknewBackendClienter(t)
+	fac := newMockNewBackendClienter(t)
 	svc := backupService{backendClientFactory: fac}
 
 	err := svc.Backup(
@@ -601,10 +601,10 @@ func TestBackupOnFailureCalledOnError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			fac := NewMocknewBackendClienter(t)
+			fac := newMockNewBackendClienter(t)
 			fac.EXPECT().NewBackendClient(mock.Anything, "the-backend").
 				RunAndReturn(func(c config.Config, s string) (backuper, error) {
-					client := NewMockbackuper(t)
+					client := newMockBackuper(t)
 					client.EXPECT().Backup(mock.Anything).Maybe().Return(nil)
 					return client, nil
 				}).Maybe()
