@@ -9,7 +9,10 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-const mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
+const (
+	mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
+	dynamicPropPattern    = "^[a-zA-Z][a-zA-Z0-9_-]*$"
+)
 
 type DestinationConfigV1 struct {
 	Backend string
@@ -58,7 +61,7 @@ func makeMainConfigSchema(
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
-					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
+					dynamicPropPattern: map[string]any{
 						"type":     "object",
 						"required": []any{"backend"},
 						"properties": map[string]any{
@@ -75,7 +78,7 @@ func makeMainConfigSchema(
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
-					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
+					dynamicPropPattern: map[string]any{
 						"type":     "object",
 						"required": []any{"recipe", "backup-to"},
 						"properties": map[string]any{
