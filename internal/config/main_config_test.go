@@ -223,3 +223,88 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 		)
 	}
 }
+
+func TestLoadMainConfigSecretDefinition(t *testing.T) {
+	testCases := []struct {
+		name           string
+		config         string
+		expectedSecret SecretConfigV1
+	}{
+		{
+			name: "from-file",
+			config: testutils.DedentYaml(`
+				version: 1
+				secrets:
+					mySecret:
+						from-file: /path/to/secret.txt
+			`),
+			expectedSecret: SecretConfigV1{
+				FromFile: "/path/to/secret.txt",
+			},
+		},
+		{
+			name: "literal",
+			config: testutils.DedentYaml(`
+				version: 1
+				secrets:
+					mySecret:
+						literal: what could possibly go wrong
+			`),
+			expectedSecret: SecretConfigV1{
+				Literal: "what could possibly go wrong",
+			},
+		},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			d := t.TempDir()
+			configPath := path.Join(d, "config.yaml")
+			err := os.WriteFile(configPath, []byte(test.config), 0o644)
+			if !assert.NoError(t, err) {
+				return
+			}
+			c, err := LoadMainConfig(
+				configPath,
+				[]BackendManifestV1{},
+				[]RecipeManifestV1{},
+			)
+			if assert.NoError(t, err) {
+				assert.Equal(t, test.expectedSecret, c.Secrets["mySecret"])
+			}
+		})
+	}
+}
+
+func TestLoadMainConfigSecretDefinitionOneProperty(t *testing.T) {
+	d := t.TempDir()
+	configPath := path.Join(d, "config.yaml")
+	err := os.WriteFile(
+		configPath,
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			secrets:
+				mySecret:
+					from-file: /path/to/secret.txt
+					literal: supersecret
+		`)),
+		0o644,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	_, err = LoadMainConfig(
+		configPath,
+		[]BackendManifestV1{},
+		[]RecipeManifestV1{},
+	)
+	var validationErr *jsonschema.ValidationError
+	if assert.Error(t, err) && assert.ErrorAs(t, err, &validationErr) {
+		assert.Equal(t,
+			testutils.Dedent(`
+				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+				- at '/secrets/mySecret': maxProperties: got 2, want 1
+			`),
+			validationErr.Error(),
+		)
+	}
+}
