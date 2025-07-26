@@ -13,9 +13,10 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
+const recipeManifestV1SchemaUrl = "standard-backups://recipe-manifest-v1.schema.json"
+
 var (
-	recipeManifestV1SchemaUrl = "standard-backups://recipe-manifest-v1.schema.json"
-	_recipeManifestV1Schema   = map[string]any{
+	_recipeManifestV1Schema = map[string]any{
 		"$schama": "https://json-schema.org/draft/2020-12/schema",
 		"$id":     recipeManifestV1SchemaUrl,
 		"type":    "object",

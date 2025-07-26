@@ -9,7 +9,7 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-var mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
+const mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
 
 type DestinationConfigV1 struct {
 	Backend string
