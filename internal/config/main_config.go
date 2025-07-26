@@ -9,26 +9,34 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-var mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
+const (
+	mainConfigV1SchemaUrl = "standard-backups://main-config-v1.schema.json"
+	dynamicPropPattern    = "^[a-zA-Z][a-zA-Z0-9_-]*$"
+)
 
-type DestinationConfigV1 struct {
-	Backend string
-	Options map[string]any
-}
-
-type JobConfigV1 struct {
-	Recipe   string
-	BackupTo []string `mapstructure:"backup-to"`
-}
-
-// MainConfig is the configuration file that system administrators are expected
-// to write. In other words, it's `$dir/config.yaml`.
-type MainConfig struct {
-	path         string
-	Version      int
-	Destinations map[string]DestinationConfigV1
-	Jobs         map[string]JobConfigV1
-}
+type (
+	DestinationConfigV1 struct {
+		Backend string
+		Options map[string]any
+	}
+	JobConfigV1 struct {
+		Recipe   string
+		BackupTo []string `mapstructure:"backup-to"`
+	}
+	SecretConfigV1 struct {
+		FromFile string `mapstructure:"from-file"`
+		Literal  string
+	}
+	// MainConfig is the configuration file that system administrators are expected
+	// to write. In other words, it's `config.yaml`.
+	MainConfig struct {
+		path         string
+		Version      int
+		Destinations map[string]DestinationConfigV1
+		Jobs         map[string]JobConfigV1
+		Secrets      map[string]SecretConfigV1
+	}
+)
 
 func makeMainConfigSchema(
 	backends []BackendManifestV1,
@@ -58,7 +66,7 @@ func makeMainConfigSchema(
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
-					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
+					dynamicPropPattern: map[string]any{
 						"type":     "object",
 						"required": []any{"backend"},
 						"properties": map[string]any{
@@ -75,7 +83,7 @@ func makeMainConfigSchema(
 				"type":                 "object",
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
-					"^[a-zA-Z][a-zA-Z0-9_-]*$": map[string]any{
+					dynamicPropPattern: map[string]any{
 						"type":     "object",
 						"required": []any{"recipe", "backup-to"},
 						"properties": map[string]any{
@@ -86,6 +94,21 @@ func makeMainConfigSchema(
 									"type": "string",
 								},
 							},
+						},
+					},
+				},
+			},
+			"secrets": map[string]any{
+				"type":                 "object",
+				"additionalProperties": false,
+				"patternProperties": map[string]any{
+					dynamicPropPattern: map[string]any{
+						"type":          "object",
+						"minProperties": 1,
+						"maxProperties": 1,
+						"properties": map[string]any{
+							"from-file": map[string]any{"type": "string"},
+							"literal":   map[string]any{"type": "string"},
 						},
 					},
 				},
