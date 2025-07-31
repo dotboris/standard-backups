@@ -41,13 +41,16 @@ func TestResticBackup(t *testing.T) {
 	sourceDir := tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
+		secrets:
+			pass:
+				literal: supersecret
 		destinations:
 			my-dest:
 				backend: restic
 				options:
 					repo: %s
 					env:
-						RESTIC_PASSWORD: supersecret
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
 		jobs:
 			my-job:
 				recipe: bogus
@@ -146,13 +149,16 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
+		secrets:
+			pass:
+				literal: supersecret
 		destinations:
 			my-dest:
 				backend: restic
 				options:
 					repo: %s
 					env:
-						RESTIC_PASSWORD: supersecret
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
 		jobs:
 			my-job:
 				recipe: bogus
@@ -186,6 +192,9 @@ func TestResticBackupForget(t *testing.T) {
 	tc.AddBogusRecipe(t, "bogus")
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
+		secrets:
+			pass:
+				literal: supersecret
 		destinations:
 			my-dest:
 				backend: restic
@@ -196,7 +205,7 @@ func TestResticBackupForget(t *testing.T) {
 						options:
 							keep-last: 1
 					env:
-						RESTIC_PASSWORD: supersecret
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
 		jobs:
 			my-job:
 				recipe: bogus
