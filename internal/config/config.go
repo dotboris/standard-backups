@@ -9,7 +9,6 @@ type Config struct {
 	Backends   []BackendManifestV1
 	Recipes    []RecipeManifestV1
 	MainConfig MainConfig
-	Secrets    map[string]string
 }
 
 func LoadConfig(
@@ -33,11 +32,15 @@ func LoadConfig(
 	if err != nil {
 		return nil, err
 	}
+	template := &configTemplate{Secrets: secrets}
+	err = mainConfig.applyTemplate(template)
+	if err != nil {
+		return nil, err
+	}
 	return &Config{
 		Backends:   backends,
 		Recipes:    recipes,
 		MainConfig: *mainConfig,
-		Secrets:    secrets,
 	}, nil
 }
 

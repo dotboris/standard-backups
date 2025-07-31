@@ -160,3 +160,20 @@ func LoadMainConfig(
 
 	return &res, nil
 }
+
+func (mc *MainConfig) applyTemplate(template *configTemplate) error {
+	for key, dest := range mc.Destinations {
+		p := fmt.Sprintf("destinations.%s.options", key)
+		res, err := template.Apply(p, dest.Options)
+		if err != nil {
+			return err
+		}
+		options, ok := res.(map[string]any)
+		if !ok {
+			panic(fmt.Sprintf("unexpected result type when templating %s", p))
+		}
+		dest.Options = options
+		mc.Destinations[key] = dest
+	}
+	return nil
+}
