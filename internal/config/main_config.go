@@ -103,9 +103,10 @@ func makeMainConfigSchema(
 				"additionalProperties": false,
 				"patternProperties": map[string]any{
 					dynamicPropPattern: map[string]any{
-						"type":          "object",
-						"minProperties": 1,
-						"maxProperties": 1,
+						"type":                 "object",
+						"minProperties":        1,
+						"maxProperties":        1,
+						"additionalProperties": false,
 						"properties": map[string]any{
 							"from-file": map[string]any{"type": "string"},
 							"literal":   map[string]any{"type": "string"},

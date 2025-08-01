@@ -308,3 +308,68 @@ func TestLoadMainConfigSecretDefinitionOneProperty(t *testing.T) {
 		)
 	}
 }
+
+func TestLoadMainConfigSecretDefinitionNoProperties(t *testing.T) {
+	d := t.TempDir()
+	configPath := path.Join(d, "config.yaml")
+	err := os.WriteFile(
+		configPath,
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			secrets:
+				mySecret: {}
+		`)),
+		0o644,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	_, err = LoadMainConfig(
+		configPath,
+		[]BackendManifestV1{},
+		[]RecipeManifestV1{},
+	)
+	var validationErr *jsonschema.ValidationError
+	if assert.Error(t, err) && assert.ErrorAs(t, err, &validationErr) {
+		assert.Equal(t,
+			testutils.Dedent(`
+				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+				- at '/secrets/mySecret': minProperties: got 0, want 1
+			`),
+			validationErr.Error(),
+		)
+	}
+}
+
+func TestLoadMainConfigSecretDefinitionBadProperties(t *testing.T) {
+	d := t.TempDir()
+	configPath := path.Join(d, "config.yaml")
+	err := os.WriteFile(
+		configPath,
+		[]byte(testutils.DedentYaml(`
+			version: 1
+			secrets:
+				mySecret:
+					bogus: stuff
+		`)),
+		0o644,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	_, err = LoadMainConfig(
+		configPath,
+		[]BackendManifestV1{},
+		[]RecipeManifestV1{},
+	)
+	var validationErr *jsonschema.ValidationError
+	if assert.Error(t, err) && assert.ErrorAs(t, err, &validationErr) {
+		assert.Equal(t,
+			testutils.Dedent(`
+				jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+				- at '/secrets/mySecret': additional properties 'bogus' not allowed
+			`),
+			validationErr.Error(),
+		)
+	}
+}
