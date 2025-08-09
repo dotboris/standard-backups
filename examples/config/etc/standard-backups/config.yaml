@@ -1,5 +1,9 @@
 version: 1
 
+secrets:
+  localResticPassword:
+    literal: supersecret
+
 destinations:
   local:
     backend: rsync
@@ -12,7 +16,7 @@ destinations:
     options:
       repo: ./dist/backups/restic-local
       env:
-        RESTIC_PASSWORD: supersecret
+        RESTIC_PASSWORD: '{{ .Secrets.localResticPassword }}'
 
 jobs:
   nextcloud:

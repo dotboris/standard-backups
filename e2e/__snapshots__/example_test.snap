@@ -111,6 +111,12 @@
         },
       },
     },
+    Secrets: map[string]config.SecretConfigV1{
+      "localResticPassword": config.SecretConfigV1{
+        FromFile: "",
+        Literal:  "supersecret",
+      },
+    },
   },
 }
 

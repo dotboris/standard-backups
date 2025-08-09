@@ -28,6 +28,15 @@ func LoadConfig(
 	if err != nil {
 		return nil, err
 	}
+	secrets, err := loadSecrets(mainConfig.Secrets)
+	if err != nil {
+		return nil, err
+	}
+	template := &configTemplate{Secrets: secrets}
+	err = mainConfig.applyTemplate(template)
+	if err != nil {
+		return nil, err
+	}
 	return &Config{
 		Backends:   backends,
 		Recipes:    recipes,

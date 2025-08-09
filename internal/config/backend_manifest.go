@@ -13,9 +13,10 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
+const backendManifestV1SchemaUrl = "standard-backups://backend-manifest-v1.schema.json"
+
 var (
-	backendManifestV1SchemaUrl = "standard-backups://backend-manifest-v1.schema.json"
-	_backendManifestV1Schema   = map[string]any{
+	_backendManifestV1Schema = map[string]any{
 		"$schama": "https://json-schema.org/draft/2020-12/schema",
 		"$id":     backendManifestV1SchemaUrl,
 		"type":    "object",
