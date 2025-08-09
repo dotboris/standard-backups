@@ -92,10 +92,7 @@ func TestBackupRsyncLocal(t *testing.T) {
 
 	backupsBefore := listBackups()
 
-	cmd := testutils.StandardBackups(t,
-		"backup", "test",
-		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
-	)
+	cmd := testutils.StandardBackups(t, "backup", "test")
 	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
@@ -116,10 +113,7 @@ func TestExampleResticLocal(t *testing.T) {
 	destDir := path.Join(root, "dist/backups/restic-local")
 	_ = os.RemoveAll(path.Join(destDir))
 
-	cmd := testutils.StandardBackups(t,
-		"backup", "test-restic",
-		"--lockfile", path.Join(t.TempDir(), "standard-backups.pid"),
-	)
+	cmd := testutils.StandardBackups(t, "backup", "test-restic")
 	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
 	err := cmd.Run()
 	if !assert.NoError(t, err) {

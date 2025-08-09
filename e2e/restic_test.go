@@ -33,7 +33,6 @@ func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
 }
 
 func TestResticBackup(t *testing.T) {
-	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
 	repoDir := t.TempDir()
 
 	tc := testutils.NewTestConfig(t)
@@ -57,10 +56,7 @@ func TestResticBackup(t *testing.T) {
 				backup-to: [my-dest]
 	`, repoDir)))
 
-	cmd := testutils.StandardBackups(t,
-		"backup", "my-job",
-		"--lockfile", lockFile,
-	)
+	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	cmd.Args = append(cmd.Args, tc.Args()...)
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
@@ -124,7 +120,6 @@ func TestResticBackup(t *testing.T) {
 }
 
 func TestResticBackupPreservesExistingRepo(t *testing.T) {
-	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
 	repoDir := t.TempDir()
 
 	// Create a repo ourselves
@@ -165,10 +160,7 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 				backup-to: [my-dest]
 	`, repoDir)))
 
-	cmd = testutils.StandardBackups(t,
-		"backup", "my-job",
-		"--lockfile", lockFile,
-	)
+	cmd = testutils.StandardBackups(t, "backup", "my-job")
 	cmd.Args = append(cmd.Args, tc.Args()...)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
@@ -184,7 +176,6 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 }
 
 func TestResticBackupForget(t *testing.T) {
-	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
 	repoDir := t.TempDir()
 
 	tc := testutils.NewTestConfig(t)
@@ -213,10 +204,7 @@ func TestResticBackupForget(t *testing.T) {
 	`, repoDir)))
 
 	for range 2 {
-		cmd := testutils.StandardBackups(t,
-			"backup", "my-job",
-			"--lockfile", lockFile,
-		)
+		cmd := testutils.StandardBackups(t, "backup", "my-job")
 		cmd.Args = append(cmd.Args, tc.Args()...)
 		err := cmd.Run()
 		if !assert.NoError(t, err) {
