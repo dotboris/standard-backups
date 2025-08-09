@@ -26,3 +26,8 @@ func TestLoadSecretFromFile(t *testing.T) {
 		assert.Equal(t, "supersecret from file", res)
 	}
 }
+
+func TestLoadSecretFromFileNotFound(t *testing.T) {
+	_, err := loadSecret(SecretConfigV1{FromFile: "does-not-exist.txt"})
+	assert.ErrorIs(t, err, os.ErrNotExist)
+}
