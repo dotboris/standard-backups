@@ -48,3 +48,29 @@ func TestConfigTemplateApply(t *testing.T) {
 		}, res)
 	}
 }
+
+func TestConfigTemplateError(t *testing.T) {
+	tpl := configTemplate{}
+	var value map[string]any
+	err := yaml.Unmarshal(
+		// Using YAML here to ensure that this get converted into the right type.
+		// The yaml lib is a little quirky about which type it chooses under the
+		// hood when parsing and that has an effect on how we walk the tree.
+		[]byte(testutils.DedentYaml(`
+			listOfObjects:
+				- secret: ...
+				- secret: '{{ crashHere }}'
+		`)),
+		&value,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	_, err = tpl.Apply("test", value)
+	assert.EqualError(
+		t,
+		err,
+		`template: test.listOfObjects.1.secret:1: function "crashHere" not defined`,
+	)
+}
