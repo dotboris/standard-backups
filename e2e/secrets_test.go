@@ -47,20 +47,12 @@ func TestSecretsPassedToBackend(t *testing.T) {
 				backup-to: [my-dest]
 	`), secretFile1, secretFile2))
 
-	lockFile := path.Join(t.TempDir(), "standard-backups.pid")
-
-	cmd := testutils.StandardBackups(t,
-		"validate-config",
-		"--lockfile", lockFile,
-	)
+	cmd := testutils.StandardBackups(t, "validate-config")
 	cmd.Args = append(cmd.Args, tc.Args()...)
 	err = cmd.Run()
 	assert.NoError(t, err)
 
-	cmd = testutils.StandardBackups(t,
-		"backup", "my-job",
-		"--lockfile", lockFile,
-	)
+	cmd = testutils.StandardBackups(t, "backup", "my-job")
 	cmd.Args = append(cmd.Args, tc.Args()...)
 	err = cmd.Run()
 	if assert.NoError(t, err) {

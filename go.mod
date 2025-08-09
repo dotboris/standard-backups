@@ -9,7 +9,6 @@ require (
 	github.com/goccy/go-yaml v1.18.0
 	github.com/k0kubun/pp/v3 v3.5.0
 	github.com/lithammer/dedent v1.1.0
-	github.com/nightlyone/lockfile v1.0.0
 	github.com/phsym/console-slog v0.3.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/cobra v1.9.1
