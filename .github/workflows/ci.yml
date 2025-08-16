@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -18,7 +18,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Use nix because it installs backup tools for us
       - uses: cachix/install-nix-action@v31
         with:
@@ -29,7 +29,7 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Use nix because it installs backup tools for us
       - uses: cachix/install-nix-action@v31
         with:
@@ -40,7 +40,7 @@ jobs:
   check-mocks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Use nix because it installs `mockery` for us
       - uses: cachix/install-nix-action@v31
         with:
@@ -52,7 +52,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Use nix because it installs backup tools for us
       - uses: cachix/install-nix-action@v31
         with:
@@ -63,7 +63,7 @@ jobs:
   fmt-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Use nix because it installs backup tools for us
       - uses: cachix/install-nix-action@v31
         with:
