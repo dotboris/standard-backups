@@ -7,6 +7,7 @@ import (
 
 type BackendImpl struct {
 	Backup BackupFunc
+	Exec   ExecFunc
 }
 
 func (bi *BackendImpl) execute() error {
@@ -17,6 +18,8 @@ func (bi *BackendImpl) execute() error {
 	switch command {
 	case "backup":
 		return bi.backup()
+	case "exec":
+		return bi.exec()
 	default:
 		return fmt.Errorf("unknown command %s", command)
 	}

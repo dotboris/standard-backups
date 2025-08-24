@@ -70,6 +70,16 @@ var Backend = &proto.BackendImpl{
 
 		return nil
 	},
+	Exec: func(req *proto.ExecRequest) error {
+		var options Options
+		err := mapstructure.Decode(req.RawOptions, &options)
+		if err != nil {
+			return err
+		}
+
+		err = restic(options.Repo, options.Env, req.Args...)
+		return err
+	},
 }
 
 func main() {

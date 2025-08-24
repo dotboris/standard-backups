@@ -7,14 +7,15 @@ import (
 	"strings"
 )
 
-type BackupFunc func(req *BackupRequest) error
-
-type BackupRequest struct {
-	Paths           []string
-	DestinationName string
-	JobName         string
-	RawOptions      map[string]any
-}
+type (
+	BackupFunc    func(req *BackupRequest) error
+	BackupRequest struct {
+		Paths           []string
+		DestinationName string
+		JobName         string
+		RawOptions      map[string]any
+	}
+)
 
 func NewBackupRequestFromEnv() (*BackupRequest, error) {
 	rawPaths, err := requireEnv("STANDARD_BACKUPS_PATHS")
