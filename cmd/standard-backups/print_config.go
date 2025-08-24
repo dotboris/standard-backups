@@ -6,8 +6,9 @@ import (
 )
 
 var printConfigCmd = &cobra.Command{
-	Use:   "print-config",
-	Short: "Print out the contents of the configuration",
+	Use:     "print-config",
+	Short:   "Print out the contents of the configuration",
+	GroupID: "config",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config, err := loadConfig()
 		if err != nil {

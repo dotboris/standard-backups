@@ -6,9 +6,10 @@ import (
 )
 
 var backupCmd = &cobra.Command{
-	Use:   "backup <job>",
-	Short: "Perform a backup for the given job",
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "backup job",
+	Short:   "Perform a backup for the given job",
+	GroupID: "operations",
+	Args:    cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jobName := args[0]
 		cfg, err := loadConfig()

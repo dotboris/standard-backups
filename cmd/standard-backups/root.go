@@ -74,6 +74,11 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddGroup(
+		&cobra.Group{ID: "operations", Title: "Operation Commands"},
+		&cobra.Group{ID: "config", Title: "Configuration Commands"},
+	)
+
 	rootCmd.PersistentFlags().StringVarP(&configPath,
 		"config", "c",
 		"/etc/standard-backups/config.yaml",
