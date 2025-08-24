@@ -43,7 +43,7 @@ automatically configure the command to work with the specified destination.
 			if backend == "" {
 				d, ok := cfg.MainConfig.Destinations[execDestination]
 				if !ok {
-					return fmt.Errorf("could not find a destination named %s", execDestination)
+					return fmt.Errorf("could not find destination named %s", execDestination)
 				}
 				backend = d.Backend
 				dest = d
