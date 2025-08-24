@@ -9,8 +9,9 @@ import (
 )
 
 var validateConfigCmd = &cobra.Command{
-	Use:   "validate-config",
-	Short: "Validates that the configurations are correct",
+	Use:     "validate-config",
+	Short:   "Validates that the configurations are correct",
+	GroupID: "config",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := loadConfig()
 		if err != nil {

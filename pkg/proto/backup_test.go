@@ -2,13 +2,13 @@ package proto
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
+	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
-var testReq = &BackupRequest{
+var testBackupReq = &BackupRequest{
 	Paths:           []string{"/foo", "/bar"},
 	DestinationName: "my-dest",
 	JobName:         "my-job",
@@ -21,22 +21,8 @@ var testReq = &BackupRequest{
 	},
 }
 
-func setBackupRequestToTestEnv(t *testing.T, req *BackupRequest) {
-	t.Helper()
-	env, err := req.ToEnv()
-	if !assert.NoError(t, err) {
-		t.Error(err)
-		t.FailNow()
-		return
-	}
-	for _, entry := range env {
-		key, value, _ := strings.Cut(entry, "=")
-		t.Setenv(key, value)
-	}
-}
-
 func TestBackupRequestE2E(t *testing.T) {
-	setBackupRequestToTestEnv(t, testReq)
+	testutils.SetEnvFromToEnv(t, testBackupReq)
 	var (
 		gotReq *BackupRequest
 		called bool
@@ -52,13 +38,13 @@ func TestBackupRequestE2E(t *testing.T) {
 	err := b.execute()
 	if assert.NoError(t, err) {
 		assert.True(t, called, "Backup func was not called")
-		assert.Equal(t, testReq, gotReq)
+		assert.Equal(t, testBackupReq, gotReq)
 	}
 }
 
 func TestBackupError(t *testing.T) {
 	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
-	setBackupRequestToTestEnv(t, testReq)
+	testutils.SetEnvFromToEnv(t, testBackupReq)
 	expectedErr := errors.New("oops")
 	b := &BackendImpl{
 		Backup: func(req *BackupRequest) error {

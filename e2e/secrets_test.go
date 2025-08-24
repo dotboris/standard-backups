@@ -60,6 +60,6 @@ func TestSecretsPassedToBackend(t *testing.T) {
 			"literal": "supersecret",
 			"file1":   "file secret 1",
 			"file2":   "file secret 2\n",
-		}, b.ReadOptions())
+		}, b.ReadJsonMap("STANDARD_BACKUPS_OPTIONS"))
 	}
 }

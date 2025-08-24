@@ -9,22 +9,26 @@ import (
 )
 
 type DumpBackend struct {
-	Path        string
-	optionsPath string
-	t           *testing.T
+	Path   string
+	outDir string
+	t      *testing.T
 }
 
 func NewDumpBackend(t *testing.T) *DumpBackend {
 	d := t.TempDir()
-	optionsPath := path.Join(d, "options.json")
 	backendPath := path.Join(d, "backend.sh")
 	err := os.WriteFile(
 		backendPath,
 		[]byte(Dedent(fmt.Sprintf(`
 			#!/bin/bash
 			set -euo pipefail
-			echo "$STANDARD_BACKUPS_OPTIONS" > %s
-		`, optionsPath))),
+			dir='%s'
+			while IFS= read -r line; do
+				var="${line%%%%=*}"
+				value="${line#*=}"
+				echo -n "$value" > "$dir/$var.json"
+			done <<< $(env | grep "^STANDARD_BACKUPS_")
+		`, d))),
 		0o755,
 	)
 	if err != nil {
@@ -34,21 +38,44 @@ func NewDumpBackend(t *testing.T) *DumpBackend {
 	}
 
 	return &DumpBackend{
-		Path:        backendPath,
-		optionsPath: optionsPath,
-		t:           t,
+		Path:   backendPath,
+		outDir: d,
+		t:      t,
 	}
 }
 
-func (b *DumpBackend) ReadOptions() map[string]any {
-	bytes, err := os.ReadFile(b.optionsPath)
+func (b *DumpBackend) ReadBytes(name string) []byte {
+	bytes, err := os.ReadFile(path.Join(b.outDir, fmt.Sprintf("%s.json", name)))
 	if err != nil {
 		b.t.Error(err)
 		b.t.FailNow()
 		return nil
 	}
+	return bytes
+}
+
+func (b *DumpBackend) ReadString(name string) string {
+	return string(b.ReadBytes(name))
+}
+
+func (b *DumpBackend) ReadJsonMap(name string) map[string]any {
+	bytes := b.ReadBytes(name)
+
 	var res map[string]any
-	err = json.Unmarshal(bytes, &res)
+	err := json.Unmarshal(bytes, &res)
+	if err != nil {
+		b.t.Error(err)
+		b.t.FailNow()
+		return nil
+	}
+	return res
+}
+
+func (b *DumpBackend) ReadJsonArray(name string) []any {
+	bytes := b.ReadBytes(name)
+
+	var res []any
+	err := json.Unmarshal(bytes, &res)
 	if err != nil {
 		b.t.Error(err)
 		b.t.FailNow()
