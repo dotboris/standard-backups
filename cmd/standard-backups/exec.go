@@ -22,7 +22,7 @@ that are specific to that tool. Please refer to the backend's documentation for
 an explanation of available commands.
 
 It's important to always put -- before the backend specific arguments and flags.
-If you fail to do this some arguments or flags may be interpreted by
+If you fail to do this, some arguments or flags may be interpreted by
 standard-backups and not the backend.
 
 Note that you must specify either -b/--backend or -d/--destination. This

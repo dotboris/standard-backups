@@ -262,7 +262,6 @@ func TestResticExec(t *testing.T) {
 		return
 	}
 
-	// Check that we have the tags
 	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
 	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
 	cmd.Dir = testutils.GetRepoRoot(t)
