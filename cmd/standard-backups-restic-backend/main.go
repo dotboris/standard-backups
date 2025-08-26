@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/go-viper/mapstructure/v2"
@@ -31,7 +32,7 @@ var Backend = &proto.BackendImpl{
 			return err
 		}
 		if !exists {
-			fmt.Printf("repo %s does not exist, creating it", options.Repo)
+			fmt.Fprintf(os.Stderr, "repo %s does not exist, creating it", options.Repo)
 			err := restic(options.Repo, options.Env, "init")
 			if err != nil {
 				return fmt.Errorf("failed to initialize repository %s: %w",

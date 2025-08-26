@@ -30,7 +30,7 @@ func (bc *BackendClient) cmd(command string, env []string) *exec.Cmd {
 		fmt.Sprintf("STANDARD_BACKUPS_COMMAND=%s", command),
 	)
 	cmd.Env = append(cmd.Env, env...)
-	cmd.Stdout = os.Stderr
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd
 }

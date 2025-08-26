@@ -11,7 +11,7 @@ func resticCmd(repo string, env map[string]string, args ...string) *exec.Cmd {
 	finalArgs := []string{"--repo", repo}
 	finalArgs = append(finalArgs, args...)
 	cmd := exec.Command("restic", finalArgs...)
-	cmd.Stdout = os.Stderr
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	cmd.Env = os.Environ()
@@ -24,7 +24,7 @@ func resticCmd(repo string, env map[string]string, args ...string) *exec.Cmd {
 
 func restic(repo string, env map[string]string, args ...string) error {
 	cmd := resticCmd(repo, env, args...)
-	fmt.Printf("running restic: %s\n", cmd.String())
+	fmt.Fprintf(os.Stderr, "running restic: %s\n", cmd.String())
 	err := cmd.Run()
 	return err
 }

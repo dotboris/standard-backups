@@ -167,11 +167,14 @@ func TestExecInnerError(t *testing.T) {
 			cmd := testutils.StandardBackups(t, "exec")
 			cmd.Args = append(cmd.Args, tc.Args()...)
 			cmd.Args = append(cmd.Args, testCase.args...)
+			stdout := bytes.Buffer{}
+			cmd.Stdout = &stdout
 			stderr := bytes.Buffer{}
 			cmd.Stderr = &stderr
 			err = cmd.Run()
 			assert.EqualError(t, err, "exit status 1")
-			assert.Equal(t, "oops\nError: exit status 42\n", stderr.String())
+			assert.Equal(t, "oops\n", stdout.String())
+			assert.Equal(t, "Error: exit status 42\n", stderr.String())
 		})
 	}
 }
