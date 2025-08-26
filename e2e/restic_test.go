@@ -230,3 +230,69 @@ func TestResticBackupForget(t *testing.T) {
 		assert.Len(t, output, 1)
 	}
 }
+
+func TestResticExec(t *testing.T) {
+	repoDir := t.TempDir()
+
+	tc := testutils.NewTestConfig(t)
+	tc.AddBackend("restic", "dist/standard-backups-restic-backend")
+	tc.AddBogusRecipe(t, "bogus")
+	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		secrets:
+			pass:
+				literal: supersecret
+		destinations:
+			my-dest:
+				backend: restic
+				options:
+					repo: %s
+					env:
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+		jobs:
+			my-job:
+				recipe: bogus
+				backup-to: [my-dest]
+	`, repoDir)))
+
+	cmd := testutils.StandardBackups(t, "backup", "my-job")
+	cmd.Args = append(cmd.Args, tc.Args()...)
+	err := cmd.Run()
+	if !assert.NoError(t, err, "failed to backup in %s") {
+		return
+	}
+
+	// Check that we have the tags
+	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
+	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
+	cmd.Dir = testutils.GetRepoRoot(t)
+	stdout := bytes.NewBufferString("")
+	cmd.Stdout = stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if !assert.NoError(t, err, "failed to list expected snapshots in %s", repoDir) {
+		return
+	}
+	var expectedSnapshots []map[string]any
+	err = json.Unmarshal(stdout.Bytes(), &expectedSnapshots)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	// Check that exec returns the same thing
+	cmd = testutils.StandardBackups(t, "exec", "-d", "my-dest")
+	cmd.Args = append(cmd.Args, tc.Args()...)
+	cmd.Args = append(cmd.Args, "--", "snapshots", "--json")
+	stdout = bytes.NewBufferString("")
+	cmd.Stdout = stdout
+	err = cmd.Run()
+	if !assert.NoError(t, err, "failed to list expected snapshots with exec in %s", repoDir) {
+		return
+	}
+	var actualSnapshots []map[string]any
+	err = json.Unmarshal(stdout.Bytes(), &actualSnapshots)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, expectedSnapshots, actualSnapshots)
+}

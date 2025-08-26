@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/go-viper/mapstructure/v2"
@@ -31,7 +32,7 @@ var Backend = &proto.BackendImpl{
 			return err
 		}
 		if !exists {
-			fmt.Printf("repo %s does not exist, creating it", options.Repo)
+			fmt.Fprintf(os.Stderr, "repo %s does not exist, creating it", options.Repo)
 			err := restic(options.Repo, options.Env, "init")
 			if err != nil {
 				return fmt.Errorf("failed to initialize repository %s: %w",
@@ -69,6 +70,16 @@ var Backend = &proto.BackendImpl{
 		}
 
 		return nil
+	},
+	Exec: func(req *proto.ExecRequest) error {
+		var options Options
+		err := mapstructure.Decode(req.RawOptions, &options)
+		if err != nil {
+			return err
+		}
+
+		err = restic(options.Repo, options.Env, req.Args...)
+		return err
 	},
 }
 
