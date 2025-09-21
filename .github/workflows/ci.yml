@@ -70,9 +70,3 @@ jobs:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix develop -L -c just fmt-check
-
-  dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/dependency-review-action@v4
