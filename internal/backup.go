@@ -52,9 +52,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 
 	var errs error
 
-	if recipe.Hooks.Before != nil {
-		logger.Info("running before hook", slog.Any("hook", recipe.Hooks.Before))
-		err := runHook(*recipe.Hooks.Before)
+	if recipe.Before != nil {
+		logger.Info("running before hook", slog.Any("hook", recipe.Before))
+		err := runHook(*recipe.Before)
 		if err != nil {
 			errs = errors.Join(errs, fmt.Errorf("before hook failed: %w", err))
 		}
@@ -99,9 +99,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 		}
 	}
 
-	if recipe.Hooks.After != nil {
-		logger.Info("running after hook", slog.Any("hook", recipe.Hooks.After))
-		err := runHook(*recipe.Hooks.After)
+	if recipe.After != nil {
+		logger.Info("running after hook", slog.Any("hook", recipe.After))
+		err := runHook(*recipe.After)
 		if err != nil {
 			errs = errors.Join(errs, fmt.Errorf("after hook failed: %w", err))
 		}
@@ -109,9 +109,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 
 	if errs == nil {
 		logger.Info("completed backup", slog.Duration("duration", time.Since(startTime)))
-		if recipe.Hooks.OnSuccess != nil {
-			logger.Info("running on-success hook", slog.Any("hook", recipe.Hooks.OnSuccess))
-			err := runHook(*recipe.Hooks.OnSuccess)
+		if recipe.OnSuccess != nil {
+			logger.Info("running on-success hook", slog.Any("hook", recipe.OnSuccess))
+			err := runHook(*recipe.OnSuccess)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-success hook failed: %w", err))
 			}
@@ -124,9 +124,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			slog.Duration("duration", time.Since(startTime)),
 			slog.Any("error", errs),
 		)
-		if recipe.Hooks.OnFailure != nil {
-			logger.Info("running on-failure hook", slog.Any("hook", recipe.Hooks.OnFailure))
-			err := runHook(*recipe.Hooks.OnFailure)
+		if recipe.OnFailure != nil {
+			logger.Info("running on-failure hook", slog.Any("hook", recipe.OnFailure))
+			err := runHook(*recipe.OnFailure)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-failure hook failed: %w", err))
 			}
