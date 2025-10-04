@@ -119,23 +119,13 @@ func TestBackupHooksSuccess(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					Before: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo before >> %s", hooksLog),
-					},
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo after >> %s", hooksLog),
-					},
-					OnSuccess: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
-					},
-					OnFailure: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
-					},
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: fmt.Sprintf("echo before >> %s", hooksLog),
+				},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: fmt.Sprintf("echo after >> %s", hooksLog),
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -151,6 +141,14 @@ func TestBackupHooksSuccess(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"d1", "d2"},
+						OnSuccess: &config.HookV1{
+							Shell:   "bash",
+							Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
+						},
+						OnFailure: &config.HookV1{
+							Shell:   "bash",
+							Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+						},
 					},
 				},
 			},
@@ -192,23 +190,13 @@ func TestBackupHooksFailure(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					Before: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo before >> %s", hooksLog),
-					},
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo after >> %s", hooksLog),
-					},
-					OnSuccess: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
-					},
-					OnFailure: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
-					},
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: fmt.Sprintf("echo before >> %s", hooksLog),
+				},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: fmt.Sprintf("echo after >> %s", hooksLog),
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -224,6 +212,14 @@ func TestBackupHooksFailure(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"d1", "d2"},
+						OnSuccess: &config.HookV1{
+							Shell:   "bash",
+							Command: fmt.Sprintf("echo on-success >> %s", hooksLog),
+						},
+						OnFailure: &config.HookV1{
+							Shell:   "bash",
+							Command: fmt.Sprintf("echo on-failure >> %s", hooksLog),
+						},
 					},
 				},
 			},
@@ -253,11 +249,9 @@ func TestBackupBeforeHookError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					Before: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 42",
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -293,15 +287,13 @@ func TestBackupRunAfterHookOnBeforeError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					Before: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: fmt.Sprintf("echo hello from after > %s", outPath),
-					},
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 42",
+				},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: fmt.Sprintf("echo hello from after > %s", outPath),
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -343,11 +335,9 @@ func TestBackupAfterHookError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 42",
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -387,12 +377,6 @@ func TestBackupOnSuccessHookError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					OnSuccess: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
-				},
 			}},
 			MainConfig: config.MainConfig{
 				Destinations: map[string]config.DestinationConfigV1{
@@ -404,6 +388,10 @@ func TestBackupOnSuccessHookError(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"bogus"},
+						OnSuccess: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 42",
+						},
 					},
 				},
 			},
@@ -431,12 +419,6 @@ func TestBackupOnFailureHookError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					OnFailure: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
-				},
 			}},
 			MainConfig: config.MainConfig{
 				Destinations: map[string]config.DestinationConfigV1{
@@ -448,6 +430,10 @@ func TestBackupOnFailureHookError(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"bogus"},
+						OnFailure: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 42",
+						},
 					},
 				},
 			},
@@ -475,20 +461,10 @@ func TestBackupBackupAndHooksError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					// We can't have Before fail otherwise, backup doesn't get performed
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 43",
-					},
-					OnSuccess: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 44",
-					},
-					OnFailure: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 45",
-					},
+				// We can't have Before fail otherwise, backup doesn't get performed
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 43",
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -501,6 +477,14 @@ func TestBackupBackupAndHooksError(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"bogus"},
+						OnSuccess: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 44",
+						},
+						OnFailure: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 45",
+						},
 					},
 				},
 			},
@@ -523,23 +507,13 @@ func TestBackupOnlyHooksError(t *testing.T) {
 		config.Config{
 			Recipes: []config.RecipeManifestV1{{
 				Name: "r",
-				Hooks: config.HooksV1{
-					Before: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 42",
-					},
-					After: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 43",
-					},
-					OnSuccess: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 44",
-					},
-					OnFailure: &config.HookV1{
-						Shell:   "bash",
-						Command: "exit 45",
-					},
+				Before: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 42",
+				},
+				After: &config.HookV1{
+					Shell:   "bash",
+					Command: "exit 43",
 				},
 			}},
 			MainConfig: config.MainConfig{
@@ -552,6 +526,14 @@ func TestBackupOnlyHooksError(t *testing.T) {
 					"do-it": {
 						Recipe:   "r",
 						BackupTo: []string{"bogus"},
+						OnSuccess: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 44",
+						},
+						OnFailure: &config.HookV1{
+							Shell:   "bash",
+							Command: "exit 45",
+						},
 					},
 				},
 			},
@@ -568,34 +550,31 @@ func TestBackupOnlyHooksError(t *testing.T) {
 
 func TestBackupOnFailureCalledOnError(t *testing.T) {
 	tests := []struct {
-		name  string
-		hooks config.HooksV1
+		name      string
+		before    *config.HookV1
+		after     *config.HookV1
+		onSuccess *config.HookV1
+		onFailure *config.HookV1
 	}{
 		{
 			name: "before",
-			hooks: config.HooksV1{
-				Before: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 1",
-				},
+			before: &config.HookV1{
+				Shell:   "bash",
+				Command: "exit 1",
 			},
 		},
 		{
 			name: "after",
-			hooks: config.HooksV1{
-				After: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 1",
-				},
+			after: &config.HookV1{
+				Shell:   "bash",
+				Command: "exit 1",
 			},
 		},
 		{
 			name: "on-success",
-			hooks: config.HooksV1{
-				OnSuccess: &config.HookV1{
-					Shell:   "bash",
-					Command: "exit 1",
-				},
+			onSuccess: &config.HookV1{
+				Shell:   "bash",
+				Command: "exit 1",
 			},
 		},
 	}
@@ -612,7 +591,7 @@ func TestBackupOnFailureCalledOnError(t *testing.T) {
 
 			d := t.TempDir()
 			outFile := path.Join(d, "out.txt")
-			test.hooks.OnFailure = &config.HookV1{
+			test.onFailure = &config.HookV1{
 				Shell:   "bash",
 				Command: fmt.Sprintf("echo hello from on-failure > %s", outFile),
 			}
@@ -620,8 +599,9 @@ func TestBackupOnFailureCalledOnError(t *testing.T) {
 			err := svc.Backup(
 				config.Config{
 					Recipes: []config.RecipeManifestV1{{
-						Name:  "r",
-						Hooks: test.hooks,
+						Name:   "r",
+						Before: test.before,
+						After:  test.after,
 					}},
 					MainConfig: config.MainConfig{
 						Destinations: map[string]config.DestinationConfigV1{
@@ -631,8 +611,10 @@ func TestBackupOnFailureCalledOnError(t *testing.T) {
 						},
 						Jobs: map[string]config.JobConfigV1{
 							"do-it": {
-								Recipe:   "r",
-								BackupTo: []string{"bogus"},
+								Recipe:    "r",
+								BackupTo:  []string{"bogus"},
+								OnSuccess: test.onSuccess,
+								OnFailure: test.onFailure,
 							},
 						},
 					},

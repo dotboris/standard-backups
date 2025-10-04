@@ -19,19 +19,12 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 			name: example 1
 			description: the first example
 			paths: [/app/to/backup/1]
-			hooks:
-				before:
-					shell: bash
-					command: echo before
-				after:
-					shell: sh
-					command: echo after
-				on-success:
-					shell: bash
-					command: echo success
-				on-failure:
-					shell: bash
-					command: echo failure
+			before:
+				shell: bash
+				command: echo before
+			after:
+				shell: sh
+				command: echo after
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
@@ -46,23 +39,13 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 				Name:        "example 1",
 				Description: "the first example",
 				Paths:       []string{"/app/to/backup/1"},
-				Hooks: HooksV1{
-					Before: &HookV1{
-						Shell:   "bash",
-						Command: "echo before",
-					},
-					After: &HookV1{
-						Shell:   "sh",
-						Command: "echo after",
-					},
-					OnSuccess: &HookV1{
-						Shell:   "bash",
-						Command: "echo success",
-					},
-					OnFailure: &HookV1{
-						Shell:   "bash",
-						Command: "echo failure",
-					},
+				Before: &HookV1{
+					Shell:   "bash",
+					Command: "echo before",
+				},
+				After: &HookV1{
+					Shell:   "sh",
+					Command: "echo after",
 				},
 			},
 		}, manifests)
@@ -78,19 +61,12 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 			name: app1
 			description: the app1
 			paths: [/app/to/backup/1]
-			hooks:
-				before:
-					shell: bash
-					command: echo before 1
-				after:
-					shell: sh
-					command: echo after 1
-				on-success:
-					shell: bash
-					command: echo success 1
-				on-failure:
-					shell: bash
-					command: echo failure 1
+			before:
+				shell: bash
+				command: echo before 1
+			after:
+				shell: sh
+				command: echo after 1
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
@@ -104,19 +80,12 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 			name: app2
 			description: the app2
 			paths: [/app/to/backup/2]
-			hooks:
-				before:
-					shell: bash
-					command: echo before 2
-				after:
-					shell: sh
-					command: echo after 2
-				on-success:
-					shell: bash
-					command: echo success 2
-				on-failure:
-					shell: bash
-					command: echo failure 2
+			before:
+				shell: bash
+				command: echo before 2
+			after:
+				shell: sh
+				command: echo after 2
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
@@ -131,23 +100,13 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				Name:        "app1",
 				Description: "the app1",
 				Paths:       []string{"/app/to/backup/1"},
-				Hooks: HooksV1{
-					Before: &HookV1{
-						Shell:   "bash",
-						Command: "echo before 1",
-					},
-					After: &HookV1{
-						Shell:   "sh",
-						Command: "echo after 1",
-					},
-					OnSuccess: &HookV1{
-						Shell:   "bash",
-						Command: "echo success 1",
-					},
-					OnFailure: &HookV1{
-						Shell:   "bash",
-						Command: "echo failure 1",
-					},
+				Before: &HookV1{
+					Shell:   "bash",
+					Command: "echo before 1",
+				},
+				After: &HookV1{
+					Shell:   "sh",
+					Command: "echo after 1",
 				},
 			},
 			{
@@ -156,23 +115,13 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				Name:        "app2",
 				Description: "the app2",
 				Paths:       []string{"/app/to/backup/2"},
-				Hooks: HooksV1{
-					Before: &HookV1{
-						Shell:   "bash",
-						Command: "echo before 2",
-					},
-					After: &HookV1{
-						Shell:   "sh",
-						Command: "echo after 2",
-					},
-					OnSuccess: &HookV1{
-						Shell:   "bash",
-						Command: "echo success 2",
-					},
-					OnFailure: &HookV1{
-						Shell:   "bash",
-						Command: "echo failure 2",
-					},
+				Before: &HookV1{
+					Shell:   "bash",
+					Command: "echo before 2",
+				},
+				After: &HookV1{
+					Shell:   "sh",
+					Command: "echo after 2",
 				},
 			},
 		}, manifests)
@@ -317,7 +266,7 @@ func TestLoadRecipeManifestsInvalidEmptyPaths(t *testing.T) {
 }
 
 func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
-	for _, hook := range []string{"before", "after", "on-success", "on-failure"} {
+	for _, hook := range []string{"before", "after"} {
 		t.Run(fmt.Sprintf("%s/bad_shell", hook), func(t *testing.T) {
 			d := t.TempDir()
 			p := path.Join(d, "app.yaml")
@@ -328,10 +277,9 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 					name: app
 					description: app description
 					paths: [bogus]
-					hooks:
-						%s:
-							shell: nope
-							command: echo test
+					%s:
+						shell: nope
+						command: echo test
 				`, hook))),
 				0o644,
 			)
@@ -343,7 +291,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
 						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
-						- at '/hooks/%s/shell': value must be one of 'bash', 'sh'
+						- at '/%s/shell': value must be one of 'bash', 'sh'
 					`, p, hook)),
 					err.Error(),
 				)
@@ -359,9 +307,8 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 					name: app
 					description: app description
 					paths: [bogus]
-					hooks:
-						%s:
-							command: echo test
+					%s:
+						command: echo test
 				`, hook))),
 				0o644,
 			)
@@ -373,7 +320,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
 						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
-						- at '/hooks/%s': missing property 'shell'
+						- at '/%s': missing property 'shell'
 					`, p, hook)),
 					err.Error(),
 				)
@@ -389,9 +336,8 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 					name: app
 					description: app description
 					paths: [bogus]
-					hooks:
-						%s:
-							shell: sh
+					%s:
+						shell: sh
 				`, hook))),
 				0o644,
 			)
@@ -403,7 +349,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				assert.Equal(t,
 					testutils.Dedent(fmt.Sprintf(`
 						recipe manifest %s is invalid: jsonschema validation failed with 'standard-backups://recipe-manifest-v1.schema.json#'
-						- at '/hooks/%s': missing property 'command'
+						- at '/%s': missing property 'command'
 					`, p, hook)),
 					err.Error(),
 				)

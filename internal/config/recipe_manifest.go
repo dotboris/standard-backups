@@ -34,25 +34,8 @@ var (
 				},
 				"minItems": 1,
 			},
-			"hooks": map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"before":     map[string]any{"$ref": "#/$defs/hook"},
-					"after":      map[string]any{"$ref": "#/$defs/hook"},
-					"on-success": map[string]any{"$ref": "#/$defs/hook"},
-					"on-failure": map[string]any{"$ref": "#/$defs/hook"},
-				},
-			},
-		},
-		"$defs": map[string]any{
-			"hook": map[string]any{
-				"type":     "object",
-				"required": []any{"shell", "command"},
-				"properties": map[string]any{
-					"shell":   map[string]any{"enum": []any{"bash", "sh"}},
-					"command": map[string]any{"type": "string"},
-				},
-			},
+			"before": hookSchemaRef,
+			"after":  hookSchemaRef,
 		},
 	}
 	recipeManifestV1Schema jsonschema.Schema
@@ -61,6 +44,10 @@ var (
 func loadRecipeManifestV1Schema() (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 	err := compiler.AddResource(recipeManifestV1SchemaUrl, _recipeManifestV1Schema)
+	if err != nil {
+		return nil, err
+	}
+	err = addHookSchema(compiler)
 	if err != nil {
 		return nil, err
 	}
@@ -79,25 +66,14 @@ func init() {
 	recipeManifestV1Schema = *res
 }
 
-type HookV1 struct {
-	Shell   string `mapstructure:"shell"`
-	Command string `mapstructure:"command"`
-}
-
-type HooksV1 struct {
-	Before    *HookV1 `mapstructure:"before"`
-	After     *HookV1 `mapstructure:"after"`
-	OnSuccess *HookV1 `mapstructure:"on-success"`
-	OnFailure *HookV1 `mapstructure:"on-failure"`
-}
-
 type RecipeManifestV1 struct {
 	path        string
 	Version     int      `mapstructure:"version"`
 	Name        string   `mapstructure:"name"`
 	Description string   `mapstructure:"description"`
 	Paths       []string `mapstructure:"paths"`
-	Hooks       HooksV1  `mapstructure:"hooks"`
+	Before      *HookV1  `mapstructure:"before"`
+	After       *HookV1  `mapstructure:"after"`
 }
 
 func LoadRecipeManifests(dirs []string) ([]RecipeManifestV1, error) {

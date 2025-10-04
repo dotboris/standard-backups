@@ -20,8 +20,10 @@ type (
 		Options map[string]any
 	}
 	JobConfigV1 struct {
-		Recipe   string
-		BackupTo []string `mapstructure:"backup-to"`
+		Recipe    string
+		BackupTo  []string `mapstructure:"backup-to"`
+		OnSuccess *HookV1  `mapstructure:"on-success"`
+		OnFailure *HookV1  `mapstructure:"on-failure"`
 	}
 	SecretConfigV1 struct {
 		FromFile string `mapstructure:"from-file"`
@@ -94,6 +96,8 @@ func makeMainConfigSchema(
 									"type": "string",
 								},
 							},
+							"on-success": hookSchemaRef,
+							"on-failure": hookSchemaRef,
 						},
 					},
 				},
@@ -116,6 +120,10 @@ func makeMainConfigSchema(
 			},
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
+	err = addHookSchema(compiler)
 	if err != nil {
 		return nil, err
 	}
