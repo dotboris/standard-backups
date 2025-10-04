@@ -25,12 +25,6 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 			after:
 				shell: sh
 				command: echo after
-			on-success:
-				shell: bash
-				command: echo success
-			on-failure:
-				shell: bash
-				command: echo failure
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
