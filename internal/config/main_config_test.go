@@ -373,3 +373,108 @@ func TestLoadMainConfigSecretDefinitionBadProperties(t *testing.T) {
 		)
 	}
 }
+
+func TestLoadMainConfigJobBadHooks(t *testing.T) {
+	for _, hook := range []string{"on-success", "on-failure"} {
+		t.Run(fmt.Sprintf("%s/bad_shell", hook), func(t *testing.T) {
+			p := path.Join(t.TempDir(), "config.yaml")
+			err := os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					jobs:
+						test:
+							recipe: bogus
+							backup-to: []
+							%s:
+								shell: nope
+								command: echo test
+				`, hook))),
+				0o644,
+			)
+			if !assert.NoError(t, err) {
+				return
+			}
+			_, err = LoadMainConfig(
+				p,
+				[]BackendManifestV1{},
+				[]RecipeManifestV1{{Version: 1, Name: "bogus"}},
+			)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						main config %s is invalid: jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+						- at '/jobs/test/%s/shell': value must be one of 'bash', 'sh'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+		t.Run(fmt.Sprintf("%s/no_shell", hook), func(t *testing.T) {
+			p := path.Join(t.TempDir(), "config.yaml")
+			err := os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					jobs:
+						test:
+							recipe: bogus
+							backup-to: []
+							%s:
+								command: echo test
+				`, hook))),
+				0o644,
+			)
+			if !assert.NoError(t, err) {
+				return
+			}
+			_, err = LoadMainConfig(
+				p,
+				[]BackendManifestV1{},
+				[]RecipeManifestV1{{Version: 1, Name: "bogus"}},
+			)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						main config %s is invalid: jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+						- at '/jobs/test/%s': missing property 'shell'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+		t.Run(fmt.Sprintf("%s/no_command", hook), func(t *testing.T) {
+			p := path.Join(t.TempDir(), "config.yaml")
+			err := os.WriteFile(
+				p,
+				[]byte(testutils.DedentYaml(fmt.Sprintf(`
+					version: 1
+					jobs:
+						test:
+							recipe: bogus
+							backup-to: []
+							%s:
+								shell: sh
+				`, hook))),
+				0o644,
+			)
+			if !assert.NoError(t, err) {
+				return
+			}
+			_, err = LoadMainConfig(
+				p,
+				[]BackendManifestV1{},
+				[]RecipeManifestV1{{Version: 1, Name: "bogus"}},
+			)
+			if assert.Error(t, err) {
+				assert.Equal(t,
+					testutils.Dedent(fmt.Sprintf(`
+						main config %s is invalid: jsonschema validation failed with 'standard-backups://main-config-v1.schema.json#'
+						- at '/jobs/test/%s': missing property 'command'
+					`, p, hook)),
+					err.Error(),
+				)
+			}
+		})
+	}
+}

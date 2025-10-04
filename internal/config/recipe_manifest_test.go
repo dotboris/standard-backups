@@ -53,14 +53,6 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 					Shell:   "sh",
 					Command: "echo after",
 				},
-				OnSuccess: &HookV1{
-					Shell:   "bash",
-					Command: "echo success",
-				},
-				OnFailure: &HookV1{
-					Shell:   "bash",
-					Command: "echo failure",
-				},
 			},
 		}, manifests)
 	}
@@ -81,12 +73,6 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 			after:
 				shell: sh
 				command: echo after 1
-			on-success:
-				shell: bash
-				command: echo success 1
-			on-failure:
-				shell: bash
-				command: echo failure 1
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
@@ -106,12 +92,6 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 			after:
 				shell: sh
 				command: echo after 2
-			on-success:
-				shell: bash
-				command: echo success 2
-			on-failure:
-				shell: bash
-				command: echo failure 2
 		`)),
 		0o644)
 	if !assert.NoError(t, err) {
@@ -134,14 +114,6 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 					Shell:   "sh",
 					Command: "echo after 1",
 				},
-				OnSuccess: &HookV1{
-					Shell:   "bash",
-					Command: "echo success 1",
-				},
-				OnFailure: &HookV1{
-					Shell:   "bash",
-					Command: "echo failure 1",
-				},
 			},
 			{
 				path:        p2,
@@ -156,14 +128,6 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				After: &HookV1{
 					Shell:   "sh",
 					Command: "echo after 2",
-				},
-				OnSuccess: &HookV1{
-					Shell:   "bash",
-					Command: "echo success 2",
-				},
-				OnFailure: &HookV1{
-					Shell:   "bash",
-					Command: "echo failure 2",
 				},
 			},
 		}, manifests)
@@ -308,7 +272,7 @@ func TestLoadRecipeManifestsInvalidEmptyPaths(t *testing.T) {
 }
 
 func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
-	for _, hook := range []string{"before", "after", "on-success", "on-failure"} {
+	for _, hook := range []string{"before", "after"} {
 		t.Run(fmt.Sprintf("%s/bad_shell", hook), func(t *testing.T) {
 			d := t.TempDir()
 			p := path.Join(d, "app.yaml")

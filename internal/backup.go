@@ -109,9 +109,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 
 	if errs == nil {
 		logger.Info("completed backup", slog.Duration("duration", time.Since(startTime)))
-		if recipe.OnSuccess != nil {
-			logger.Info("running on-success hook", slog.Any("hook", recipe.OnSuccess))
-			err := runHook(*recipe.OnSuccess)
+		if job.OnSuccess != nil {
+			logger.Info("running on-success hook", slog.Any("hook", job.OnSuccess))
+			err := runHook(*job.OnSuccess)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-success hook failed: %w", err))
 			}
@@ -124,9 +124,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			slog.Duration("duration", time.Since(startTime)),
 			slog.Any("error", errs),
 		)
-		if recipe.OnFailure != nil {
-			logger.Info("running on-failure hook", slog.Any("hook", recipe.OnFailure))
-			err := runHook(*recipe.OnFailure)
+		if job.OnFailure != nil {
+			logger.Info("running on-failure hook", slog.Any("hook", job.OnFailure))
+			err := runHook(*job.OnFailure)
 			if err != nil {
 				errs = errors.Join(errs, fmt.Errorf("on-failure hook failed: %w", err))
 			}

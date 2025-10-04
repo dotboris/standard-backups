@@ -34,10 +34,8 @@ var (
 				},
 				"minItems": 1,
 			},
-			"before":     hookSchemaRef,
-			"after":      hookSchemaRef,
-			"on-success": hookSchemaRef,
-			"on-failure": hookSchemaRef,
+			"before": hookSchemaRef,
+			"after":  hookSchemaRef,
 		},
 	}
 	recipeManifestV1Schema jsonschema.Schema
@@ -76,8 +74,6 @@ type RecipeManifestV1 struct {
 	Paths       []string `mapstructure:"paths"`
 	Before      *HookV1  `mapstructure:"before"`
 	After       *HookV1  `mapstructure:"after"`
-	OnSuccess   *HookV1  `mapstructure:"on-success"`
-	OnFailure   *HookV1  `mapstructure:"on-failure"`
 }
 
 func LoadRecipeManifests(dirs []string) ([]RecipeManifestV1, error) {

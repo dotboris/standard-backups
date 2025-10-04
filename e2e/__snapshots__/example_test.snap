@@ -25,10 +25,8 @@
       Paths:       []string{
         "examples",
       },
-      Before:    (*config.HookV1)(nil),
-      After:     (*config.HookV1)(nil),
-      OnSuccess: (*config.HookV1)(nil),
-      OnFailure: (*config.HookV1)(nil),
+      Before: (*config.HookV1)(nil),
+      After:  (*config.HookV1)(nil),
     },
     config.RecipeManifestV1{
       Version:     1,
@@ -37,10 +35,8 @@
       Paths:       []string{
         "/path/to/nextcloud",
       },
-      Before:    (*config.HookV1)(nil),
-      After:     (*config.HookV1)(nil),
-      OnSuccess: (*config.HookV1)(nil),
-      OnFailure: (*config.HookV1)(nil),
+      Before: (*config.HookV1)(nil),
+      After:  (*config.HookV1)(nil),
     },
     config.RecipeManifestV1{
       Version:     1,
@@ -49,10 +45,8 @@
       Paths:       []string{
         "/path/to/paperless",
       },
-      Before:    (*config.HookV1)(nil),
-      After:     (*config.HookV1)(nil),
-      OnSuccess: (*config.HookV1)(nil),
-      OnFailure: (*config.HookV1)(nil),
+      Before: (*config.HookV1)(nil),
+      After:  (*config.HookV1)(nil),
     },
   },
   MainConfig: config.MainConfig{
@@ -85,24 +79,32 @@
           "local",
           "s3",
         },
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
       },
       "paperless": config.JobConfigV1{
         Recipe:   "paperless",
         BackupTo: []string{
           "s3",
         },
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
       },
       "test": config.JobConfigV1{
         Recipe:   "examples",
         BackupTo: []string{
           "local",
         },
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
       },
       "test-restic": config.JobConfigV1{
         Recipe:   "examples",
         BackupTo: []string{
           "local-restic",
         },
+        OnSuccess: (*config.HookV1)(nil),
+        OnFailure: (*config.HookV1)(nil),
       },
     },
     Secrets: map[string]config.SecretConfigV1{
