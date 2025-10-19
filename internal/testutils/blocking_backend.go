@@ -24,7 +24,7 @@ func NewBlockingBackend(t *testing.T, name string, logFile string) *BlockingBack
 	err := os.WriteFile(
 		backendPath,
 		[]byte(Dedent(fmt.Sprintf(`
-			#!/bin/bash
+			#!/usr/bin/env bash
 			name=%s
 			log_file=%s
 			wait_file=%s
