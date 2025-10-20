@@ -134,7 +134,7 @@ func TestExecDestinationNotFound(t *testing.T) {
 func TestExecInnerError(t *testing.T) {
 	crashBackend := path.Join(t.TempDir(), "crash-backend.sh")
 	err := os.WriteFile(crashBackend, []byte(testutils.Dedent(`
-		#!/bin/bash
+		#!/usr/bin/env bash
 		echo oops
 		exit 42
 	`)), 0o755)

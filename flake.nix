@@ -36,6 +36,7 @@
           pkgs.just
           pkgs.rsync
           pkgs.restic
+          pkgs.bash # used in e2e tests
         ];
       };
     });

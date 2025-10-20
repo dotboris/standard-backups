@@ -20,7 +20,7 @@ func NewDumpBackend(t *testing.T) *DumpBackend {
 	err := os.WriteFile(
 		backendPath,
 		[]byte(Dedent(fmt.Sprintf(`
-			#!/bin/bash
+			#!/usr/bin/env bash
 			set -euo pipefail
 			dir='%s'
 			while IFS= read -r line; do
