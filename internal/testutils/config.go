@@ -51,7 +51,11 @@ func (tc *TestConfig) Apply(cmd *exec.Cmd) {
 	if cmd.Env == nil {
 		cmd.Env = append(cmd.Env, os.Environ()...)
 	}
-	cmd.Env = append(cmd.Env, fmt.Sprintf("XDG_DATA_DIRS=%s", tc.DataDir))
+	cmd.Env = append(cmd.Env,
+		fmt.Sprintf("XDG_DATA_DIRS=%s", tc.DataDir),
+		// Erase existing value to avoid host env contamination
+		"XDG_CONFIG_DIRS=",
+	)
 }
 
 func (tc *TestConfig) AddBackend(name string, bin string) {

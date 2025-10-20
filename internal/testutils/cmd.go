@@ -30,5 +30,7 @@ func ApplyExampleConfig(t *testing.T, cmd *exec.Cmd) {
 	}
 	cmd.Env = append(cmd.Env,
 		fmt.Sprintf("XDG_DATA_DIRS=%s/examples/config/share", root),
+		// Erase existing value to avoid host env contamination
+		"XDG_CONFIG_DIRS=",
 	)
 }
