@@ -1,16 +1,11 @@
 package testutils
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
 )
-
-var ExampleConfigArgs = []string{
-	"--config", "examples/config/etc/standard-backups/config.yaml",
-	"--backend-dirs", "examples/config/etc/standard-backups/backends.d",
-	"--recipe-dirs", "examples/config/etc/standard-backups/recipes.d",
-}
 
 func StandardBackups(t *testing.T, args ...string) *exec.Cmd {
 	cmd := exec.Command(
@@ -21,4 +16,19 @@ func StandardBackups(t *testing.T, args ...string) *exec.Cmd {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd
+}
+
+func ApplyExampleConfig(t *testing.T, cmd *exec.Cmd) {
+	root := GetRepoRoot(t)
+	cmd.Args = append(
+		cmd.Args,
+		"--config",
+		fmt.Sprintf("%s/examples/config/etc/standard-backups/config.yaml", root),
+	)
+	if cmd.Env == nil {
+		cmd.Env = append(cmd.Env, os.Environ()...)
+	}
+	cmd.Env = append(cmd.Env,
+		fmt.Sprintf("XDG_DATA_DIRS=%s/examples/config/share", root),
+	)
 }

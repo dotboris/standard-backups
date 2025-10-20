@@ -26,10 +26,10 @@ run *args: build-backends
 
 # Run standard-backups using config in `example/config/`
 run-example *args: build-backends
+  #!/usr/bin/env bash
+  XDG_DATA_DIRS="$PWD/examples/config/share" \
   go run ./cmd/standard-backups \
     --config examples/config/etc/standard-backups/config.yaml \
-    --backend-dirs examples/config/etc/standard-backups/backends.d \
-    --recipe-dirs examples/config/etc/standard-backups/recipes.d \
     {{ args }}
 
 # Run unit tests

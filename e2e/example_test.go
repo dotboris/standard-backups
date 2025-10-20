@@ -20,7 +20,7 @@ import (
 
 func TestExamplePrintConfig(t *testing.T) {
 	cmd := testutils.StandardBackups(t, "print-config", "--no-color")
-	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
+	testutils.ApplyExampleConfig(t, cmd)
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout
 	stderr := bytes.Buffer{}
@@ -93,7 +93,7 @@ func TestBackupRsyncLocal(t *testing.T) {
 	backupsBefore := listBackups()
 
 	cmd := testutils.StandardBackups(t, "backup", "test")
-	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
+	testutils.ApplyExampleConfig(t, cmd)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
 		return
@@ -114,7 +114,7 @@ func TestExampleResticLocal(t *testing.T) {
 	_ = os.RemoveAll(path.Join(destDir))
 
 	cmd := testutils.StandardBackups(t, "backup", "test-restic")
-	cmd.Args = append(cmd.Args, testutils.ExampleConfigArgs...)
+	testutils.ApplyExampleConfig(t, cmd)
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
 		return
