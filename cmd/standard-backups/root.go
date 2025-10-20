@@ -10,9 +10,6 @@ import (
 )
 
 var (
-	configPath   string
-	backendDirs  []string
-	recipeDirs   []string
 	logLevelFlag string
 	logJson      bool
 	noColor      bool
@@ -76,29 +73,7 @@ func init() {
 		&cobra.Group{ID: "config", Title: "Configuration Commands"},
 	)
 
-	rootCmd.PersistentFlags().StringVarP(&configPath,
-		"config", "c",
-		"/etc/standard-backups/config.yaml",
-		"Configuration file path",
-	)
-	rootCmd.PersistentFlags().StringSliceVarP(&backendDirs,
-		"backend-dirs", "B",
-		[]string{
-			"/usr/local/share/standard-backups/backends",
-			"/usr/share/standard-backups/backends",
-			"/etc/standard-backups/backends.d",
-		},
-		"Directories where to search for backends",
-	)
-	rootCmd.PersistentFlags().StringSliceVarP(&recipeDirs,
-		"recipe-dirs", "R",
-		[]string{
-			"/usr/local/share/standard-backups/recipes",
-			"/usr/share/standard-backups/recipes",
-			"/etc/standard-backups/recipes.d",
-		},
-		"Directories where to search for recipes",
-	)
+	addConfigFlags(rootCmd)
 
 	rootCmd.PersistentFlags().BoolVarP(&logJson,
 		"log-json", "j",
