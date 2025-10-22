@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -25,6 +26,42 @@ func setBogusConfig(t *testing.T) {
 	})
 }
 
+func createTestBackendManifest(t *testing.T, dir string, name string, bin string) {
+	t.Helper()
+	p := path.Join(dir, fmt.Sprintf("standard-backups/backends/%s.yaml", name))
+	err := os.MkdirAll(path.Dir(p), 0o755)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	err = os.WriteFile(p, []byte(testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		protocol-version: 1
+		name: %s
+		bin: %s
+	`, name, bin))), 0o644)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+}
+
+func createTestRecipeManifest(t *testing.T, dir string, name string, description string) {
+	t.Helper()
+	p := path.Join(dir, fmt.Sprintf("standard-backups/recipes/%s.yaml", name))
+	err := os.MkdirAll(path.Dir(p), 0o755)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	err = os.WriteFile(p, []byte(testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		name: %s
+		description: %s
+		paths: [bogus]
+	`, name, description))), 0o644)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+}
+
 func TestLoadConfigBackend(t *testing.T) {
 	for _, envVar := range []string{
 		"XDG_CONFIG_HOME",
@@ -37,21 +74,7 @@ func TestLoadConfigBackend(t *testing.T) {
 
 			dir := t.TempDir()
 			t.Setenv(envVar, dir)
-
-			p := path.Join(dir, "standard-backups/backends/my-backend.yaml")
-			err := os.MkdirAll(path.Dir(p), 0o755)
-			if !assert.NoError(t, err) {
-				return
-			}
-			err = os.WriteFile(p, []byte(testutils.DedentYaml(`
-				version: 1
-				protocol-version: 1
-				name: my-backend
-				bin: bogus
-			`)), 0o644)
-			if !assert.NoError(t, err) {
-				return
-			}
+			createTestBackendManifest(t, dir, "my-backend", "bogus")
 
 			c, err := loadConfig()
 			if !assert.NoError(t, err) {
@@ -78,20 +101,7 @@ func TestLoadConfigRecipes(t *testing.T) {
 
 			dir := t.TempDir()
 			t.Setenv(envVar, dir)
-
-			p := path.Join(dir, "standard-backups/recipes/my-recipe.yaml")
-			err := os.MkdirAll(path.Dir(p), 0o755)
-			if !assert.NoError(t, err) {
-				return
-			}
-			err = os.WriteFile(p, []byte(testutils.DedentYaml(`
-				version: 1
-				name: my-recipe
-				paths: [bogus]
-			`)), 0o644)
-			if !assert.NoError(t, err) {
-				return
-			}
+			createTestRecipeManifest(t, dir, "my-recipe", "bogus")
 
 			c, err := loadConfig()
 			if !assert.NoError(t, err) {
