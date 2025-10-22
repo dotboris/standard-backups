@@ -115,3 +115,163 @@ func TestLoadConfigRecipes(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadConfigBackendLoadOrder(t *testing.T) {
+	getBackendBin := func() (string, error) {
+		t.Helper()
+		c, err := loadConfig()
+		if err != nil {
+			return "", err
+		}
+		b, err := c.GetBackendManifest("my-backend")
+		if err != nil {
+			return "", err
+		}
+		return b.Bin, nil
+	}
+
+	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Setenv("XDG_CONFIG_DIRS", "")
+	t.Setenv("XDG_DATA_HOME", "")
+	t.Setenv("XDG_DATA_DIRS", "")
+
+	setBogusConfig(t)
+
+	bin, err := getBackendBin()
+	assert.Empty(t, bin)
+	assert.Error(t, err)
+
+	dataDir1 := t.TempDir()
+	createTestBackendManifest(t, dataDir1, "my-backend", "data dir 1")
+	t.Setenv("XDG_DATA_DIRS", dataDir1)
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data dir 1", bin)
+
+	dataDir2 := t.TempDir()
+	createTestBackendManifest(t, dataDir2, "my-backend", "data dir 2")
+	t.Setenv("XDG_DATA_DIRS", fmt.Sprintf("%s:%s", dataDir2, dataDir1))
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data dir 2", bin)
+
+	dataHome := t.TempDir()
+	createTestBackendManifest(t, dataHome, "my-backend", "data home")
+	t.Setenv("XDG_DATA_HOME", dataHome)
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data home", bin)
+
+	configDir1 := t.TempDir()
+	createTestBackendManifest(t, configDir1, "my-backend", "config dir 1")
+	t.Setenv("XDG_CONFIG_DIRS", configDir1)
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config dir 1", bin)
+
+	configDir2 := t.TempDir()
+	createTestBackendManifest(t, configDir2, "my-backend", "config dir 2")
+	t.Setenv("XDG_CONFIG_DIRS", fmt.Sprintf("%s:%s", configDir2, configDir1))
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config dir 2", bin)
+
+	configHome := t.TempDir()
+	createTestBackendManifest(t, configHome, "my-backend", "config home")
+	t.Setenv("XDG_CONFIG_HOME", configHome)
+	bin, err = getBackendBin()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config home", bin)
+}
+
+func TestLoadConfigRecipesLoadOrder(t *testing.T) {
+	getRecipeDescription := func() (string, error) {
+		t.Helper()
+		c, err := loadConfig()
+		if err != nil {
+			return "", err
+		}
+		r, err := c.GetRecipeManifest("my-recipe")
+		if err != nil {
+			return "", err
+		}
+		return r.Description, nil
+	}
+
+	t.Setenv("XDG_CONFIG_HOME", "")
+	t.Setenv("XDG_CONFIG_DIRS", "")
+	t.Setenv("XDG_DATA_HOME", "")
+	t.Setenv("XDG_DATA_DIRS", "")
+
+	setBogusConfig(t)
+
+	description, err := getRecipeDescription()
+	assert.Empty(t, description)
+	assert.Error(t, err)
+
+	dataDir1 := t.TempDir()
+	createTestRecipeManifest(t, dataDir1, "my-recipe", "data dir 1")
+	t.Setenv("XDG_DATA_DIRS", dataDir1)
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data dir 1", description)
+
+	dataDir2 := t.TempDir()
+	createTestRecipeManifest(t, dataDir2, "my-recipe", "data dir 2")
+	t.Setenv("XDG_DATA_DIRS", fmt.Sprintf("%s:%s", dataDir2, dataDir1))
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data dir 2", description)
+
+	dataHome := t.TempDir()
+	createTestRecipeManifest(t, dataHome, "my-recipe", "data home")
+	t.Setenv("XDG_DATA_HOME", dataHome)
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "data home", description)
+
+	configDir1 := t.TempDir()
+	createTestRecipeManifest(t, configDir1, "my-recipe", "config dir 1")
+	t.Setenv("XDG_CONFIG_DIRS", configDir1)
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config dir 1", description)
+
+	configDir2 := t.TempDir()
+	createTestRecipeManifest(t, configDir2, "my-recipe", "config dir 2")
+	t.Setenv("XDG_CONFIG_DIRS", fmt.Sprintf("%s:%s", configDir2, configDir1))
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config dir 2", description)
+
+	configHome := t.TempDir()
+	createTestRecipeManifest(t, configHome, "my-recipe", "config home")
+	t.Setenv("XDG_CONFIG_HOME", configHome)
+	description, err = getRecipeDescription()
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "config home", description)
+}
