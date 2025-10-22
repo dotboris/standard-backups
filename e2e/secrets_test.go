@@ -48,12 +48,12 @@ func TestSecretsPassedToBackend(t *testing.T) {
 	`), secretFile1, secretFile2))
 
 	cmd := testutils.StandardBackups(t, "validate-config")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	err = cmd.Run()
 	assert.NoError(t, err)
 
 	cmd = testutils.StandardBackups(t, "backup", "my-job")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	err = cmd.Run()
 	if assert.NoError(t, err) {
 		assert.Equal(t, map[string]any{

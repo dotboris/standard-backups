@@ -57,7 +57,7 @@ func TestResticBackup(t *testing.T) {
 	`, repoDir)))
 
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
 		return
@@ -161,7 +161,7 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	`, repoDir)))
 
 	cmd = testutils.StandardBackups(t, "backup", "my-job")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
 		return
@@ -205,7 +205,7 @@ func TestResticBackupForget(t *testing.T) {
 
 	for range 2 {
 		cmd := testutils.StandardBackups(t, "backup", "my-job")
-		cmd.Args = append(cmd.Args, tc.Args()...)
+		tc.Apply(cmd)
 		err := cmd.Run()
 		if !assert.NoError(t, err) {
 			return
@@ -256,7 +256,7 @@ func TestResticExec(t *testing.T) {
 	`, repoDir)))
 
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	err := cmd.Run()
 	if !assert.NoError(t, err, "failed to backup in %s") {
 		return
@@ -280,7 +280,7 @@ func TestResticExec(t *testing.T) {
 
 	// Check that exec returns the same thing
 	cmd = testutils.StandardBackups(t, "exec", "-d", "my-dest")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	cmd.Args = append(cmd.Args, "--", "snapshots", "--json")
 	stdout = bytes.NewBufferString("")
 	cmd.Stdout = stdout

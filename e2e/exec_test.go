@@ -33,7 +33,7 @@ func TestExecWithBackend(t *testing.T) {
 	`))
 
 	cmd := testutils.StandardBackups(t, "exec", "-b", "test")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	cmd.Args = append(cmd.Args, "--", "foo", "bar", "--baz", "--qux=2", "-x")
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
@@ -73,7 +73,7 @@ func TestExecWithDestination(t *testing.T) {
 	`))
 
 	cmd := testutils.StandardBackups(t, "exec", "-d", "my-dest")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	cmd.Args = append(cmd.Args, "--", "foo", "bar", "--baz", "--qux=2", "-x")
 	err := cmd.Run()
 	if !assert.NoError(t, err) {
@@ -105,7 +105,7 @@ func TestExecBackendNotFound(t *testing.T) {
 	`))
 
 	cmd := testutils.StandardBackups(t, "exec", "-b", "does-not-exist")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	stderr := bytes.Buffer{}
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -123,7 +123,7 @@ func TestExecDestinationNotFound(t *testing.T) {
 	`))
 
 	cmd := testutils.StandardBackups(t, "exec", "-d", "does-not-exist")
-	cmd.Args = append(cmd.Args, tc.Args()...)
+	tc.Apply(cmd)
 	stderr := bytes.Buffer{}
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -165,7 +165,7 @@ func TestExecInnerError(t *testing.T) {
 			`))
 
 			cmd := testutils.StandardBackups(t, "exec")
-			cmd.Args = append(cmd.Args, tc.Args()...)
+			tc.Apply(cmd)
 			cmd.Args = append(cmd.Args, testCase.args...)
 			stdout := bytes.Buffer{}
 			cmd.Stdout = &stdout
