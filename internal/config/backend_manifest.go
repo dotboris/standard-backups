@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -76,13 +77,16 @@ func LoadBackendManifests(dirs []string) ([]BackendManifestV1, error) {
 		}
 
 		for _, entry := range entries {
-			if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
-				fullPath := path.Join(dir, entry.Name())
+			fullPath := path.Join(dir, entry.Name())
+			if strings.HasSuffix(entry.Name(), ".yaml") {
+				slog.Debug("loading backend", slog.String("path", fullPath))
 				backendManifest, err := loadBackendManifest(fullPath)
 				if err != nil {
 					return nil, err
 				}
 				manifests = append(manifests, *backendManifest)
+			} else {
+				slog.Debug("skipped while loading backends", slog.String("path", fullPath))
 			}
 		}
 	}
