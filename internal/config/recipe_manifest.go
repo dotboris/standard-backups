@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -88,13 +89,16 @@ func LoadRecipeManifests(dirs []string) ([]RecipeManifestV1, error) {
 		}
 
 		for _, entry := range entries {
-			if entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".yaml") {
-				fullPath := path.Join(dir, entry.Name())
+			fullPath := path.Join(dir, entry.Name())
+			if strings.HasSuffix(entry.Name(), ".yaml") {
+				slog.Debug("loading recipe", slog.String("path", fullPath))
 				manifest, err := loadRecipeManifest(fullPath)
 				if err != nil {
 					return nil, err
 				}
 				manifests = append(manifests, *manifest)
+			} else {
+				slog.Debug("skipped while loading recipes", slog.String("path", fullPath))
 			}
 		}
 	}
