@@ -86,6 +86,7 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 			err = client.Backup(
 				&proto.BackupRequest{
 					Paths:           recipe.Paths,
+					Exclude:         recipe.Exclude,
 					DestinationName: destName,
 					JobName:         jobName,
 					RawOptions:      dest.Options,

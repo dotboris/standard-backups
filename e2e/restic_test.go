@@ -32,7 +32,7 @@ func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
 	return output.Id, nil
 }
 
-func TestResticBackup(t *testing.T) {
+func TestResticBackupBase(t *testing.T) {
 	repoDir := t.TempDir()
 
 	tc := testutils.NewTestConfig(t)
@@ -60,7 +60,7 @@ func TestResticBackup(t *testing.T) {
 		paths:
 			- %s
 		exclude:
-		  - not-me.txt
+		  - 'not-me.txt'
 	`, sourceDir)))
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
@@ -141,7 +141,7 @@ func TestResticBackup(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "back me up", string(restoredFile))
-	_, err = os.Stat(path.Join(sourceDir, "not-me.txt"))
+	_, err = os.Stat(path.Join(restoreDir, "not-me.txt"))
 	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 

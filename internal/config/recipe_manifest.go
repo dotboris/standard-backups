@@ -35,6 +35,12 @@ var (
 				},
 				"minItems": 1,
 			},
+			"exclude": map[string]any{
+				"type": "array",
+				"items": map[string]any{
+					"type": "string",
+				},
+			},
 			"before": hookSchemaRef,
 			"after":  hookSchemaRef,
 		},
@@ -73,6 +79,7 @@ type RecipeManifestV1 struct {
 	Name        string   `mapstructure:"name"`
 	Description string   `mapstructure:"description"`
 	Paths       []string `mapstructure:"paths"`
+	Exclude     []string `mapstructure:"exclude"`
 	Before      *HookV1  `mapstructure:"before"`
 	After       *HookV1  `mapstructure:"after"`
 }

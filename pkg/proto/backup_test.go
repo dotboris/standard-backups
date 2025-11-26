@@ -10,6 +10,7 @@ import (
 
 var testBackupReq = &BackupRequest{
 	Paths:           []string{"/foo", "/bar"},
+	Exclude:         []string{"biz", "baz"},
 	DestinationName: "my-dest",
 	JobName:         "my-job",
 	RawOptions: map[string]any{

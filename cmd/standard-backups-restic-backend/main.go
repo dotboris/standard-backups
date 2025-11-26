@@ -46,6 +46,9 @@ var Backend = &proto.BackendImpl{
 		}
 
 		backupArgs := []string{"backup"}
+		for _, exclude := range req.Exclude {
+			backupArgs = append(backupArgs, "--exclude", exclude)
+		}
 		backupArgs = append(backupArgs, tagArgs...)
 		backupArgs = append(backupArgs, req.Paths...)
 		err = restic(options.Repo, options.Env, backupArgs...)
