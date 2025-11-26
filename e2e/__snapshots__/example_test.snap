@@ -25,9 +25,11 @@
       Paths:       []string{
         "examples",
       },
-      Exclude: []string(nil),
-      Before:  (*config.HookV1)(nil),
-      After:   (*config.HookV1)(nil),
+      Exclude: []string{
+        "config.yaml",
+      },
+      Before: (*config.HookV1)(nil),
+      After:  (*config.HookV1)(nil),
     },
     config.RecipeManifestV1{
       Version:     1,

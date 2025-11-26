@@ -30,7 +30,18 @@ var Backend = &proto.BackendImpl{
 		if err != nil {
 			return err
 		}
-		err = rsync(req.Paths, dest)
+
+		args := []string{"-av"}
+		for _, exclude := range req.Exclude {
+			args = append(args, "--exclude", exclude)
+		}
+		args = append(args, req.Paths...)
+		args = append(args, dest)
+		cmd := exec.Command("rsync", args...)
+		cmd.Stdout = os.Stderr
+		cmd.Stderr = os.Stderr
+		fmt.Printf("running rsync: %s\n", cmd.String())
+		err = cmd.Run()
 		if err != nil {
 			return err
 		}
