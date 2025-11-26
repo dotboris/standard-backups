@@ -128,6 +128,84 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	}
 }
 
+func TestLoadRecipeManifestsExclude(t *testing.T) {
+	testCases := []struct {
+		name     string
+		content  string
+		expected []string
+	}{
+		{
+			name: "not-set",
+			content: testutils.DedentYaml(`
+				version: 1
+				name: example 1
+				description: the first example
+				paths: [/app/to/backup/1]
+			`),
+			expected: nil,
+		},
+		{
+			name: "empty",
+			content: testutils.DedentYaml(`
+				version: 1
+				name: example 1
+				description: the first example
+				paths: [/app/to/backup/1]
+				exclude: []
+			`),
+			expected: []string{},
+		},
+		{
+			name: "one-value",
+			content: testutils.DedentYaml(`
+				version: 1
+				name: example 1
+				description: the first example
+				paths: [/app/to/backup/1]
+				exclude:
+					- value 1
+			`),
+			expected: []string{"value 1"},
+		},
+		{
+			name: "two-values",
+			content: testutils.DedentYaml(`
+				version: 1
+				name: example 1
+				description: the first example
+				paths: [/app/to/backup/1]
+				exclude:
+					- value 1
+					- value 2
+			`),
+			expected: []string{"value 1", "value 2"},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			d := t.TempDir()
+			p := path.Join(d, "example.yaml")
+			err := os.WriteFile(p, []byte(testCase.content), 0o644)
+			if !assert.NoError(t, err) {
+				return
+			}
+			manifests, err := LoadRecipeManifests([]string{d})
+			if assert.NoError(t, err) {
+				assert.Equal(t, []RecipeManifestV1{
+					{
+						path:        p,
+						Version:     1,
+						Name:        "example 1",
+						Description: "the first example",
+						Paths:       []string{"/app/to/backup/1"},
+						Exclude:     testCase.expected,
+					},
+				}, manifests)
+			}
+		})
+	}
+}
+
 func TestLoadRecipeManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	err := os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0o644)

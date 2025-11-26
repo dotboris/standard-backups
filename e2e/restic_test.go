@@ -32,12 +32,36 @@ func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
 	return output.Id, nil
 }
 
-func TestResticBackup(t *testing.T) {
+func TestResticBackupBase(t *testing.T) {
 	repoDir := t.TempDir()
 
 	tc := testutils.NewTestConfig(t)
 	tc.AddBackend("restic", "dist/standard-backups-restic-backend")
-	sourceDir := tc.AddBogusRecipe(t, "bogus")
+	sourceDir := t.TempDir()
+	err := os.WriteFile(
+		path.Join(sourceDir, "back-me-up.txt"),
+		[]byte("back me up"),
+		0o644,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = os.WriteFile(
+		path.Join(sourceDir, "not-me.txt"),
+		[]byte("can't touch this"),
+		0o644,
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	tc.AddRecipe("bogus", testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		name: bogus
+		paths:
+			- %s
+		exclude:
+			- 'not-me.txt'
+	`, sourceDir)))
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
 		secrets:
@@ -58,7 +82,7 @@ func TestResticBackup(t *testing.T) {
 
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
-	err := cmd.Run()
+	err = cmd.Run()
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -117,6 +141,8 @@ func TestResticBackup(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "back me up", string(restoredFile))
+	_, err = os.Stat(path.Join(restoreDir, "not-me.txt"))
+	assert.ErrorIs(t, err, os.ErrNotExist)
 }
 
 func TestResticBackupPreservesExistingRepo(t *testing.T) {

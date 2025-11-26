@@ -3,3 +3,5 @@ name: examples
 description: Backs up all the example files in this repository
 paths:
   - examples
+exclude:
+  - config.yaml

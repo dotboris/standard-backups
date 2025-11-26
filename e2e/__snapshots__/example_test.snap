@@ -25,6 +25,9 @@
       Paths:       []string{
         "examples",
       },
+      Exclude: []string{
+        "config.yaml",
+      },
       Before: (*config.HookV1)(nil),
       After:  (*config.HookV1)(nil),
     },
@@ -35,8 +38,9 @@
       Paths:       []string{
         "/path/to/nextcloud",
       },
-      Before: (*config.HookV1)(nil),
-      After:  (*config.HookV1)(nil),
+      Exclude: []string(nil),
+      Before:  (*config.HookV1)(nil),
+      After:   (*config.HookV1)(nil),
     },
     config.RecipeManifestV1{
       Version:     1,
@@ -45,8 +49,9 @@
       Paths:       []string{
         "/path/to/paperless",
       },
-      Before: (*config.HookV1)(nil),
-      After:  (*config.HookV1)(nil),
+      Exclude: []string(nil),
+      Before:  (*config.HookV1)(nil),
+      After:   (*config.HookV1)(nil),
     },
   },
   MainConfig: config.MainConfig{
