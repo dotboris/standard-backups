@@ -183,7 +183,6 @@ func TestLoadRecipeManifestsExclude(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-
 			d := t.TempDir()
 			p := path.Join(d, "example.yaml")
 			err := os.WriteFile(p, []byte(testCase.content), 0o644)
