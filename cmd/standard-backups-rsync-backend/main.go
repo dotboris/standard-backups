@@ -52,15 +52,3 @@ var Backend = &proto.BackendImpl{
 func main() {
 	Backend.Execute()
 }
-
-func rsync(sources []string, dest string) error {
-	args := []string{"-av"}
-	args = append(args, sources...)
-	args = append(args, dest)
-	cmd := exec.Command("rsync", args...)
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
-	fmt.Printf("running rsync: %s\n", cmd.String())
-	err := cmd.Run()
-	return err
-}
