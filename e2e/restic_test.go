@@ -60,7 +60,7 @@ func TestResticBackupBase(t *testing.T) {
 		paths:
 			- %s
 		exclude:
-		  - 'not-me.txt'
+			- 'not-me.txt'
 	`, sourceDir)))
 	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
