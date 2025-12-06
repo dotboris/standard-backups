@@ -4,9 +4,9 @@ go 1.24.3
 
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0
-	github.com/gkampitakis/go-snaps v0.5.15
+	github.com/gkampitakis/go-snaps v0.5.18
 	github.com/go-viper/mapstructure/v2 v2.4.0
-	github.com/goccy/go-yaml v1.18.0
+	github.com/goccy/go-yaml v1.19.0
 	github.com/k0kubun/pp/v3 v3.5.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/phsym/console-slog v0.3.1
@@ -27,6 +27,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
+	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
