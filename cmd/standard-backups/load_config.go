@@ -12,13 +12,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configPath string
+var (
+	configPath  string
+	showSecrets bool
+)
 
 func addConfigFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&configPath,
 		"config", "c",
 		"/etc/standard-backups/config.yaml",
 		"Configuration file path",
+	)
+	cmd.PersistentFlags().BoolVar(&showSecrets,
+		"show-secrets", false,
+		"Allow secrets to be printed to stdout and stderr",
 	)
 }
 
@@ -74,16 +81,18 @@ func loadConfig() (*config.Config, error) {
 		return nil, err
 	}
 
-	for name, secret := range c.Secrets {
-		err = redact.AddSecrets(secret)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"failed to register secret named %s for redaction: %w",
-				name,
-				err,
-			)
+	if !showSecrets {
+		for name, secret := range c.Secrets {
+			err = redact.AddSecrets(secret)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"failed to register secret named %s for redaction: %w",
+					name,
+					err,
+				)
+			}
+			slog.Debug("redacting secret", slog.String("name", name))
 		}
-		slog.Debug("redacting secret", slog.String("name", name))
 	}
 
 	return c, nil
