@@ -5,20 +5,22 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sync"
 
 	"golang.org/x/text/transform"
 )
 
-type Redact struct {
+type RedactTransformer struct {
 	transform.NopResetter
-	secrets [][]byte
+	secrets     [][]byte
+	secretsLock sync.RWMutex
 }
 
 var ErrEmptySecret = errors.New("secret is empty")
 
 const REPLACE = "***"
 
-func New(secrets ...string) (*Redact, error) {
+func NewTransformer(secrets ...string) (*RedactTransformer, error) {
 	bSecrets := make([][]byte, len(secrets))
 	for i, s := range secrets {
 		b, err := convertSecret(s)
@@ -28,7 +30,7 @@ func New(secrets ...string) (*Redact, error) {
 		bSecrets[i] = b
 	}
 
-	return &Redact{
+	return &RedactTransformer{
 		secrets: bSecrets,
 	}, nil
 }
@@ -40,8 +42,25 @@ func convertSecret(s string) ([]byte, error) {
 	return []byte(s), nil
 }
 
+func (r *RedactTransformer) AddSecrets(secrets ...string) error {
+	r.secretsLock.Lock()
+	defer r.secretsLock.Unlock()
+
+	for i, s := range secrets {
+		b, err := convertSecret(s)
+		if err != nil {
+			return fmt.Errorf("bad secret at index %d: %w", i, err)
+		}
+		r.secrets = append(r.secrets, b)
+	}
+	return nil
+}
+
 // Transform implements [transform.Transformer].
-func (r *Redact) Transform(dst []byte, src []byte, atEOF bool) (int, int, error) {
+func (r *RedactTransformer) Transform(dst []byte, src []byte, atEOF bool) (int, int, error) {
+	r.secretsLock.RLock()
+	defer r.secretsLock.RUnlock()
+
 	if len(r.secrets) == 0 {
 		n, err := checkCopy(dst, src)
 		return n, n, err

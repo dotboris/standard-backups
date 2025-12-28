@@ -119,6 +119,9 @@
       },
     },
   },
+  Secrets: map[string]string{
+    "localResticPassword": "supersecret",
+  },
 }
 
 ---

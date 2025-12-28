@@ -41,10 +41,11 @@ test:
 
 # Run end-to-end tests
 [group("test")]
-e2e: build-all
+e2e filter="": build-all
   gotestsum \
     --format standard-verbose \
-    --packages $(go list ./... | grep 'standard-backups/e2e')
+    --packages $(go list ./... | grep 'standard-backups/e2e') \
+    {{ if filter == "" {""} else { "-- -run " + filter } }}
 
 # Runs all tests
 [group("test")]

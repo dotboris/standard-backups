@@ -9,13 +9,13 @@ import (
 )
 
 func TestEmptySecretError(t *testing.T) {
-	r, err := New("")
+	r, err := NewTransformer("")
 	assert.Nil(t, r)
 	assert.ErrorIs(t, err, ErrEmptySecret)
 }
 
 func TestNoopWithNoSecrets(t *testing.T) {
-	r, err := New()
+	r, err := NewTransformer()
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -29,7 +29,7 @@ func TestNoopWithNoSecrets(t *testing.T) {
 }
 
 func TestNoopWithNoMatch(t *testing.T) {
-	r, err := New("bogus")
+	r, err := NewTransformer("bogus")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -70,7 +70,7 @@ func TestRedact(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			r, err := New(c.secrets...)
+			r, err := NewTransformer(c.secrets...)
 			if !assert.NoError(t, err) {
 				return
 			}
@@ -166,7 +166,7 @@ func TestOverlapSecretAcrossWrites(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			r, err := New(c.secrets...)
+			r, err := NewTransformer(c.secrets...)
 			if !assert.NoError(t, err) {
 				return
 			}

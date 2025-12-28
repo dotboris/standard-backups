@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/dotboris/standard-backups/internal/config"
+	"github.com/dotboris/standard-backups/internal/redact"
 )
 
 type BackendClient struct {
@@ -30,7 +31,7 @@ func (bc *BackendClient) cmd(command string, env []string) *exec.Cmd {
 		fmt.Sprintf("STANDARD_BACKUPS_COMMAND=%s", command),
 	)
 	cmd.Env = append(cmd.Env, env...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = redact.Stdout
+	cmd.Stderr = redact.Stderr
 	return cmd
 }

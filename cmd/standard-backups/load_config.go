@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/dotboris/standard-backups/internal/config"
+	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/spf13/cobra"
 )
 
@@ -63,9 +65,26 @@ func loadConfig() (*config.Config, error) {
 		slog.Any("backendDirs", backendDirs),
 		slog.Any("recipeDirs", recipeDirs),
 	)
-	return config.LoadConfig(
+	c, err := config.LoadConfig(
 		configPath,
 		backendDirs,
 		recipeDirs,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	for name, secret := range c.Secrets {
+		err = redact.AddSecrets(secret)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"failed to register secret named %s for redaction: %w",
+				name,
+				err,
+			)
+		}
+		slog.Debug("redacting secret", slog.String("name", name))
+	}
+
+	return c, nil
 }
