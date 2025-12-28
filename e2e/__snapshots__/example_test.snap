@@ -21,6 +21,7 @@
   },
   Recipes: []config.RecipeManifestV1{
     config.RecipeManifestV1{
+      Path:        "[root]/examples/config/share/standard-backups/recipes/internal-code.yaml",
       Version:     1,
       Name:        "examples",
       Description: "Backs up all the example files in this repository",
@@ -34,6 +35,7 @@
       After:  (*config.HookV1)(nil),
     },
     config.RecipeManifestV1{
+      Path:        "[root]/examples/config/share/standard-backups/recipes/nextcloud.yaml",
       Version:     1,
       Name:        "nextcloud",
       Description: "",
@@ -41,10 +43,17 @@
         "/path/to/nextcloud",
       },
       Exclude: []string(nil),
-      Before:  (*config.HookV1)(nil),
-      After:   (*config.HookV1)(nil),
+      Before:  &config.HookV1{
+        Shell:   "bash",
+        Command: "occ maintenance:mode --on\necho maintenance mode is ON\n",
+      },
+      After: &config.HookV1{
+        Shell:   "bash",
+        Command: "occ maintenance:mode --off\necho maintenance mode is OFF\n",
+      },
     },
     config.RecipeManifestV1{
+      Path:        "[root]/examples/config/share/standard-backups/recipes/paperless.yaml",
       Version:     1,
       Name:        "paperless",
       Description: "",
@@ -140,5 +149,34 @@ rsync ([root]/examples/config/share/standard-backups/backends/rsync.yaml)
   bin: ./dist/standard-backups-rsync-backend
   version: 1
   protocol version: 1
+
+---
+
+[TestExampleListRecipes - 1]
+examples ([root]/examples/config/share/standard-backups/recipes/internal-code.yaml)
+  description: Backs up all the example files in this repository
+  version: 1
+  paths: 
+    - examples
+  exclude: 
+    - config.yaml
+
+nextcloud ([root]/examples/config/share/standard-backups/recipes/nextcloud.yaml)
+  description: (no description)
+  version: 1
+  paths: 
+    - /path/to/nextcloud
+  before: (bash)
+    occ maintenance:mode --on
+    echo maintenance mode is ON
+  after: (bash)
+    occ maintenance:mode --off
+    echo maintenance mode is OFF
+
+paperless ([root]/examples/config/share/standard-backups/recipes/paperless.yaml)
+  description: (no description)
+  version: 1
+  paths: 
+    - /path/to/paperless
 
 ---

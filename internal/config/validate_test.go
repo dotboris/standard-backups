@@ -32,7 +32,7 @@ func TestValidateSuccess(t *testing.T) {
 		},
 		Recipes: []RecipeManifestV1{
 			{
-				path:    "bogus/recipes.d/r.yaml",
+				Path:    "bogus/recipes.d/r.yaml",
 				Version: 0,
 				Name:    "r",
 				Paths:   []string{"bogus/back-me-up"},

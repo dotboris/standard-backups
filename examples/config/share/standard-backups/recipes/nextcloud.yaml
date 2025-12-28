@@ -2,3 +2,13 @@ version: 1
 name: nextcloud
 paths:
   - /path/to/nextcloud
+before:
+  shell: bash
+  command: |
+    occ maintenance:mode --on
+    echo maintenance mode is ON
+after:
+  shell: bash
+  command: |
+    occ maintenance:mode --off
+    echo maintenance mode is OFF
