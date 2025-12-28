@@ -9,6 +9,7 @@ type Config struct {
 	Backends   []BackendManifestV1
 	Recipes    []RecipeManifestV1
 	MainConfig MainConfig
+	Secrets    map[string]string
 }
 
 func LoadConfig(
@@ -41,6 +42,7 @@ func LoadConfig(
 		Backends:   backends,
 		Recipes:    recipes,
 		MainConfig: *mainConfig,
+		Secrets:    secrets,
 	}, nil
 }
 

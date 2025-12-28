@@ -67,7 +67,7 @@
         Backend: "restic",
         Options: map[string]interface {}{
           "env": map[string]interface {}{
-            "RESTIC_PASSWORD": "supersecret",
+            "RESTIC_PASSWORD": "***",
           },
           "repo": "./dist/backups/restic-local",
         },
@@ -115,9 +115,12 @@
     Secrets: map[string]config.SecretConfigV1{
       "localResticPassword": config.SecretConfigV1{
         FromFile: "",
-        Literal:  "supersecret",
+        Literal:  "***",
       },
     },
+  },
+  Secrets: map[string]string{
+    "localResticPassword": "***",
   },
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/k0kubun/pp/v3"
 	"github.com/spf13/cobra"
 )
@@ -15,6 +16,7 @@ var printConfigCmd = &cobra.Command{
 			return err
 		}
 		pp := pp.New()
+		pp.SetOutput(redact.Stdout)
 		pp.SetColoringEnabled(!noColor)
 		pp.SetExportedOnly(true)
 		pp.SetOmitEmpty(false)
