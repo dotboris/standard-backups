@@ -103,25 +103,27 @@ func TestOverlapSecretAcrossWrites(t *testing.T) {
 			expected: "hello *** world",
 		},
 		{
-			name: "multiple matching secrets",
+			name: "multiple matching prefixes",
 			secrets: []string{
-				"boop",
-				"bboop",
-				"beboop",
-				"beeboop",
 				"beepboop",
+				// The following don't match fully but their prefix does
+				"beepnope",
+				"eepnope",
+				"epnope",
+				"pnope",
 			},
 			writes:   []string{"hello beep", "boop world"},
 			expected: "hello *** world",
 		},
 		{
-			name: "multiple matching secrets reverse",
+			name: "multiple matching prefixes reverse",
 			secrets: []string{
-				"beepboop",
-				"beeboop",
-				"beboop",
-				"bboop",
-				"boop",
+				// The following don't match fully but their prefix does
+				"pnope",
+				"epnope",
+				"eepnope",
+				"beepnope",
+				"beepboop", // full match
 			},
 			writes:   []string{"hello beep", "boop world"},
 			expected: "hello *** world",
@@ -139,16 +141,15 @@ func TestOverlapSecretAcrossWrites(t *testing.T) {
 			expected: "hello AAAAB world",
 		},
 		{
-			name: "multiple matching secrets no match",
+			name: "multiple matching prefixes no match",
 			secrets: []string{
-				"boop",
-				"bboop",
-				"beboop",
-				"beeboop",
-				"beepboop",
+				"beepnope",
+				"eepnope",
+				"epnope",
+				"pnope",
 			},
-			writes:   []string{"hello beep", "beep world"},
-			expected: "hello beepbeep world",
+			writes:   []string{"hello beep", "boop world"},
+			expected: "hello beepboop world",
 		},
 		{
 			name:     "no match up to the end",
@@ -174,7 +175,6 @@ func TestOverlapSecretAcrossWrites(t *testing.T) {
 			w := transform.NewWriter(res, r)
 
 			for _, write := range c.writes {
-
 				n, err := w.Write([]byte(write))
 				if !assert.NoError(t, err) {
 					return
