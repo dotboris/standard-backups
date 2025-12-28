@@ -78,7 +78,6 @@ func TestRedactSecretsBackend(t *testing.T) {
 func TestRedactSecretsHooks(t *testing.T) {
 	for _, exit := range []int{0, 42} {
 		t.Run(fmt.Sprintf("exit %d", exit), func(t *testing.T) {
-
 			tc := testutils.NewTestConfig(t)
 			d := t.TempDir()
 			err := os.WriteFile(
