@@ -2,10 +2,10 @@ package internal
 
 import (
 	"errors"
-	"os"
 	"os/exec"
 
 	"github.com/dotboris/standard-backups/internal/config"
+	"github.com/dotboris/standard-backups/internal/redact"
 )
 
 var errUnsupportedShell = errors.New("unsupported shell")
@@ -27,7 +27,7 @@ func runHook(hook config.HookV1) error {
 	}
 
 	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = redact.Stderr
+	cmd.Stderr = redact.Stderr
 	return cmd.Run()
 }
