@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/phsym/console-slog"
 	"github.com/spf13/cobra"
 )
@@ -33,11 +34,12 @@ func setupLogging() error {
 		)
 	}
 
+	w := redact.Stderr
 	var handler slog.Handler
 	if logJson {
-		handler = slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: level})
+		handler = slog.NewJSONHandler(w, &slog.HandlerOptions{Level: level})
 	} else {
-		handler = console.NewHandler(os.Stderr, &console.HandlerOptions{
+		handler = console.NewHandler(w, &console.HandlerOptions{
 			Level:   level,
 			NoColor: noColor,
 		})
