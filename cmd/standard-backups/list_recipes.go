@@ -36,12 +36,12 @@ var listRecipesCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s (%s)\n",
 				color.Bold.Text(recipe.Name),
 				color.Cyan.Text(recipe.Path))
+			fmt.Fprintf(w, "  %s: v%d\n",
+				color.Magenta.Text("version"),
+				recipe.Version)
 			fmt.Fprintf(w, "  %s: %s\n",
 				color.Magenta.Text("description"),
 				description)
-			fmt.Fprintf(w, "  %s: %d\n",
-				color.Magenta.Text("version"),
-				recipe.Version)
 
 			fmt.Fprintf(w, "  %s: \n", color.Magenta.Text("paths"))
 			for _, p := range recipe.Paths {

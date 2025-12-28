@@ -139,31 +139,29 @@
 
 [TestExampleListBackends - 1]
 restic ([root]/examples/config/share/standard-backups/backends/restic.yaml)
+  version: v1 (protocol=v1)
   description: (no description)
   bin: ./dist/standard-backups-restic-backend
-  version: 1
-  protocol version: 1
 
 rsync ([root]/examples/config/share/standard-backups/backends/rsync.yaml)
+  version: v1 (protocol=v1)
   description: (no description)
   bin: ./dist/standard-backups-rsync-backend
-  version: 1
-  protocol version: 1
 
 ---
 
 [TestExampleListRecipes - 1]
 examples ([root]/examples/config/share/standard-backups/recipes/internal-code.yaml)
+  version: v1
   description: Backs up all the example files in this repository
-  version: 1
   paths: 
     - examples
   exclude: 
     - config.yaml
 
 nextcloud ([root]/examples/config/share/standard-backups/recipes/nextcloud.yaml)
+  version: v1
   description: (no description)
-  version: 1
   paths: 
     - /path/to/nextcloud
   before: (bash)
@@ -174,8 +172,8 @@ nextcloud ([root]/examples/config/share/standard-backups/recipes/nextcloud.yaml)
     echo maintenance mode is OFF
 
 paperless ([root]/examples/config/share/standard-backups/recipes/paperless.yaml)
+  version: v1
   description: (no description)
-  version: 1
   paths: 
     - /path/to/paperless
 

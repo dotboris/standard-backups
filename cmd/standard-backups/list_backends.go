@@ -35,18 +35,15 @@ var listBackendsCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s (%s)\n",
 				color.Bold.Text(backend.Name),
 				color.Cyan.Text(backend.Path))
+			fmt.Fprintf(w, "  %s: v%d (protocol=v%d)\n",
+				color.Magenta.Text("version"),
+				backend.Version, backend.ProtocolVersion)
 			fmt.Fprintf(w, "  %s: %s\n",
 				color.Magenta.Text("description"),
 				description)
 			fmt.Fprintf(w, "  %s: %s\n",
 				color.Magenta.Text("bin"),
 				backend.Bin)
-			fmt.Fprintf(w, "  %s: %d\n",
-				color.Magenta.Text("version"),
-				backend.Version)
-			fmt.Fprintf(w, "  %s: %d\n",
-				color.Magenta.Text("protocol version"),
-				backend.ProtocolVersion)
 		}
 
 		return nil
