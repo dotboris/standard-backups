@@ -29,7 +29,7 @@ func TestLoadBackendManifestsSingleFile(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
-				path:            p,
+				Path:            p,
 				Version:         1,
 				Name:            "example 1",
 				Description:     "the first example",
@@ -75,7 +75,7 @@ func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
-				path:            p1,
+				Path:            p1,
 				Version:         1,
 				Name:            "backend1",
 				Description:     "the backend1",
@@ -83,7 +83,7 @@ func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 				ProtocolVersion: 1,
 			},
 			{
-				path:            p2,
+				Path:            p2,
 				Version:         1,
 				Name:            "backend2",
 				Description:     "the backend2",
@@ -141,7 +141,7 @@ func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
 			{
-				path:            p,
+				Path:            p,
 				Version:         1,
 				Name:            "backend",
 				Bin:             "/usr/bin/my-backend",

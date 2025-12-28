@@ -19,14 +19,14 @@ func (c *Config) Validate() []ValidationError {
 			f, err := os.Stat(b.Bin)
 			if err != nil {
 				return &ValidationError{
-					File:      b.path,
+					File:      b.Path,
 					FieldPath: "/bin",
 					Err:       err,
 				}
 			}
 			if f.IsDir() {
 				return &ValidationError{
-					File:      b.path,
+					File:      b.Path,
 					FieldPath: "/bin",
 					Err:       fmt.Errorf("%s is a directory", b.Bin),
 				}

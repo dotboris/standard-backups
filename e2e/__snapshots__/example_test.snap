@@ -3,6 +3,7 @@
 &config.Config{
   Backends: []config.BackendManifestV1{
     config.BackendManifestV1{
+      Path:            "[root]/examples/config/share/standard-backups/backends/restic.yaml",
       Version:         1,
       Name:            "restic",
       Description:     "",
@@ -10,6 +11,7 @@
       ProtocolVersion: 1,
     },
     config.BackendManifestV1{
+      Path:            "[root]/examples/config/share/standard-backups/backends/rsync.yaml",
       Version:         1,
       Name:            "rsync",
       Description:     "",
@@ -123,5 +125,20 @@
     "localResticPassword": "***",
   },
 }
+
+---
+
+[TestExampleListBackends - 1]
+restic ([root]/examples/config/share/standard-backups/backends/restic.yaml)
+  description: (no description)
+  bin: ./dist/standard-backups-restic-backend
+  version: 1
+  protocol version: 1
+
+rsync ([root]/examples/config/share/standard-backups/backends/rsync.yaml)
+  description: (no description)
+  bin: ./dist/standard-backups-rsync-backend
+  version: 1
+  protocol version: 1
 
 ---
