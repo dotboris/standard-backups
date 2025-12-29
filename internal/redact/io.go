@@ -7,10 +7,12 @@ import (
 	"golang.org/x/text/transform"
 )
 
+type WriteCloser = io.WriteCloser
+
 var (
 	redactTransformer *RedactTransformer
-	Stdout            io.WriteCloser
-	Stderr            io.WriteCloser
+	Stdout            WriteCloser
+	Stderr            WriteCloser
 )
 
 func init() {
