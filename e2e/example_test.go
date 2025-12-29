@@ -31,7 +31,42 @@ func TestExamplePrintConfig(t *testing.T) {
 			stdout.String(), stderr.String())) {
 		return
 	}
-	snaps.MatchSnapshot(t, stdout.String())
+	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
+	snaps.MatchSnapshot(t, clean)
+}
+
+func TestExampleListBackends(t *testing.T) {
+	cmd := testutils.StandardBackups(t, "list-backends", "--no-color")
+	testutils.ApplyExampleConfig(t, cmd)
+	stdout := bytes.Buffer{}
+	cmd.Stdout = &stdout
+	stderr := bytes.Buffer{}
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if !assert.NoError(t, err,
+		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
+			stdout.String(), stderr.String())) {
+		return
+	}
+	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
+	snaps.MatchSnapshot(t, clean)
+}
+
+func TestExampleListRecipes(t *testing.T) {
+	cmd := testutils.StandardBackups(t, "list-recipes", "--no-color")
+	testutils.ApplyExampleConfig(t, cmd)
+	stdout := bytes.Buffer{}
+	cmd.Stdout = &stdout
+	stderr := bytes.Buffer{}
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if !assert.NoError(t, err,
+		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
+			stdout.String(), stderr.String())) {
+		return
+	}
+	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
+	snaps.MatchSnapshot(t, clean)
 }
 
 func assertTreesMatch(t *testing.T, expectedPath string, actualPath string) bool {

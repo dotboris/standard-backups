@@ -4,3 +4,12 @@ formatters:
     - golines
     - gofmt
     - gofumpt
+
+linters:
+  settings:
+    errcheck:
+      exclude-functions:
+        # These are wrappers around `os.Stdout` and `os.Stderr` which are excluded by default
+        - fmt.Fprint(github.com/dotboris/standard-backups/internal/redact.WriteCloser)
+        - fmt.Fprintf(github.com/dotboris/standard-backups/internal/redact.WriteCloser)
+        - fmt.Fprintln(github.com/dotboris/standard-backups/internal/redact.WriteCloser)

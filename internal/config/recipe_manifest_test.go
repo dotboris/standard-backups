@@ -34,7 +34,7 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
-				path:        p,
+				Path:        p,
 				Version:     1,
 				Name:        "example 1",
 				Description: "the first example",
@@ -95,7 +95,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
-				path:        p1,
+				Path:        p1,
 				Version:     1,
 				Name:        "app1",
 				Description: "the app1",
@@ -110,7 +110,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				},
 			},
 			{
-				path:        p2,
+				Path:        p2,
 				Version:     1,
 				Name:        "app2",
 				Description: "the app2",
@@ -193,7 +193,7 @@ func TestLoadRecipeManifestsExclude(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, []RecipeManifestV1{
 					{
-						path:        p,
+						Path:        p,
 						Version:     1,
 						Name:        "example 1",
 						Description: "the first example",
@@ -252,7 +252,7 @@ func TestLoadRecipeManifestsNoHooks(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
 			{
-				path:        p,
+				Path:        p,
 				Version:     1,
 				Name:        "app",
 				Description: "app description",

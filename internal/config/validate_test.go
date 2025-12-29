@@ -23,7 +23,7 @@ func TestValidateSuccess(t *testing.T) {
 	c := Config{
 		Backends: []BackendManifestV1{
 			{
-				path:            "bogus/backends.d/b.yaml",
+				Path:            "bogus/backends.d/b.yaml",
 				Version:         1,
 				Name:            "b",
 				Bin:             bin,
@@ -32,7 +32,7 @@ func TestValidateSuccess(t *testing.T) {
 		},
 		Recipes: []RecipeManifestV1{
 			{
-				path:    "bogus/recipes.d/r.yaml",
+				Path:    "bogus/recipes.d/r.yaml",
 				Version: 0,
 				Name:    "r",
 				Paths:   []string{"bogus/back-me-up"},
@@ -64,7 +64,7 @@ func TestValidateBackendBinNotFound(t *testing.T) {
 	c := Config{
 		Backends: []BackendManifestV1{
 			{
-				path:            "path/to/backend.yaml",
+				Path:            "path/to/backend.yaml",
 				Version:         1,
 				Name:            "busted-backend",
 				Bin:             "bogus/does-not-exist",
@@ -89,7 +89,7 @@ func TestValidateBackendBinIsDir(t *testing.T) {
 	c := Config{
 		Backends: []BackendManifestV1{
 			{
-				path:            "path/to/backend.yaml",
+				Path:            "path/to/backend.yaml",
 				Version:         1,
 				Name:            "busted-backend",
 				Bin:             bin,
