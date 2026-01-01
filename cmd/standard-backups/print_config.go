@@ -20,7 +20,7 @@ var printConfigCmd = &cobra.Command{
 		pp.SetColoringEnabled(!noColor)
 		pp.SetExportedOnly(true)
 		pp.SetOmitEmpty(false)
-		_, err = pp.Println(config)
+		_, err = pp.Println(config.MainConfig)
 		return err
 	},
 }

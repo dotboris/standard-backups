@@ -1,137 +1,68 @@
 
 [TestExamplePrintConfig - 1]
-&config.Config{
-  Backends: []config.BackendManifestV1{
-    config.BackendManifestV1{
-      Path:            "[root]/examples/config/share/standard-backups/backends/restic.yaml",
-      Version:         1,
-      Name:            "restic",
-      Description:     "",
-      Bin:             "./dist/standard-backups-restic-backend",
-      ProtocolVersion: 1,
+config.MainConfig{
+  Version:      1,
+  Destinations: map[string]config.DestinationConfigV1{
+    "local": config.DestinationConfigV1{
+      Backend: "rsync",
+      Options: map[string]interface {}{
+        "destination-dir": "./dist/backups/local",
+      },
     },
-    config.BackendManifestV1{
-      Path:            "[root]/examples/config/share/standard-backups/backends/rsync.yaml",
-      Version:         1,
-      Name:            "rsync",
-      Description:     "",
-      Bin:             "./dist/standard-backups-rsync-backend",
-      ProtocolVersion: 1,
+    "local-restic": config.DestinationConfigV1{
+      Backend: "restic",
+      Options: map[string]interface {}{
+        "env": map[string]interface {}{
+          "RESTIC_PASSWORD": "***",
+        },
+        "repo": "./dist/backups/restic-local",
+      },
+    },
+    "s3": config.DestinationConfigV1{
+      Backend: "restic",
+      Options: map[string]interface {}{},
     },
   },
-  Recipes: []config.RecipeManifestV1{
-    config.RecipeManifestV1{
-      Path:        "[root]/examples/config/share/standard-backups/recipes/internal-code.yaml",
-      Version:     1,
-      Name:        "examples",
-      Description: "Backs up all the example files in this repository",
-      Paths:       []string{
-        "examples",
+  Jobs: map[string]config.JobConfigV1{
+    "nextcloud": config.JobConfigV1{
+      Recipe:   "nextcloud",
+      BackupTo: []string{
+        "local",
+        "s3",
       },
-      Exclude: []string{
-        "config.yaml",
-      },
-      Before: (*config.HookV1)(nil),
-      After:  (*config.HookV1)(nil),
+      OnSuccess: (*config.HookV1)(nil),
+      OnFailure: (*config.HookV1)(nil),
     },
-    config.RecipeManifestV1{
-      Path:        "[root]/examples/config/share/standard-backups/recipes/nextcloud.yaml",
-      Version:     1,
-      Name:        "nextcloud",
-      Description: "",
-      Paths:       []string{
-        "/path/to/nextcloud",
+    "paperless": config.JobConfigV1{
+      Recipe:   "paperless",
+      BackupTo: []string{
+        "s3",
       },
-      Exclude: []string(nil),
-      Before:  &config.HookV1{
-        Shell:   "bash",
-        Command: "occ maintenance:mode --on\necho maintenance mode is ON\n",
-      },
-      After: &config.HookV1{
-        Shell:   "bash",
-        Command: "occ maintenance:mode --off\necho maintenance mode is OFF\n",
-      },
+      OnSuccess: (*config.HookV1)(nil),
+      OnFailure: (*config.HookV1)(nil),
     },
-    config.RecipeManifestV1{
-      Path:        "[root]/examples/config/share/standard-backups/recipes/paperless.yaml",
-      Version:     1,
-      Name:        "paperless",
-      Description: "",
-      Paths:       []string{
-        "/path/to/paperless",
+    "test": config.JobConfigV1{
+      Recipe:   "examples",
+      BackupTo: []string{
+        "local",
       },
-      Exclude: []string(nil),
-      Before:  (*config.HookV1)(nil),
-      After:   (*config.HookV1)(nil),
+      OnSuccess: (*config.HookV1)(nil),
+      OnFailure: (*config.HookV1)(nil),
+    },
+    "test-restic": config.JobConfigV1{
+      Recipe:   "examples",
+      BackupTo: []string{
+        "local-restic",
+      },
+      OnSuccess: (*config.HookV1)(nil),
+      OnFailure: (*config.HookV1)(nil),
     },
   },
-  MainConfig: config.MainConfig{
-    Version:      1,
-    Destinations: map[string]config.DestinationConfigV1{
-      "local": config.DestinationConfigV1{
-        Backend: "rsync",
-        Options: map[string]interface {}{
-          "destination-dir": "./dist/backups/local",
-        },
-      },
-      "local-restic": config.DestinationConfigV1{
-        Backend: "restic",
-        Options: map[string]interface {}{
-          "env": map[string]interface {}{
-            "RESTIC_PASSWORD": "***",
-          },
-          "repo": "./dist/backups/restic-local",
-        },
-      },
-      "s3": config.DestinationConfigV1{
-        Backend: "restic",
-        Options: map[string]interface {}{},
-      },
+  Secrets: map[string]config.SecretConfigV1{
+    "localResticPassword": config.SecretConfigV1{
+      FromFile: "",
+      Literal:  "***",
     },
-    Jobs: map[string]config.JobConfigV1{
-      "nextcloud": config.JobConfigV1{
-        Recipe:   "nextcloud",
-        BackupTo: []string{
-          "local",
-          "s3",
-        },
-        OnSuccess: (*config.HookV1)(nil),
-        OnFailure: (*config.HookV1)(nil),
-      },
-      "paperless": config.JobConfigV1{
-        Recipe:   "paperless",
-        BackupTo: []string{
-          "s3",
-        },
-        OnSuccess: (*config.HookV1)(nil),
-        OnFailure: (*config.HookV1)(nil),
-      },
-      "test": config.JobConfigV1{
-        Recipe:   "examples",
-        BackupTo: []string{
-          "local",
-        },
-        OnSuccess: (*config.HookV1)(nil),
-        OnFailure: (*config.HookV1)(nil),
-      },
-      "test-restic": config.JobConfigV1{
-        Recipe:   "examples",
-        BackupTo: []string{
-          "local-restic",
-        },
-        OnSuccess: (*config.HookV1)(nil),
-        OnFailure: (*config.HookV1)(nil),
-      },
-    },
-    Secrets: map[string]config.SecretConfigV1{
-      "localResticPassword": config.SecretConfigV1{
-        FromFile: "",
-        Literal:  "***",
-      },
-    },
-  },
-  Secrets: map[string]string{
-    "localResticPassword": "***",
   },
 }
 
