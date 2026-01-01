@@ -60,7 +60,7 @@ var listRecipesCmd = &cobra.Command{
 				fmt.Fprintf(w, "  %s: (%s)\n",
 					color.Magenta.Text("before"), recipe.Before.Shell)
 				for line := range strings.Lines(recipe.Before.Command) {
-					fmt.Fprintf(w, "    %s", line)
+					fmt.Fprintf(w, "    %s\n", strings.TrimRight(line, "\n"))
 				}
 			}
 
@@ -68,7 +68,7 @@ var listRecipesCmd = &cobra.Command{
 				fmt.Fprintf(w, "  %s: (%s)\n",
 					color.Magenta.Text("after"), recipe.After.Shell)
 				for line := range strings.Lines(recipe.After.Command) {
-					fmt.Fprintf(w, "    %s", line)
+					fmt.Fprintf(w, "    %s\n", strings.TrimRight(line, "\n"))
 				}
 			}
 		}
