@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/go-viper/mapstructure/v2"
@@ -83,6 +85,69 @@ var Backend = &proto.BackendImpl{
 
 		err = restic(options.Repo, options.Env, req.Args...)
 		return err
+	},
+	ListBackups: func(req *proto.ListBackupsRequest) (*proto.ListBackupsResponse, error) {
+		var options Options
+		err := mapstructure.Decode(req.RawOptions, &options)
+		if err != nil {
+			return nil, err
+		}
+
+		bs, err := resticOutput(options.Repo, options.Env, "snapshots", "--json")
+		if err != nil {
+			return nil, err
+		}
+
+		type Summary struct {
+			TotalBytesProcessed int `json:"total_bytes_processed"`
+		}
+		type Snapshot struct {
+			RawId   string   `json:"raw_id"`
+			Time    string   `json:"time"`
+			Tags    []string `json:"tags"`
+			Summary Summary  `json:"summary"`
+		}
+
+		var snapshots []Snapshot
+		err = json.Unmarshal(bs, &snapshots)
+		if err != nil {
+			return nil, err
+		}
+
+		var rawSnapshots []map[string]any
+		err = json.Unmarshal(bs, &rawSnapshots)
+		if err != nil {
+			return nil, err
+		}
+
+		backups := make([]proto.ListBackupsResponseItem, len(snapshots))
+		for i, snap := range snapshots {
+			job := ""
+			dest := ""
+			for _, tag := range snap.Tags {
+				j, ok := strings.CutPrefix(tag, "sb:job:")
+				if ok {
+					job = j
+				}
+				d, ok := strings.CutPrefix(tag, "sb:dest:")
+				if ok {
+					dest = d
+				}
+			}
+
+			backups[i] = proto.ListBackupsResponseItem{
+				Id:          snap.RawId,
+				Time:        snap.Time,
+				Bytes:       snap.Summary.TotalBytesProcessed,
+				Job:         job,
+				Destination: dest,
+				Extra:       rawSnapshots[i],
+			}
+		}
+
+		return &proto.ListBackupsResponse{
+			Backups: backups,
+		}, nil
 	},
 }
 

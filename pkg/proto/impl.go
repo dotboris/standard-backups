@@ -6,8 +6,9 @@ import (
 )
 
 type BackendImpl struct {
-	Backup BackupFunc
-	Exec   ExecFunc
+	Backup      BackupFunc
+	Exec        ExecFunc
+	ListBackups ListBackupsFunc
 }
 
 func (bi *BackendImpl) execute() error {
@@ -20,6 +21,8 @@ func (bi *BackendImpl) execute() error {
 		return bi.backup()
 	case "exec":
 		return bi.exec()
+	case "list-backups":
+		return bi.listBackups()
 	default:
 		return fmt.Errorf("unknown command %s", command)
 	}
