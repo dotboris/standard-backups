@@ -138,7 +138,7 @@ var Backend = &proto.BackendImpl{
 			backups[i] = proto.ListBackupsResponseItem{
 				Id:          snap.ShortId,
 				Time:        snap.Time,
-				Bytes:       snap.Summary.TotalBytesProcessed,
+				Size:        snap.Summary.TotalBytesProcessed,
 				Job:         job,
 				Destination: dest,
 				Extra:       rawSnapshots[i],

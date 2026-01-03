@@ -18,7 +18,7 @@ type (
 		Time        string         `json:"time"`
 		Job         string         `json:"job"`
 		Destination string         `json:"destination"`
-		Bytes       int            `json:"bytes"`
+		Size        int            `json:"size"` // Size of the backup in bytes
 		Extra       map[string]any `json:"extra"`
 	}
 	ListBackupsResponse struct {

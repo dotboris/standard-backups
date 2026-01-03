@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/dotboris/standard-backups/pkg/proto"
@@ -13,6 +14,7 @@ import (
 )
 
 var listBackupsJson bool
+var listBackupsColumns []string
 
 var listBackupsCmd = &cobra.Command{
 	Use:     "list-backups <destination>",
@@ -71,20 +73,19 @@ var listBackupsCmd = &cobra.Command{
 				Header: tw.CellConfig{
 					Formatting: tw.CellFormatting{
 						// Destination gets truncated sometimes, we want to keep it in full
-						AutoWrap: tw.WrapNormal,
+						AutoWrap:   tw.WrapNormal,
+						AutoFormat: tw.Off,
 					},
 				},
 			}),
 		)
-		table.Header("Id", "Time", "Job", "Destination", "Size")
+		table.Header(listBackupsColumns)
 		for _, backup := range res.Backups {
-			err = table.Append([]string{
-				backup.Id,
-				backup.Time,
-				backup.Job,
-				backup.Destination,
-				fmt.Sprintf("%d B", backup.Bytes),
-			})
+			row := make([]string, len(listBackupsColumns))
+			for i, col := range listBackupsColumns {
+				row[i] = formatColumn(col, backup)
+			}
+			err = table.Append(row)
 			if err != nil {
 				return err
 			}
@@ -105,6 +106,70 @@ func init() {
 		"json", false,
 		"Print backups to stdout as JSON",
 	)
+	listBackupsCmd.Flags().StringSliceVarP(&listBackupsColumns,
+		"columns", "C",
+		[]string{"id", "time", "job", "destination", "size"},
+		"Columns to include output",
+	)
+	listBackupsCmd.MarkFlagsMutuallyExclusive("json", "columns")
 
 	rootCmd.AddCommand(listBackupsCmd)
+}
+
+func formatColumn(col string, backup proto.ListBackupsResponseItem) string {
+	switch strings.ToLower(col) {
+	case "id":
+		return backup.Id
+	case "time":
+		return backup.Time
+	case "job":
+		return backup.Job
+	case "destination":
+		return backup.Destination
+	case "size":
+		unit := "B"
+		size := float64(backup.Size)
+		if size >= 1024 {
+			size = size / 1024
+			unit = "KB"
+		}
+		if size >= 1024 {
+			size = size / 1024
+			unit = "MB"
+		}
+		if size >= 1024 {
+			size = size / 1024
+			unit = "GB"
+		}
+		if size >= 1024 {
+			size = size / 1024
+			unit = "TB"
+		}
+		if size >= 1024 {
+			size = size / 1024
+			unit = "PB"
+		}
+		formatted := fmt.Sprintf("%.2f", size)
+		formatted = strings.TrimRight(formatted, "0")
+		formatted = strings.TrimRight(formatted, ".")
+		return fmt.Sprintf("%s %s", formatted, unit)
+	default:
+		if col, ok := strings.CutPrefix(col, "extra."); ok {
+			parts := strings.Split(col, ".")
+			var value any = backup.Extra
+			for _, part := range parts {
+				if m, ok := value.(map[string]any); ok {
+					value, ok = m[part]
+					if !ok {
+						break
+					}
+				}
+			}
+			if value == nil {
+				return ""
+			}
+			return fmt.Sprintf("%v", value)
+		}
+		return ""
+	}
 }
