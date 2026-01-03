@@ -7,19 +7,19 @@ require (
 	github.com/gkampitakis/go-snaps v0.5.18
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/goccy/go-yaml v1.19.1
+	github.com/gookit/color v1.6.0
 	github.com/k0kubun/pp/v3 v3.5.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/phsym/console-slog v0.3.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.26.0
+	golang.org/x/text v0.32.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gkampitakis/ciinfo v0.3.2 // indirect
-	github.com/gookit/color v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
