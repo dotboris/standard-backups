@@ -13,8 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listBackupsJson bool
-var listBackupsColumns []string
+var (
+	listBackupsJson    bool
+	listBackupsColumns []string
+)
 
 var listBackupsCmd = &cobra.Command{
 	Use:     "list-backups <destination>",
