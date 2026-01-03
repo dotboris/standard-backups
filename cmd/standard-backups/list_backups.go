@@ -7,6 +7,8 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/dotboris/standard-backups/pkg/proto"
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 	"github.com/spf13/cobra"
 )
 
@@ -61,7 +63,38 @@ var listBackupsCmd = &cobra.Command{
 			return nil
 		}
 
-		fmt.Fprintf(w, "%+v", res)
+		table := tablewriter.NewTable(w,
+			tablewriter.WithRendition(tw.Rendition{
+				Borders: tw.BorderNone,
+			}),
+			tablewriter.WithConfig(tablewriter.Config{
+				Header: tw.CellConfig{
+					Formatting: tw.CellFormatting{
+						// Destination gets truncated sometimes, we want to keep it in full
+						AutoWrap: tw.WrapNormal,
+					},
+				},
+			}),
+		)
+		table.Header("Id", "Time", "Job", "Destination", "Size")
+		for _, backup := range res.Backups {
+			err = table.Append([]string{
+				backup.Id,
+				backup.Time,
+				backup.Job,
+				backup.Destination,
+				fmt.Sprintf("%d B", backup.Bytes),
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Fprintln(w)
+		err = table.Render()
+		if err != nil {
+			return err
+		}
 
 		return nil
 	},
