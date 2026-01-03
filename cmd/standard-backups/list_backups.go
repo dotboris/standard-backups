@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -8,6 +9,8 @@ import (
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/spf13/cobra"
 )
+
+var listBackupsJson bool
 
 var listBackupsCmd = &cobra.Command{
 	Use:     "list-backups <destination>",
@@ -47,6 +50,17 @@ var listBackupsCmd = &cobra.Command{
 		}
 
 		w := redact.Stdout
+
+		if listBackupsJson {
+			enc := json.NewEncoder(w)
+			enc.SetIndent("", "  ")
+			err = enc.Encode(res.Backups)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
 		fmt.Fprintf(w, "%+v", res)
 
 		return nil
@@ -54,5 +68,10 @@ var listBackupsCmd = &cobra.Command{
 }
 
 func init() {
+	listBackupsCmd.Flags().BoolVar(&listBackupsJson,
+		"json", false,
+		"Print backups to stdout as JSON",
+	)
+
 	rootCmd.AddCommand(listBackupsCmd)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 )
 
 type (
@@ -96,10 +97,10 @@ func (bi *BackendImpl) listBackups() error {
 	if err != nil {
 		return err
 	}
-	bs, err := json.Marshal(res)
+	enc := json.NewEncoder(os.Stdout)
+	err = enc.Encode(res)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s", bs)
 	return nil
 }

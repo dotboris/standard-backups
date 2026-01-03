@@ -102,7 +102,7 @@ var Backend = &proto.BackendImpl{
 			TotalBytesProcessed int `json:"total_bytes_processed"`
 		}
 		type Snapshot struct {
-			RawId   string   `json:"raw_id"`
+			ShortId string   `json:"short_id"`
 			Time    string   `json:"time"`
 			Tags    []string `json:"tags"`
 			Summary Summary  `json:"summary"`
@@ -136,7 +136,7 @@ var Backend = &proto.BackendImpl{
 			}
 
 			backups[i] = proto.ListBackupsResponseItem{
-				Id:          snap.RawId,
+				Id:          snap.ShortId,
 				Time:        snap.Time,
 				Bytes:       snap.Summary.TotalBytesProcessed,
 				Job:         job,
