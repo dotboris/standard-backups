@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -27,6 +28,18 @@ func restic(repo string, env map[string]string, args ...string) error {
 	fmt.Fprintf(os.Stderr, "running restic: %s\n", cmd.String())
 	err := cmd.Run()
 	return err
+}
+
+func resticOutput(repo string, env map[string]string, args ...string) ([]byte, error) {
+	cmd := resticCmd(repo, env, args...)
+	output := bytes.NewBuffer(nil)
+	cmd.Stdout = output
+	fmt.Fprintf(os.Stderr, "running restic: %s\n", cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		return nil, err
+	}
+	return output.Bytes(), nil
 }
 
 func checkRepoExists(repo string, env map[string]string) (bool, error) {

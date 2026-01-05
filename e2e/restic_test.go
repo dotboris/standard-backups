@@ -8,8 +8,10 @@ import (
 	"os/exec"
 	"path"
 	"testing"
+	"time"
 
 	"github.com/dotboris/standard-backups/internal/testutils"
+	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -98,15 +100,14 @@ func TestResticBackupBase(t *testing.T) {
 		return
 	}
 
-	// Check that we have the tags
-	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	stdout := bytes.NewBufferString("")
+	// Check that we can list the backup
+	cmd = testutils.StandardBackups(t, "list-backups", "my-dest", "--json")
+	tc.Apply(cmd)
+	stdout := bytes.NewBuffer(nil)
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err, "restic repo %s has not been initialized", repoDir) {
+	if !assert.NoError(t, err, "failed to list backups") {
 		return
 	}
 	var output []map[string]any
@@ -115,17 +116,17 @@ func TestResticBackupBase(t *testing.T) {
 		return
 	}
 	assert.Len(t, output, 1)
-	assert.Equal(t, []any{
-		"sb:dest:my-dest",
-		"sb:job:my-job",
-	}, output[0]["tags"])
+	id, ok := output[0]["id"]
+	if !assert.True(t, ok) {
+		return
+	}
 
 	// Test restore
 	restoreDir := t.TempDir()
 	cmd = exec.Command("restic",
 		"-v",
 		"-r", repoDir,
-		"restore", fmt.Sprintf("latest:%s", sourceDir),
+		"restore", fmt.Sprintf("%s:%s", id, sourceDir),
 		"--target", restoreDir,
 	)
 	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
@@ -284,7 +285,7 @@ func TestResticExec(t *testing.T) {
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
 	err := cmd.Run()
-	if !assert.NoError(t, err, "failed to backup in %s") {
+	if !assert.NoError(t, err, "failed to backup") {
 		return
 	}
 
@@ -320,4 +321,77 @@ func TestResticExec(t *testing.T) {
 		return
 	}
 	assert.Equal(t, expectedSnapshots, actualSnapshots)
+}
+
+func TestResticListBackups(t *testing.T) {
+	tc := testutils.NewTestConfig(t)
+	tc.AddBackend("restic", "dist/standard-backups-restic-backend")
+	tc.AddBogusRecipe(t, "bogus")
+	tc.WriteConfig(testutils.DedentYaml(fmt.Sprintf(`
+		version: 1
+		secrets:
+			pass:
+				literal: supersecret
+		destinations:
+			d1:
+				backend: restic
+				options:
+					repo: %s
+					env:
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+			d2:
+				backend: restic
+				options:
+					repo: %s
+					env:
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+		jobs:
+			my-job:
+				recipe: bogus
+				backup-to: [d1, d2]
+	`, t.TempDir(), t.TempDir())))
+
+	for range 2 {
+		cmd := testutils.StandardBackups(t, "backup", "my-job")
+		tc.Apply(cmd)
+		err := cmd.Run()
+		if !assert.NoError(t, err, "failed to backup") {
+			return
+		}
+	}
+
+	for _, dest := range []string{"d1", "d2"} {
+		cmd := testutils.StandardBackups(t, "list-backups", dest, "--json")
+		tc.Apply(cmd)
+		stdout := bytes.NewBuffer(nil)
+		cmd.Stdout = stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if !assert.NoError(t, err, "failed to list backups for %s", dest) {
+			return
+		}
+		var output []proto.ListBackupsResponseItem
+		err = json.Unmarshal(stdout.Bytes(), &output)
+		if !assert.NoError(t, err, dest) {
+			return
+		}
+
+		assert.Len(t, output, 2)
+		for i := range 2 {
+			backupTime, err := time.Parse(time.RFC3339, output[i].Time)
+			assert.NoError(t, err, "failed to parse output[%d].Time in %s", i, dest)
+			assert.WithinRange(t, backupTime,
+				backupTime.Add(time.Minute*-2),
+				backupTime.Add(time.Minute*2))
+
+			assert.NotEmpty(t, output[i].Id, i)
+			assert.NotEmpty(t, output[i].Extra, i)
+			assert.Equal(t, "my-job", output[i].Job, i)
+			assert.Equal(t, dest, output[i].Destination, i)
+			assert.Greater(t, output[i].Size, 0, i)
+		}
+
+		assert.NotEqual(t, output[0].Id, output[1].Id, dest)
+		assert.Less(t, output[0].Time, output[1].Time, dest)
+	}
 }
