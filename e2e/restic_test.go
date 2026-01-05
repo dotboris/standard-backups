@@ -99,14 +99,13 @@ func TestResticBackupBase(t *testing.T) {
 	}
 
 	// Check that we have the tags
-	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	stdout := bytes.NewBufferString("")
+	cmd = testutils.StandardBackups(t, "list-backups", "my-dest", "--json")
+	tc.Apply(cmd)
+	stdout := bytes.NewBuffer(nil)
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err, "restic repo %s has not been initialized", repoDir) {
+	if !assert.NoError(t, err, "failed to list backups") {
 		return
 	}
 	var output []map[string]any
@@ -115,17 +114,15 @@ func TestResticBackupBase(t *testing.T) {
 		return
 	}
 	assert.Len(t, output, 1)
-	assert.Equal(t, []any{
-		"sb:dest:my-dest",
-		"sb:job:my-job",
-	}, output[0]["tags"])
+	assert.Equal(t, "my-job", output[0]["job"])
+	assert.Equal(t, "my-dest", output[0]["destination"])
 
 	// Test restore
 	restoreDir := t.TempDir()
 	cmd = exec.Command("restic",
 		"-v",
 		"-r", repoDir,
-		"restore", fmt.Sprintf("latest:%s", sourceDir),
+		"restore", fmt.Sprintf("%s:%s", output[0]["id"], sourceDir),
 		"--target", restoreDir,
 	)
 	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
