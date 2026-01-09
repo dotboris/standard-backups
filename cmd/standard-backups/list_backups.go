@@ -19,7 +19,7 @@ var (
 )
 
 var listBackupsCmd = &cobra.Command{
-	Use:     "list-backups <destination>",
+	Use:     "list-backups destination",
 	Short:   "List available backups",
 	Long:    `List all backups from a given destination.`,
 	GroupID: "operations",

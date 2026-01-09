@@ -116,28 +116,24 @@ func TestResticBackupBase(t *testing.T) {
 		return
 	}
 	assert.Len(t, output, 1)
-	id, ok := output[0]["id"]
-	if !assert.True(t, ok) {
+	rawId, ok := output[0]["id"]
+	if !assert.True(t, ok, "failed to get output[0].id") {
+		return
+	}
+	id, ok := rawId.(string)
+	if !assert.True(t, ok, "output[0].id is not a string") {
 		return
 	}
 
 	// Test restore
 	restoreDir := t.TempDir()
-	cmd = exec.Command("restic",
-		"-v",
-		"-r", repoDir,
-		"restore", fmt.Sprintf("%s:%s", id, sourceDir),
-		"--target", restoreDir,
-	)
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd = testutils.StandardBackups(t, "restore", "my-dest", id, restoreDir)
+	tc.Apply(cmd)
 	err = cmd.Run()
 	if !assert.NoError(t, err) {
 		return
 	}
-	restoredFile, err := os.ReadFile(path.Join(restoreDir, "back-me-up.txt"))
+	restoredFile, err := os.ReadFile(path.Join(restoreDir, sourceDir, "back-me-up.txt"))
 	if !assert.NoError(t, err) {
 		return
 	}
