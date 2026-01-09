@@ -149,6 +149,22 @@ var Backend = &proto.BackendImpl{
 			Backups: backups,
 		}, nil
 	},
+	Restore: func(req *proto.RestoreRequest) error {
+		var options Options
+		err := mapstructure.Decode(req.RawOptions, &options)
+		if err != nil {
+			return err
+		}
+
+		err = restic(options.Repo, options.Env, "restore", "--target", req.OutputDir, req.BackupId)
+		if err != nil {
+			return fmt.Errorf(
+				"failed to restore backup %s from destination %s to %s: %w",
+				req.BackupId, req.DestinationName, req.OutputDir, err,
+			)
+		}
+		return nil
+	},
 }
 
 func main() {
