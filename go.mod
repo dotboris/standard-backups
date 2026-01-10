@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0
-	github.com/gkampitakis/go-snaps v0.5.18
+	github.com/gkampitakis/go-snaps v0.5.19
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/goccy/go-yaml v1.19.1
 	github.com/gookit/color v1.6.0
