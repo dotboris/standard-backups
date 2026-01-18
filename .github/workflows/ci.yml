@@ -70,3 +70,13 @@ jobs:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix develop -L -c just fmt-check
+
+  check-mod-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go mod tidy
+      - run: git diff --color=always --exit-code
