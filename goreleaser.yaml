@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+dist: ./dist/goreleaser
+
+builds:
+  - id: standard-backups
+    binary: standard-backups
+    main: ./cmd/standard-backups
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+  - id: standard-backups-restic-backend
+    binary: standard-backups-restic-backend
+    main: ./cmd/standard-backups-restic-backend
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+  - id: standard-backups-rsync-backend
+    binary: standard-backups-rsync-backend
+    main: ./cmd/standard-backups-rsync-backend
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

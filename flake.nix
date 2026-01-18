@@ -32,6 +32,7 @@
 
           # Misc tooling
           pkgs.golangci-lint
+          pkgs.goreleaser
           pkgs.gotestsum
           pkgs.just
           pkgs.rsync

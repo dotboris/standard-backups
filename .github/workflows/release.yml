@@ -1,17 +1,20 @@
-name: PR
-on: [pull_request]
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
 
 jobs:
-  dependency-review:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/dependency-review-action@v4
-
-  goreleaser-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
@@ -19,4 +22,6 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --snapshot --clean
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
