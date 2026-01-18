@@ -7,3 +7,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/dependency-review-action@v4
+
+  goreleaser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --snapshot --clean
