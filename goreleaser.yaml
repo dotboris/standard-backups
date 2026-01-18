@@ -5,18 +5,21 @@ dist: ./dist/goreleaser
 
 builds:
   - id: standard-backups
+    binary: standard-backups
     main: ./cmd/standard-backups
     env:
       - CGO_ENABLED=0
     goos:
       - linux
   - id: standard-backups-restic-backend
+    binary: standard-backups-restic-backend
     main: ./cmd/standard-backups-restic-backend
     env:
       - CGO_ENABLED=0
     goos:
       - linux
   - id: standard-backups-rsync-backend
+    binary: standard-backups-rsync-backend
     main: ./cmd/standard-backups-rsync-backend
     env:
       - CGO_ENABLED=0
