@@ -9,4 +9,5 @@
     prCreation: "approval",
   },
   nix: { enabled: true },
+  postUpdateOptions: ["gomodUpdateImportPaths", "gomodTidy"],
 }
