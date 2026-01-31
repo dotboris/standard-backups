@@ -2,8 +2,7 @@ name: Release
 
 on:
   push:
-    tags:
-      - "*"
+    branches: [main]
 
 permissions:
   contents: write
@@ -18,7 +17,24 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+      - name: install svu
+        run: |
+          go install github.com/caarlos0/svu/v3@v3.3.0
+          svu --version
+      - name: detect versions
+        id: versions
+        run: |
+          echo "current=$(svu current)" >> "$GITHUB_OUTPUT"
+          echo "next=$(svu next)" >> "$GITHUB_OUTPUT"
+      - name: tag new version
+        if: steps.versions.outputs.current != steps.versions.outputs.next
+        env:
+          NEXT: ${{ steps.versions.outputs.next }}
+        run: |
+          git tag "$NEXT"
+          git push origin "$NEXT"
       - uses: goreleaser/goreleaser-action@v6
+        if: steps.versions.outputs.current != steps.versions.outputs.next
         with:
           distribution: goreleaser
           version: "~> v2"

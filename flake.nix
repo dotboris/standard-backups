@@ -33,6 +33,7 @@
           # Misc tooling
           pkgs.golangci-lint
           pkgs.goreleaser
+          pkgs.svu
           pkgs.gotestsum
           pkgs.just
           pkgs.rsync
