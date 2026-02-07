@@ -1,0 +1,6 @@
+# Manifest for the standard-backups rsync backend
+version: 1
+name: rsync
+description: Example backend that performs backups through the rsync command.
+bin: standard-backups-rsync-backend
+protocol-version: 1
