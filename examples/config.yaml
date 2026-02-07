@@ -1,0 +1,67 @@
+# Quick command reference:
+# - `standard-backups validate-config` validates this config file.
+# - `standard-backups print-config` shows how standard-backups interprets this
+#   config file.
+# - `standard-backups list-backends` shows available backends.
+# - `standard-backups list-recipes` show available recipes.
+
+# Version of the standard-backups config. Set this to 1.
+version: 1
+
+# Destinations are where backups are sent to. Each destination has a name and
+# uses a backend to perform the actual backup operations. They can also
+# configure how a backend behaves through options.
+#
+# You can list all backups in a given destination by running `standard-backups
+# list-backups {name}` where `{name}` is the name of a destination.
+#destinations:
+  # Name of the backend, we'll refer to this later
+  #example:
+    # The backend used for this destination. You can see your installed backend
+    # by running `standard-backups list-backends`.
+    #backend: ...
+    # Configuration options for the backend. This controls how it behaves. The
+    # specific options depend on which backend you chose. Refer to that
+    # backend's documentation for details.
+    #options: ...
+
+# Jobs represent backup executions. Each job has a name that can be used to
+# launch it. Launching a job, performs a backup using a recipe (steps to backup
+# an app or system) and stores the contents of the backup in one or more
+# destinations.
+#
+# You can launch a job with `standard-backups backup {name}` where `{name}` is
+# the name of the job.
+#jobs:
+  # Name of the job
+  #example:
+    # Which recipe to use. Recipes can be packaged with certain applications or
+    # services, or they can written by hand by creating
+    # `/etc/standard-backups/recipes/{name}.yaml`. You can list available
+    # recipes on your system with by running `standard-backups list-recipes`.
+    #recipe: ...
+    # Destinations where to store the backup. Each entry in the array is the
+    # name of a destination as defined in the `destinations` section.
+    #backup-to:
+    #  - example
+
+# Secrets define secret values that standard-backups can load and reference
+# during its executions. Each secret has a name and a configuration defining how
+# to load the secret value. When dealing with secret values like encryption
+# password, it is recommend that you never store these values in this config
+# file directly. You should instead put secret values in files that are only
+# readable by the user performing your backups. This is important because this
+# config file is readable by all users by default.
+#
+# Secret values can be referenced in other parts of this config file
+# (destination options) through the use of template syntax. For example, the
+# following: `{{ .Secrets.mySecret }}` gets replaced by the actual secret value.
+#secrets:
+  # Name of the secret. Can be referenced through template syntax in other parts
+  # of this config like so `{{ .Secrets.mySecret }}`. It is recommended to use
+  # camelCase, PascalCase, or snake_case for the secret name. Avoid using
+  # kebab-case since it'll lead to syntax errors in the template.
+  #mySecret:
+    # Path to a file that contains the secret value. Make sure that only the
+    # user that runs your backups has access to this file.
+    #from-file: /path/to/secret

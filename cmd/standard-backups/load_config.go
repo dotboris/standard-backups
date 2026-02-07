@@ -41,6 +41,9 @@ func loadConfig() (*config.Config, error) {
 		xdgDataHome = path.Join(home, ".local/share")
 	}
 	xdgDataDirs := os.Getenv("XDG_DATA_DIRS")
+	if xdgDataDirs == "" {
+		xdgDataDirs = "/usr/local/share/:/usr/share/"
+	}
 
 	dirs := []string{}
 	dirs = append(dirs, xdgConfigHome)

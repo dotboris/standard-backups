@@ -1,0 +1,6 @@
+# Manifest for the standard-backups restic backend
+version: 1
+name: restic
+description: Integrates standard-backups with the popular restic backup tool.
+bin: standard-backups-restic-backend
+protocol-version: 1
