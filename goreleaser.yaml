@@ -27,9 +27,37 @@ builds:
       - linux
 
 archives:
-  - formats: [tar.gz]
+  - id: standard-backups
+    ids: [standard-backups]
+    formats: [tar.gz]
     name_template: >-
-      {{ .ProjectName }}_
+      standard-backups_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+  - id: standard-backups-restic-backend
+    ids: [standard-backups-restic-backend]
+    formats: [tar.gz]
+    name_template: >-
+      standard-backups-restic-backend_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+  - id: standard-backups-rsync-backend
+    ids: [standard-backups-rsync-backend]
+    formats: [tar.gz]
+    name_template: >-
+      standard-backups-rsync-backend_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
