@@ -20,6 +20,11 @@ build-all: \
   build-backends \
   (build "standard-backups")
 
+# Builds distribution packages used for releases
+[group("build")]
+build-pkgs:
+  goreleaser release --snapshot --clean
+
 # Run standard-backups
 run *args: build-backends
   go run ./cmd/standard-backups {{ args }}

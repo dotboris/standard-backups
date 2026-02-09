@@ -34,6 +34,7 @@
           pkgs.golangci-lint
           pkgs.goreleaser
           pkgs.svu
+          pkgs.nfpm # linux packages
           pkgs.gotestsum
           pkgs.just
           pkgs.rsync
