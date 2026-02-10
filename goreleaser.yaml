@@ -27,7 +27,8 @@ builds:
       - linux
 
 archives:
-  - id: standard-backups
+  - &archive-base
+    id: standard-backups
     ids: [standard-backups]
     formats: [tar.gz]
     files:
@@ -35,41 +36,70 @@ archives:
       - README.md
       - src: examples/config.yaml
         dst: config.yaml
-    name_template: >-
-      {{ .Binary }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-  - id: standard-backups-restic-backend
+    name_template: &name-template >-
+      {{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+      {{- with .Arm }}v{{ . }}{{ end }}
+      {{- with .Mips }}_{{ . }}{{ end }}
+      {{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}
+  - <<: *archive-base
+    id: standard-backups-restic-backend
     ids: [standard-backups-restic-backend]
     files:
       - LICENSE
       - src: ./cmd/standard-backups-restic-backend/restic.yaml
         dst: restic.yaml
-    formats: [tar.gz]
-    name_template: >-
-      {{ .Binary }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-  - id: standard-backups-rsync-backend
+  - <<: *archive-base
+    id: standard-backups-rsync-backend
     ids: [standard-backups-rsync-backend]
     files:
       - LICENSE
       - src: ./cmd/standard-backups-rsync-backend/rsync.yaml
         dst: rsync.yaml
-    formats: [tar.gz]
-    name_template: >-
-      {{ .Binary }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+nfpms:
+  - &npfm-base
+    id: standard-backups
+    ids: [standard-backups]
+    package_name: standard-backups
+    file_name_template: *name-template
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+    maintainer: Boris Bera <beraboris@gmail.com>
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/standard-backups/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/standard-backups/README.md
+      - src: examples/config.yaml
+        dst: /etc/standard-backups/config.yaml
+        type: config
+  - <<: *npfm-base
+    id: standard-backups-restic-backend
+    ids: [standard-backups-restic-backend]
+    package_name: standard-backups-restic-backend
+    dependencies:
+      - standard-backups
+      - restic
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/standard-backups-restic-backend/LICENSE
+      - src: ./cmd/standard-backups-restic-backend/restic.yaml
+        dst: /usr/share/standard-backups/backends/restic.yaml
+  - <<: *npfm-base
+    id: standard-backups-rsync-backend
+    ids: [standard-backups-rsync-backend]
+    package_name: standard-backups-rsync-backend
+    dependencies:
+      - standard-backups
+      - rsync
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/standard-backups-rsync-backend/LICENSE
+      - src: ./cmd/standard-backups-rsync-backend/rsync.yaml
+        dst: /usr/share/standard-backups/backends/rsync.yaml
 
 changelog:
   sort: asc
@@ -77,3 +107,4 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+      - "^chore:"
