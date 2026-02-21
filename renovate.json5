@@ -6,7 +6,8 @@
   minimumReleaseAge: "7 days",
   lockFileMaintenance: {
     enabled: true,
-    prCreation: "approval",
+    schedule: ["before 5am on saturday"],
+    minimumReleaseAge: null,
   },
   nix: { enabled: true },
   postUpdateOptions: ["gomodUpdateImportPaths", "gomodTidy"],
