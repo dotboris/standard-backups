@@ -26,9 +26,9 @@ var validateConfigCmd = &cobra.Command{
 			}
 			message := strings.Builder{}
 			for file, errs := range byFile {
-				message.WriteString(fmt.Sprintf("%s:\n", file))
+				fmt.Fprintf(&message, "%s:\n", file)
 				for _, err := range errs {
-					message.WriteString(fmt.Sprintf("- at '%s': %s\n", err.FieldPath, err.Err))
+					fmt.Fprintf(&message, "- at '%s': %s\n", err.FieldPath, err.Err)
 				}
 			}
 			return fmt.Errorf("configuration is not valid:\n%s", message.String())
