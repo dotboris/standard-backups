@@ -87,6 +87,22 @@ pacman -U ./standard-backups-*.pkg.tar.zst
 To validate your installation, simply run `standard-backups list-backends`. This
 should show you the backends that you have installed.
 
+### Setup a Recipe
+
+TODO: What's a recipe
+TODO: look for existing ones
+TODO: write your own
+
+### Configure a Destination
+
+TODO: Restic
+TODO: ???
+
+### Perform Backups
+
+TODO: Run a backup once
+TODO: setup recurring backups
+
 ## License
 
 Copyright (C) 2025 Boris Bera
