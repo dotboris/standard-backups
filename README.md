@@ -89,9 +89,44 @@ should show you the backends that you have installed.
 
 ### Setup a Recipe
 
-TODO: What's a recipe
-TODO: look for existing ones
-TODO: write your own
+Recipes tell Standard Backups how to backup a given system, service, or
+application. Each recipe consists of a list of paths to backup with exclusions,
+an optional command to prepare the backup (before hook), an optional command to
+cleanup the backup (after hook), and some metadata.
+
+Standard Backups allows packages to ship their own recipes. This saves your from
+writing your own. You can see what recipes are available on your system by
+running `standard-backups list-recipes`. If there's already a recipe for the
+application you're trying to backup take note of its name and move to the next
+step. Otherwise, you'll need to write your own.
+
+To make your own recipe, create a `.yaml` file under
+`/etc/standard-backups/recipes/` with the following content:
+
+```yaml
+version: 1 # internal; must be 1
+name: my-recipe # name of your recipe; change this
+description: ... # optional description of what your recipe does
+paths: # paths that will be backed up; change this
+  - /path/to/backup/...
+  - /other/path/to/backup/...
+exclude: # optional paths that will not be backed up
+  - paths-not-to-backup
+  - ...
+before: # optional command to run before the backup; change or remove this
+  shell: bash # what shell to run the command through; (options: bash, sh)
+  command: | # commands to run; change this
+    ... command to run ...
+    ... supports multiple lines ...
+after: # optional command to run after the backup; change or remove this
+  shell: bash # what shell to run the command through; (options: bash, sh)
+  command: | # commands to run; change this
+    ... command to run ...
+    ... supports multiple lines ...
+```
+
+Change this file to fit your needs following the comments. You can verify that
+Standard Backups sees your recipe by running `standard-backups list-recipes`.
 
 ### Configure a Destination
 
