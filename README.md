@@ -1,10 +1,10 @@
 # Standard Backups
 
 Standard Backups is a generic backup orchestration tool with a plugin
-architecture that lets it work with existing backup tools that you love and
-trust. It handles all the boring logic (preparing backups, performing backups,
-cleanup, secret management, etc.) and lets you focus on what you want to backup
-and where you want those backups to go.
+architecture that works with existing backup tools that you love and trust. It
+handles all the boring logic (preparing backups, performing backups, cleanup,
+secret management, etc.) and lets you focus on what you want to backup and where
+you want those backups to go.
 
 ## Getting Started
 
@@ -130,11 +130,64 @@ Standard Backups sees your recipe by running `standard-backups list-recipes`.
 
 ### Configure a Destination
 
-TODO: Restic
-TODO: ???
+Destinations are where backups go. Each is bound to a specific backend. As such,
+configuration will change depending on what backend you choose. Follow the
+example below that best fits your backend.
+
+You can see which backends are installed by running `standard-backups list-backends`.
+
+#### Restic Destination
+
+Open `/etc/standard-backups/config.yaml` and add the following:
+
+```yaml
+destinations:
+  my-destination: # Name of your destination. Change this.
+    backend: restic
+    options:
+      repo: ... # Restic repo. Can be a local path or remote server / service.
+      env:
+        # Password for the restic repo. Don't put your password in clear text here, use the secrets feature.
+        RESTIC_PASSWORD: '{{ .secrets.myDestinationPassword }}'
+        # Add other environment variables needed by your repo here. Remember: don't but clear text secrets here, use the secrets feature.
+      forget: # Optional. Tells restic when to delete old backups.
+        # Important: Read the restic guide on this feature before enabling it.
+        # https://restic.readthedocs.io/en/stable/060_forget.html#removing-snapshots-according-to-a-policy
+        enable: true
+        options:
+          keep-last: 4
+          keep-daily: 7
+          keep-weekly: 4
+          keep-monthly: 12
+          keep-yearly: 7
+
+secrets:
+  myDestinationPassword:
+    # Where the repo password is stored.
+    # - Create a file on your system and paste the password in there.
+    # - Change its permissions so that only standard-backups can read it.
+    # - Update the path here to match your file.
+    from-file: /path/to/secret-file
+```
+
+#### Rsync Destination
+
+> [!WARNING]
+> The Rsync backend is not feature rich or battle tested. It's not recommended for production use.
+
+Open `/etc/standard-backups/config.yaml` and add the following:
+
+```yaml
+destinations:
+  my-destination: # Name of your destination. Change this.
+    backend: rsync
+    options:
+      destination-dir: ... # Where to store the backups.
+```
 
 ### Perform Backups
 
+TODO: configure job
 TODO: Run a backup once
 TODO: setup recurring backups
 
