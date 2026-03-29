@@ -41,7 +41,7 @@ and at least one backend. Then, run the following commands:
 
 ```sh
 apt update
-apt install ./standard-backups-*.deb
+apt install ./standard-backups*.deb
 ```
 
 </details>
@@ -53,7 +53,7 @@ Go to the directory where you downloaded the `.rpm` files for Standard Backups
 and at least one backend. Then, run the following commands:
 
 ```sh
-dnf install --refresh ./standard-backups-*.rpm
+dnf install --refresh ./standard-backups*.rpm
 ```
 
 </details>
@@ -66,7 +66,7 @@ and at least one backend. Then, run the following commands:
 
 ```sh
 apk update
-apk add --allow-untrusted ./standard-backups-*.apk
+apk add --allow-untrusted ./standard-backups*.apk
 ```
 
 </details>
@@ -79,7 +79,7 @@ Backups and at least one backend. Then, run the following commands:
 
 ```sh
 pacman -Sy
-pacman -U ./standard-backups-*.pkg.tar.zst
+pacman -U ./standard-backups*.pkg.tar.zst
 ```
 
 </details>
@@ -148,7 +148,7 @@ destinations:
       repo: ... # Restic repo. Can be a local path or remote server / service.
       env:
         # Password for the restic repo. Don't put your password in clear-text here, use the secrets feature.
-        RESTIC_PASSWORD: '{{ .secrets.myDestinationPassword }}'
+        RESTIC_PASSWORD: '{{ .Secrets.myDestinationPassword }}'
         # Add other environment variables needed by your repo here. Remember: don't put clear-text secrets here, use the secrets feature.
       forget: # Optional. Tells restic when to delete old backups.
         # Important: Read the restic guide on this feature before enabling it.
