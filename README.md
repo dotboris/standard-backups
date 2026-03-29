@@ -1,50 +1,222 @@
 # Standard Backups
 
+Standard Backups is a generic backup orchestration tool with a plugin-based
+architecture that works with existing backup tools that you love and trust. It
+handles all the boring logic (preparing backups, performing backups, cleanup,
+secret management, etc.) and lets you focus on what you want to backup and where
+you want those backups to go.
+
+## Getting Started
+
+Standard Backups uses backends to integrate with existing backup tools which
+perform the backups. So you first need to choose which backend you'll be using.
+Note that you can use more than one backend and you can change backends if you
+change your mind.
+
+The following backends are currently distributed alongside Standard Backups:
+
+- [Restic](https://restic.net/): A fully featured backend that integrates with
+  restic, a popular, fast, and secure backup program.
+- Rsync: An example backend that uses rsync to backup files.
+
+### Install
+
+You'll need to install Standard Backups itself as well as a backend. Backends
+are plugins that integrate with existing backup tools. You can use more than one
+backend, but you'll need at least one.
+
+1. Open the latest
+   [release](https://github.com/dotboris/standard-backups/releases/latest) page.
+1. Download the `standard-backups` package for your package manager and
+   architecture.
+1. Download at least one backend (`standard-backups-*-backend`) package for your
+   package manager and architecture.
+1. Install those packages with the instructions below (must be run as `root`).
+
+<details>
+<summary>DEB based Linux distributions (e.g. Ubuntu, Debian)</summary>
+
+Go to the directory where you downloaded the `.deb` files for Standard Backups
+and at least one backend. Then, run the following commands:
+
+```sh
+apt update
+apt install ./standard-backups*.deb
+```
+
+</details>
+
+<details>
+<summary>RPM based Linux distributions (e.g. Fedora)</summary>
+
+Go to the directory where you downloaded the `.rpm` files for Standard Backups
+and at least one backend. Then, run the following commands:
+
+```sh
+dnf install --refresh ./standard-backups*.rpm
+```
+
+</details>
+
+<details>
+<summary>Alpine Linux</summary>
+
+Go to the directory where you downloaded the `.apk` files for Standard Backups
+and at least one backend. Then, run the following commands:
+
+```sh
+apk update
+apk add --allow-untrusted ./standard-backups*.apk
+```
+
+</details>
+
+<details>
+<summary>Arch Linux</summary>
+
+Go to the directory where you downloaded the `.pkg.tar.zst` files for Standard
+Backups and at least one backend. Then, run the following commands:
+
+```sh
+pacman -Sy
+pacman -U ./standard-backups*.pkg.tar.zst
+```
+
+</details>
+
+To validate your installation, simply run `standard-backups list-backends`. This
+should show you the backends that you have installed.
+
+### Setup a Recipe
+
+Recipes tell Standard Backups how to backup a given system, service, or
+application. Each recipe consists of a list of paths to backup with exclusions,
+an optional command to prepare the backup (before hook), an optional command to
+cleanup the backup (after hook), and some metadata.
+
+Standard Backups allows applications to distribute their own recipes. This saves
+you from writing your own. You can see what recipes are available on your system
+by running `standard-backups list-recipes`. If there's already a recipe for the
+application you're trying to backup, take note of its name and move to the next
+step. Otherwise, you'll need to write your own.
+
+To make your own recipe, create a `.yaml` file under
+`/etc/standard-backups/recipes/` with the following content:
+
+```yaml
+version: 1 # Internal, must be 1.
+name: my-recipe # Name of your recipe. change this.
+description: ... # Optional description of what your recipe does.
+paths: # Paths that will be backed up. Change this.
+  - /path/to/backup/...
+  - /other/path/to/backup/...
+exclude: # Optional paths that will not be backed up.
+  - paths-not-to-backup
+  - ...
+before: # Optional command to run before the backup. Change or remove this.
+  shell: bash # What shell to run the command through. (options: bash, sh)
+  command: | # Commands to run. Change this.
+    ... command to run ...
+    ... supports multiple lines ...
+after: # Optional command to run after the backup. Change or remove this.
+  shell: bash # What shell to run the command through. (options: bash, sh)
+  command: | # Commands to run. Change this.
+    ... command to run ...
+    ... supports multiple lines ...
+```
+
+Change this file to fit your needs following the comments. You can verify that
+Standard Backups sees your recipe by running `standard-backups list-recipes`.
+
+### Configure a Destination
+
+Destinations are where backups go. Each is bound to a specific backend. As such,
+configuration will change depending on what backend you choose. Follow the
+example below that best fits your backend.
+
+You can see which backends are installed by running `standard-backups list-backends`.
+
+#### Restic Destination
+
+Open `/etc/standard-backups/config.yaml` and add the following:
+
+```yaml
+destinations:
+  my-destination: # Name of your destination. Change this.
+    backend: restic
+    options:
+      repo: ... # Restic repo. Can be a local path or remote server / service.
+      env:
+        # Password for the restic repo. Don't put your password in clear-text here, use the secrets feature.
+        RESTIC_PASSWORD: '{{ .Secrets.myDestinationPassword }}'
+        # Add other environment variables needed by your repo here. Remember: don't put clear-text secrets here, use the secrets feature.
+      forget: # Optional. Tells restic when to delete old backups.
+        # Important: Read the restic guide on this feature before enabling it.
+        # https://restic.readthedocs.io/en/stable/060_forget.html#removing-snapshots-according-to-a-policy
+        enable: true
+        options:
+          keep-last: 4
+          keep-daily: 7
+          keep-weekly: 4
+          keep-monthly: 12
+          keep-yearly: 7
+
+secrets:
+  myDestinationPassword:
+    # Where the repo password is stored.
+    # - Create a file on your system and paste the password in there.
+    # - Change its permissions so that only standard-backups can read it.
+    # - Update the path here to match your file.
+    from-file: /path/to/secret-file
+```
+
+#### Rsync Destination
+
 > [!WARNING]
-> This repository and project is very early in development. It's currently in the prototyping stages and doesn't fully function. It's **not ready for production use at all**.
+> The Rsync backend is not feature-rich or battle tested. It's not recommended for production use.
 
-Standard backups is currently merely an idea trying to take shape. I'm actively working on building a first proof of concept and I'll see how things move out from there.
+Open `/etc/standard-backups/config.yaml` and add the following:
 
-## The Idea
+```yaml
+destinations:
+  my-destination: # Name of your destination. Change this.
+    backend: rsync
+    options:
+      destination-dir: ... # Where to store the backups.
+```
 
-If you've ever wanted to setup backups on linux, you've probably quickly realized that there's a lot of great tools out there but as an admin you have to figure out two things:
+### Perform Backups
 
-1. When and how do you run those backup tools to produce correct backups.
-1. How do you backup all the apps and services you run on your servers.
+First, you need to define a job. Jobs associate a recipe with one or more
+destinations. To define a job, open `/etc/standard-backups/config.yaml` and add
+the following:
 
-### Standard Orchestration and Pluggable Backup Tools
+```yaml
+jobs:
+  my-job: # Name of your job. Change this.
+    recipe: ... # Name of the recipe you found or created earlier. Change this.
+    backup-to: # Destinations where to send the backups.
+      - my-destination # Destination we created earlier. Change this.
+    on-success: # Optional command to run after the job succeeds. Change or remove this.
+      shell: bash # What shell to run this command through. (options: bash, sh)
+      command: | # Commands to run. Change this.
+        ... command to run after job succeeds ...
+    on-failure: # Optional command to run after the job fails. Change or remove this.
+      shell: bash # What shell to run this command through. (options: bash, sh)
+      command: | # Commands to run. Change this.
+        ... command to run after job fails ...
+```
 
-In practice, this leads you to build sketchy one-off scripts for your backups. The quality of those script will vary with your programming know-how and how much time and effort you put into them. This should be easier.
+You can now perform a backup by running `standard-backups backup my-job`. You
+can see the resulting backup by running `standard-backups list-backups`.
 
-There are tools out there that handle this backup orchestration for you but they're bound to specific backup tools. That means that if you want to use `restic` for your backups you need to use one orchestration tool and if you want to use `borg` you need to use another. That's better but not ideal.
+Standard Backups doesn't provide a mechanism to run scheduled backups. Instead,
+you are expected to use an existing task scheduling tool (`cron`, `systemd`
+timers, etc.) to run `standard-backups backup ...` periodically.
 
-This ends up being a lot of programs that all pretty much do the same thing. Some are in-house private scripts while others are open source tools. The level of quality and maintenance across those can vary quite a bit depending on much time and effort maintainers have to give. This seems like a lot of duplicate work.
-
-The idea behind `standard-backups` is to implement a standardized backup orchestration process once and then integrate backup tools in a pluggable way. We save on all the custom scripts and different orchestration tools. This addresses point 1 above.
-
-### Pluggable and Pre-defined Backup Recipes
-
-As a general rule of thumb, backing up an app or service usually involves a few simple steps:
-
-1. Run some commands to prepare for the backup (optional)
-1. Backup one or many directories
-1. Run some commands to clean up after the backup (optional)
-
-This varies from one app to the next. Some apps are nice enough to provide guides and instructions in their documentation while others leave you to reverse engineer things. In a classic scenario, it's the system administrator who's stuck with this task. Problem is that they might be not be well equipped to do that. After all, running and operating an app doesn't mean that you know enough inner plumbing to extract its data for backups.
-
-Wouldn't it be nice if the people who know the most about the app were able to provide all of that for you?
-
-With `standard-backups` the rules on how to backup a given app are defined in a separate manifest that can be provided by the app developer or maintainer. If that doesn't work, it can be provided by package maintainers or even the community. Separating things this way allows you to pull use recipes from trusted sources instead of having to figure out things on your own.
-
-### Simple Backups for Admins
-
-So what's left for system administrators? Simple high level configuration. Using `standard-backups`' config, admins can:
-
-- choose which backup tools to use,
-- define destinations which are different instances of those backup tools (ex: local vs remote),
-- define jobs which connect recipes with one or more targets.
-
-From there, they run `standard-backups` on a schedule and leave it to do all the hard work.
+It is recommended that you create a dedicated user for Standard Backups and
+perform all backups as that one user. All files referenced in the `secrets`
+section of the configuration should be owned and only readable by that user.
 
 ## License
 
