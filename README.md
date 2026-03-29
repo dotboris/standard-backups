@@ -104,23 +104,23 @@ To make your own recipe, create a `.yaml` file under
 `/etc/standard-backups/recipes/` with the following content:
 
 ```yaml
-version: 1 # internal; must be 1
-name: my-recipe # name of your recipe; change this
-description: ... # optional description of what your recipe does
-paths: # paths that will be backed up; change this
+version: 1 # Internal, must be 1.
+name: my-recipe # Name of your recipe. change this.
+description: ... # Optional description of what your recipe does.
+paths: # Paths that will be backed up. Change this.
   - /path/to/backup/...
   - /other/path/to/backup/...
-exclude: # optional paths that will not be backed up
+exclude: # Optional paths that will not be backed up.
   - paths-not-to-backup
   - ...
-before: # optional command to run before the backup; change or remove this
-  shell: bash # what shell to run the command through; (options: bash, sh)
-  command: | # commands to run; change this
+before: # Optional command to run before the backup. Change or remove this.
+  shell: bash # What shell to run the command through. (options: bash, sh)
+  command: | # Commands to run. Change this.
     ... command to run ...
     ... supports multiple lines ...
-after: # optional command to run after the backup; change or remove this
-  shell: bash # what shell to run the command through; (options: bash, sh)
-  command: | # commands to run; change this
+after: # Optional command to run after the backup. Change or remove this.
+  shell: bash # What shell to run the command through. (options: bash, sh)
+  command: | # Commands to run. Change this.
     ... command to run ...
     ... supports multiple lines ...
 ```
