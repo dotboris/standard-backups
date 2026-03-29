@@ -9,9 +9,14 @@ import (
 )
 
 func resticCmd(repo string, env map[string]string, args ...string) *exec.Cmd {
+	restic := os.Getenv("RESTIC")
+	if restic == "" {
+		restic = "restic"
+	}
+
 	finalArgs := []string{"--repo", repo}
 	finalArgs = append(finalArgs, args...)
-	cmd := exec.Command("restic", finalArgs...)
+	cmd := exec.Command(restic, finalArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
