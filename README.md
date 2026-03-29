@@ -187,9 +187,37 @@ destinations:
 
 ### Perform Backups
 
-TODO: configure job
-TODO: Run a backup once
-TODO: setup recurring backups
+First, you need to define a job. Jobs associate a recipe with one or more
+destinations. To define a job, open `/etc/standard-backups/config.yaml` and add
+the following:
+
+```yaml
+jobs:
+  my-job: # Name of your job. Change this.
+    recipe: ... # Name of the recipe you found or created earlier. Change this.
+    backup-to: # Destinations where to send the backups.
+      - my-destination # Destination we created earlier. Change this.
+    on-success: # Optional command to run after the job succeeds. Change or remove this.
+      shell: bash # What shell to run this command through. (options: bash, sh)
+      command: | # Commands to run. Change this.
+        ... command to run after job succeeds ...
+    on-failure: # Optional command to run after the job fails. Change or remove this.
+      shell: bash # What shell to run this command through. (options: bash, sh)
+      command: | # Commands to run. Change this.
+        ... command to run after job fails ...
+```
+
+You are now able to perform your first backup by running
+`standard-backups backup my-job`. You can see the resulting backup by running
+`standard-backups list-backups`.
+
+Standard Backups doesn't provide a mechanism to run scheduled backups. Instead,
+you are expected to use an existing task scheduling tool (`cron`, `systemd`
+timers, etc.) to run `standard-backups backup ...` periodically.
+
+It is recommended that you create a dedicated user for Standard Backups and
+perform all backups as that one user. All files referenced in the `secrets`
+section of the configuration should be owned and only readable by that user.
 
 ## License
 
