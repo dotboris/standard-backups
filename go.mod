@@ -8,6 +8,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gookit/color v1.6.0
+	github.com/hashicorp/go-version v1.8.0
 	github.com/k0kubun/pp/v3 v3.5.1
 	github.com/lithammer/dedent v1.1.0
 	github.com/olekukonko/tablewriter v1.1.4
@@ -25,7 +26,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gkampitakis/ciinfo v0.3.2 // indirect
-	github.com/hashicorp/go-version v1.8.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
