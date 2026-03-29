@@ -1,9 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOptionsToArgs(t *testing.T) {
@@ -54,6 +58,41 @@ func TestOptionsToArgs(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, test.args, res)
 			}
+		})
+	}
+}
+
+func TestCheckRepoExists(t *testing.T) {
+	tests := map[string]string{
+		"system": "restic",
+	}
+	restic016, ok := os.LookupEnv("RESTIC_0_16")
+	if ok {
+		tests["0.16"] = fmt.Sprintf("%s/bin/restic", restic016)
+	}
+	for name, restic := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv("RESTIC", restic)
+			t.Run("exists", func(t *testing.T) {
+				repo := t.TempDir()
+				cmd := exec.Command(restic, "init", "--repo", repo)
+				cmd.Env = append(cmd.Env, "RESTIC_PASSWORD=supersecret")
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				err := cmd.Run()
+				require.NoError(t, err)
+
+				res, err := checkRepoExists(repo, map[string]string{
+					"RESTIC_PASSWORD": "supersecret",
+				})
+				assert.NoError(t, err)
+				assert.True(t, res)
+			})
+			t.Run("not-exists", func(t *testing.T) {
+				res, err := checkRepoExists(t.TempDir(), map[string]string{})
+				assert.NoError(t, err)
+				assert.False(t, res)
+			})
 		})
 	}
 }
