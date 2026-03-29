@@ -1,6 +1,6 @@
 # Standard Backups
 
-Standard Backups is a generic backup orchestration tool with a plugin
+Standard Backups is a generic backup orchestration tool with a plugin-based
 architecture that works with existing backup tools that you love and trust. It
 handles all the boring logic (preparing backups, performing backups, cleanup,
 secret management, etc.) and lets you focus on what you want to backup and where
@@ -13,7 +13,7 @@ perform the backups. So you first need to choose which backend you'll be using.
 Note that you can use more than one backend and you can change backends if you
 change your mind.
 
-The following backends are currently distributed along side Standard Backups:
+The following backends are currently distributed alongside Standard Backups:
 
 - [Restic](https://restic.net/): A fully featured backend that integrates with
   restic, a popular, fast, and secure backup program.
@@ -21,7 +21,7 @@ The following backends are currently distributed along side Standard Backups:
 
 ### Install
 
-You'll need to install `standard-backups` itself as well as a backend. Backends
+You'll need to install Standard Backups itself as well as a backend. Backends
 are plugins that integrate with existing backup tools. You can use more than one
 backend, but you'll need at least one.
 
@@ -31,7 +31,7 @@ backend, but you'll need at least one.
    architecture.
 1. Download at least one backend (`standard-backups-*-backend`) package for your
    package manager and architecture.
-1. Install those packages with the instructions below. Must be run as `root`.
+1. Install those packages with the instructions below (must be run as `root`).
 
 <details>
 <summary>DEB based Linux distributions (e.g. Ubuntu, Debian)</summary>
@@ -94,10 +94,10 @@ application. Each recipe consists of a list of paths to backup with exclusions,
 an optional command to prepare the backup (before hook), an optional command to
 cleanup the backup (after hook), and some metadata.
 
-Standard Backups allows packages to ship their own recipes. This saves your from
-writing your own. You can see what recipes are available on your system by
-running `standard-backups list-recipes`. If there's already a recipe for the
-application you're trying to backup take note of its name and move to the next
+Standard Backups allows applications to distribute their own recipes. This saves
+you from writing your own. You can see what recipes are available on your system
+by running `standard-backups list-recipes`. If there's already a recipe for the
+application you're trying to backup, take note of its name and move to the next
 step. Otherwise, you'll need to write your own.
 
 To make your own recipe, create a `.yaml` file under
@@ -147,9 +147,9 @@ destinations:
     options:
       repo: ... # Restic repo. Can be a local path or remote server / service.
       env:
-        # Password for the restic repo. Don't put your password in clear text here, use the secrets feature.
+        # Password for the restic repo. Don't put your password in clear-text here, use the secrets feature.
         RESTIC_PASSWORD: '{{ .secrets.myDestinationPassword }}'
-        # Add other environment variables needed by your repo here. Remember: don't but clear text secrets here, use the secrets feature.
+        # Add other environment variables needed by your repo here. Remember: don't put clear-text secrets here, use the secrets feature.
       forget: # Optional. Tells restic when to delete old backups.
         # Important: Read the restic guide on this feature before enabling it.
         # https://restic.readthedocs.io/en/stable/060_forget.html#removing-snapshots-according-to-a-policy
@@ -173,7 +173,7 @@ secrets:
 #### Rsync Destination
 
 > [!WARNING]
-> The Rsync backend is not feature rich or battle tested. It's not recommended for production use.
+> The Rsync backend is not feature-rich or battle tested. It's not recommended for production use.
 
 Open `/etc/standard-backups/config.yaml` and add the following:
 
@@ -207,9 +207,8 @@ jobs:
         ... command to run after job fails ...
 ```
 
-You are now able to perform your first backup by running
-`standard-backups backup my-job`. You can see the resulting backup by running
-`standard-backups list-backups`.
+You can now perform a backup by running `standard-backups backup my-job`. You
+can see the resulting backup by running `standard-backups list-backups`.
 
 Standard Backups doesn't provide a mechanism to run scheduled backups. Instead,
 you are expected to use an existing task scheduling tool (`cron`, `systemd`
