@@ -2,16 +2,28 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
+
+	"github.com/hashicorp/go-version"
 )
+
+func resticBin() string {
+	restic := os.Getenv("RESTIC")
+	if restic == "" {
+		restic = "restic"
+	}
+	return restic
+}
 
 func resticCmd(repo string, env map[string]string, args ...string) *exec.Cmd {
 	finalArgs := []string{"--repo", repo}
 	finalArgs = append(finalArgs, args...)
-	cmd := exec.Command("restic", finalArgs...)
+	cmd := exec.Command(resticBin(), finalArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -42,6 +54,44 @@ func resticOutput(repo string, env map[string]string, args ...string) ([]byte, e
 	return output.Bytes(), nil
 }
 
+func resticRawVersion() (string, error) {
+	cmd := exec.Command(resticBin(), "version", "--json")
+	stdout := bytes.NewBuffer(nil)
+	cmd.Stdout = stdout
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	output := stdout.Bytes()
+	var versionMessage struct {
+		Version string `json:"version"`
+	}
+	err = json.Unmarshal(output, &versionMessage)
+	if err == nil {
+		return versionMessage.Version, nil
+	}
+
+	// Older versions don't honor `--json` on `restic version`. Parsing out manually.
+	versionRegexp := regexp.MustCompile(`^restic (\d+\.\d+\.\d+) compiled`)
+	matches := versionRegexp.FindSubmatch(output)
+	if matches == nil {
+		return "", fmt.Errorf("could not parse restic version from '%s'", output)
+	}
+	return string(matches[1]), nil
+}
+
+func resticVersion() (*version.Version, error) {
+	raw, err := resticRawVersion()
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine restic version: %w", err)
+	}
+	res, err := version.NewVersion(raw)
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine restic version (raw=%s): %w", raw, err)
+	}
+	return res, nil
+}
+
 func checkRepoExists(repo string, env map[string]string) (bool, error) {
 	cmd := resticCmd(repo, env, "cat", "config")
 	cmd.Stderr = nil
@@ -49,9 +99,16 @@ func checkRepoExists(repo string, env map[string]string) (bool, error) {
 
 	err := cmd.Run()
 	var exitError *exec.ExitError
-	if errors.As(err, &exitError) &&
-		exitError.ExitCode() == 10 /*repo does not exist*/ {
-		return false, nil
+	if errors.As(err, &exitError) {
+		v, err := resticVersion()
+		if err != nil {
+			return false, fmt.Errorf("failed to check if repo %s exists: %w", repo, err)
+		}
+		if v.LessThan(version.Must(version.NewVersion("0.17.0"))) /*no dedicated exit code*/ ||
+			exitError.ExitCode() == 10 /*repo does not exist*/ {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to check if repo %s exists: %w", repo, err)
 	} else if err != nil {
 		return false, fmt.Errorf("failed to check if repo %s exists: %w", repo, err)
 	}
