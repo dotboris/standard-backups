@@ -8,7 +8,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gookit/color v1.6.0
-	github.com/hashicorp/go-version v1.8.0
+	github.com/hashicorp/go-version v1.9.0
 	github.com/k0kubun/pp/v3 v3.5.1
 	github.com/lithammer/dedent v1.1.0
 	github.com/olekukonko/tablewriter v1.1.4
