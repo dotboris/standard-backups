@@ -8,6 +8,8 @@ config.MainConfig{
       Options: map[string]interface {}{
         "destination-dir": "./dist/backups/local",
       },
+      DefaultVariant: "",
+      Variants:       map[string]map[string]interface {}{},
     },
     "local-restic": config.DestinationConfigV1{
       Backend: "restic",
@@ -17,10 +19,39 @@ config.MainConfig{
         },
         "repo": "./dist/backups/restic-local",
       },
+      DefaultVariant: "medium",
+      Variants:       map[string]map[string]interface {}{
+        "long": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-days": 2555,
+            },
+          },
+        },
+        "medium": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-days": 365,
+            },
+          },
+        },
+        "short": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-days": 30,
+            },
+          },
+        },
+      },
     },
     "s3": config.DestinationConfigV1{
-      Backend: "restic",
-      Options: map[string]interface {}{},
+      Backend:        "restic",
+      Options:        map[string]interface {}{},
+      DefaultVariant: "",
+      Variants:       map[string]map[string]interface {}{},
     },
   },
   Jobs: map[string]config.JobConfigV1{

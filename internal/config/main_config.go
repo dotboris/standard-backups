@@ -16,8 +16,10 @@ const (
 
 type (
 	DestinationConfigV1 struct {
-		Backend string
-		Options map[string]any
+		Backend        string
+		Options        map[string]any
+		DefaultVariant string `mapstructure:"default-variant"`
+		Variants       map[string]map[string]any
 	}
 	JobConfigV1 struct {
 		Recipe    string
@@ -76,6 +78,19 @@ func makeMainConfigSchema(
 							// TODO: allow backend to setup schema here
 							"options": map[string]any{
 								"type": "object",
+							},
+							"default-variant": map[string]any{
+								"type": "string",
+							},
+							"variants": map[string]any{
+								"type":                 "object",
+								"additionalProperties": false,
+								"patternProperties": map[string]any{
+									dynamicPropPattern: map[string]any{
+										// Same as destinations.*.options
+										"type": "object",
+									},
+								},
 							},
 						},
 					},
@@ -182,6 +197,20 @@ func (mc *MainConfig) applyTemplate(template *configTemplate) error {
 			panic(fmt.Sprintf("unexpected result type when templating %s", p))
 		}
 		dest.Options = options
+
+		for variantKey, variant := range dest.Variants {
+			p := fmt.Sprintf("destinations.%s.variants.%s", key, variantKey)
+			res, err := template.Apply(p, variant)
+			if err != nil {
+				return err
+			}
+			resVariant, ok := res.(map[string]any)
+			if !ok {
+				panic(fmt.Sprintf("unexpected result type when templating %s", p))
+			}
+			dest.Variants[variantKey] = resVariant
+		}
+
 		mc.Destinations[key] = dest
 	}
 	return nil

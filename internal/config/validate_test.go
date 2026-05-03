@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidateSuccess(t *testing.T) {
@@ -43,8 +44,12 @@ func TestValidateSuccess(t *testing.T) {
 			Version: 1,
 			Destinations: map[string]DestinationConfigV1{
 				"d": {
-					Backend: "b",
-					Options: map[string]any{},
+					Backend:        "b",
+					Options:        map[string]any{},
+					DefaultVariant: "foo",
+					Variants: map[string]map[string]any{
+						"foo": map[string]any{},
+					},
 				},
 			},
 			Jobs: map[string]JobConfigV1{
@@ -121,4 +126,26 @@ func TestValidateMainConfigUnknownDestination(t *testing.T) {
 	assert.Equal(t, "bogus/config.yaml", res[0].File)
 	assert.Equal(t, "/jobs/my-job/backup-to/0", res[0].FieldPath)
 	assert.EqualError(t, res[0].Err, "unknown destination nope")
+}
+
+func TestValidateDefaultVariantBadRef(t *testing.T) {
+	c := Config{
+		MainConfig: MainConfig{
+			path: "bogus/config.yaml",
+			Destinations: map[string]DestinationConfigV1{
+				"my-dest": DestinationConfigV1{
+					DefaultVariant: "nope",
+					Variants: map[string]map[string]any{
+						"bogus": map[string]any{},
+					},
+				},
+			},
+		},
+	}
+
+	res := c.Validate()
+	require.Len(t, res, 1)
+	assert.Equal(t, "bogus/config.yaml", res[0].File)
+	assert.Equal(t, "/destinations/my-dest/default-variant", res[0].FieldPath)
+	assert.EqualError(t, res[0].Err, "unknown variant nope for destination my-dest")
 }
