@@ -491,8 +491,9 @@ func TestGetDestinationDirect(t *testing.T) {
 		},
 	}
 
-	dest, err := c.GetDestination("target")
+	dest, ref, err := c.GetDestination("target")
 	require.NoError(t, err)
+	assert.Equal(t, &DestinationRef{Name: "target"}, ref)
 	assert.Equal(t, c.Destinations["target"], *dest)
 }
 
@@ -512,8 +513,9 @@ func TestGetDestinationVariant(t *testing.T) {
 		},
 	}
 
-	dest, err := c.GetDestination("target/var")
+	dest, ref, err := c.GetDestination("target/var")
 	require.NoError(t, err)
+	assert.Equal(t, &DestinationRef{Name: "target", Variant: "var"}, ref)
 	assert.Equal(t, DestinationConfigV1{
 		Options: map[string]any{
 			"foo": "override",
@@ -538,8 +540,9 @@ func TestGetDestinationDefaultVariant(t *testing.T) {
 		},
 	}
 
-	dest, err := c.GetDestination("target")
+	dest, ref, err := c.GetDestination("target")
 	require.NoError(t, err)
+	assert.Equal(t, &DestinationRef{Name: "target", Variant: "var"}, ref)
 	assert.Equal(t, DestinationConfigV1{
 		Options: map[string]any{
 			"foo": "override",
@@ -574,8 +577,9 @@ func TestGetDestinationVariantComplexMerge(t *testing.T) {
 		},
 	}
 
-	dest, err := c.GetDestination("target/var")
+	dest, ref, err := c.GetDestination("target/var")
 	require.NoError(t, err)
+	assert.Equal(t, &DestinationRef{Name: "target", Variant: "var"}, ref)
 	assert.Equal(t, DestinationConfigV1{
 		Options: map[string]any{
 			"foo":             "override",

@@ -149,9 +149,11 @@ func TestExampleResticLocal(t *testing.T) {
 	_ = os.RemoveAll(path.Join(destDir))
 
 	cmd := testutils.StandardBackups(t, "backup", "test-restic")
+	stderr := bytes.NewBufferString("")
+	cmd.Stderr = stderr
 	testutils.ApplyExampleConfig(t, cmd)
 	err := cmd.Run()
-	if !assert.NoError(t, err) {
+	if !assert.NoError(t, err, stderr) {
 		return
 	}
 
@@ -160,7 +162,7 @@ func TestExampleResticLocal(t *testing.T) {
 		os.Environ(),
 		"RESTIC_PASSWORD=supersecret",
 	)
-	stderr := bytes.NewBufferString("")
+	stderr = bytes.NewBufferString("")
 	cmd.Stderr = stderr
 	resticOutput, err := cmd.Output()
 	if !assert.NoError(t, err, stderr.String()) {

@@ -25,7 +25,7 @@ config.MainConfig{
           "forget": map[string]interface {}{
             "enable":  true,
             "options": map[string]interface {}{
-              "keep-days": 2555,
+              "keep-daily": 2555,
             },
           },
         },
@@ -33,7 +33,7 @@ config.MainConfig{
           "forget": map[string]interface {}{
             "enable":  true,
             "options": map[string]interface {}{
-              "keep-days": 365,
+              "keep-daily": 365,
             },
           },
         },
@@ -41,7 +41,7 @@ config.MainConfig{
           "forget": map[string]interface {}{
             "enable":  true,
             "options": map[string]interface {}{
-              "keep-days": 30,
+              "keep-daily": 30,
             },
           },
         },

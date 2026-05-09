@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +20,9 @@ var restoreCmd = &cobra.Command{
 			return err
 		}
 
-		destination, ok := config.MainConfig.Destinations[destName]
-		if !ok {
-			return fmt.Errorf("could not find destination named %s", destName)
+		destination, ref, err := config.MainConfig.GetDestination(destName)
+		if err != nil {
+			return err
 		}
 
 		client, err := proto.NewBackendClient(*config, destination.Backend)
@@ -34,7 +32,7 @@ var restoreCmd = &cobra.Command{
 
 		err = client.Restore(&proto.RestoreRequest{
 			RawOptions:      destination.Options,
-			DestinationName: destName,
+			DestinationName: ref.Name, // TODO: split dest name from variant
 			BackupId:        backupId,
 			OutputDir:       outputDir,
 		})

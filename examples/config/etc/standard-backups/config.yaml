@@ -23,17 +23,17 @@ destinations:
         forget:
           enable: true
           options:
-            keep-days: 30 # 1 month
+            keep-daily: 30 # 1 month
       medium:
         forget:
           enable: true
           options:
-            keep-days: 365 # 1 year
+            keep-daily: 365 # 1 year
       long:
         forget:
           enable: true
           options:
-            keep-days: 2555 # 7 years
+            keep-daily: 2555 # 7 years
 
 jobs:
   nextcloud:

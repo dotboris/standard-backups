@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/dotboris/standard-backups/internal/config"
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/spf13/cobra"
@@ -38,15 +36,15 @@ automatically configure the command to work with the specified destination.
 				return err
 			}
 
-			var dest config.DestinationConfigV1
+			var dest *config.DestinationConfigV1
+			var ref *config.DestinationRef
 			backend := execBackend
 			if backend == "" {
-				d, ok := cfg.MainConfig.Destinations[execDestination]
-				if !ok {
-					return fmt.Errorf("could not find destination named %s", execDestination)
+				dest, ref, err = cfg.MainConfig.GetDestination(execDestination)
+				if err != nil {
+					return err
 				}
-				backend = d.Backend
-				dest = d
+				backend = dest.Backend
 			}
 
 			client, err := proto.NewBackendClient(*cfg, backend)
@@ -54,11 +52,16 @@ automatically configure the command to work with the specified destination.
 				return err
 			}
 
-			err = client.Exec(&proto.ExecRequest{
-				Args:            args,
-				DestinationName: execDestination,
-				RawOptions:      dest.Options,
-			})
+			req := &proto.ExecRequest{
+				Args: args,
+			}
+			if ref != nil {
+				req.DestinationName = ref.Name // TODO: split dest name & variant
+			}
+			if dest != nil {
+				req.RawOptions = dest.Options
+			}
+			err = client.Exec(req)
 			return err
 		},
 		DisableFlagsInUseLine: true,

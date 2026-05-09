@@ -63,3 +63,58 @@ func TestSecretsPassedToBackend(t *testing.T) {
 		}, b.ReadJsonMap("STANDARD_BACKUPS_OPTIONS"))
 	}
 }
+
+func TestSecretsPassedToBackendWithVarient(t *testing.T) {
+	secretFile1 := path.Join(t.TempDir(), "secret1.txt")
+	err := os.WriteFile(secretFile1, []byte("file secret 1"), 0o644)
+	if !assert.NoError(t, err) {
+		return
+	}
+	secretFile2 := path.Join(t.TempDir(), "secret2.txt")
+	err = os.WriteFile(secretFile2, []byte("file secret 2\n"), 0o644)
+	if !assert.NoError(t, err) {
+		return
+	}
+	b := testutils.NewDumpBackend(t)
+	tc := testutils.NewTestConfig(t)
+	tc.AddBogusRecipe(t, "bogus")
+	tc.AddBackend("test-backend", b.Path)
+	tc.WriteConfig(fmt.Sprintf(testutils.DedentYaml(`
+		version: 1
+		secrets:
+			literal:
+				literal: supersecret
+			file1:
+				from-file: %s
+			file2:
+				from-file: %s
+		destinations:
+			my-dest:
+				backend: test-backend
+				variants:
+				  foo:
+						literal: '{{ .Secrets.literal }}'
+						file1: '{{ .Secrets.file1 }}'
+						file2: '{{ .Secrets.file2 }}'
+		jobs:
+			my-job:
+				recipe: bogus
+				backup-to: [my-dest/foo]
+	`), secretFile1, secretFile2))
+
+	cmd := testutils.StandardBackups(t, "validate-config")
+	tc.Apply(cmd)
+	err = cmd.Run()
+	assert.NoError(t, err)
+
+	cmd = testutils.StandardBackups(t, "backup", "my-job")
+	tc.Apply(cmd)
+	err = cmd.Run()
+	if assert.NoError(t, err) {
+		assert.Equal(t, map[string]any{
+			"literal": "supersecret",
+			"file1":   "file secret 1",
+			"file2":   "file secret 2\n",
+		}, b.ReadJsonMap("STANDARD_BACKUPS_OPTIONS"))
+	}
+}

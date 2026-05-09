@@ -217,12 +217,17 @@ func (mc *MainConfig) applyTemplate(template *configTemplate) error {
 	return nil
 }
 
-func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, error) {
+type DestinationRef struct {
+	Name    string
+	Variant string
+}
+
+func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, *DestinationRef, error) {
 	parts := strings.SplitN(name, "/", 2)
 	destName := parts[0]
 	dest, ok := c.Destinations[destName]
 	if !ok {
-		return nil, fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"unknown destination %s: destinations.%s not in main config",
 			name,
 			destName,
@@ -237,13 +242,13 @@ func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, error) {
 		varName = dest.DefaultVariant
 	}
 	if len(dest.Variants) != 0 && varName == "" {
-		return nil, fmt.Errorf("destination %s requires a variant", name)
+		return nil, nil, fmt.Errorf("destination %s requires a variant", name)
 	}
 
 	if varName != "" {
 		variant, ok := dest.Variants[varName]
 		if !ok {
-			return nil, fmt.Errorf(
+			return nil, nil, fmt.Errorf(
 				"unknown destination %s: destinations.%s.variants.%s not in main config",
 				name,
 				destName,
@@ -257,7 +262,10 @@ func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, error) {
 		dest.DefaultVariant = ""
 	}
 
-	return &dest, nil
+	return &dest, &DestinationRef{
+		Name:    destName,
+		Variant: varName,
+	}, nil
 }
 
 func mergeOptions(base, variant any) any {

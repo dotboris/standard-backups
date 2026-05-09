@@ -32,9 +32,9 @@ var listBackupsCmd = &cobra.Command{
 		}
 
 		destName := args[0]
-		destination, ok := config.MainConfig.Destinations[destName]
-		if !ok {
-			return fmt.Errorf("could not find destination named %s", destName)
+		destination, ref, err := config.MainConfig.GetDestination(destName)
+		if err != nil {
+			return err
 		}
 
 		client, err := proto.NewBackendClient(*config, destination.Backend)
@@ -44,7 +44,7 @@ var listBackupsCmd = &cobra.Command{
 
 		res, err := client.ListBackups(&proto.ListBackupsRequest{
 			RawOptions:      destination.Options,
-			DestinationName: destName,
+			DestinationName: ref.Name, // TODO: split name & variant
 		})
 		if err != nil {
 			return err

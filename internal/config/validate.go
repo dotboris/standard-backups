@@ -58,9 +58,7 @@ func (c *Config) Validate() []ValidationError {
 
 	for jobName, job := range c.MainConfig.Jobs {
 		for destIndex, destName := range job.BackupTo {
-			// TODO: validate refs with variants
-			// TODO: crash with no default ref
-			_, err := c.MainConfig.GetDestination(destName)
+			_, _, err := c.MainConfig.GetDestination(destName)
 			if err != nil {
 				res = append(res, ValidationError{
 					File:      c.MainConfig.path,
