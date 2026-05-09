@@ -47,7 +47,11 @@ func (c *Config) Validate() []ValidationError {
 			res = append(res, ValidationError{
 				File:      c.MainConfig.path,
 				FieldPath: fmt.Sprintf("/destinations/%s/default-variant", destName),
-				Err:       fmt.Errorf("unknown variant %s for destination %s", dest.DefaultVariant, destName),
+				Err: fmt.Errorf(
+					"unknown variant %s for destination %s",
+					dest.DefaultVariant,
+					destName,
+				),
 			})
 		}
 	}
@@ -56,12 +60,12 @@ func (c *Config) Validate() []ValidationError {
 		for destIndex, destName := range job.BackupTo {
 			// TODO: validate refs with variants
 			// TODO: crash with no default ref
-			_, ok := c.MainConfig.Destinations[destName]
-			if !ok {
+			_, err := c.MainConfig.GetDestination(destName)
+			if err != nil {
 				res = append(res, ValidationError{
 					File:      c.MainConfig.path,
 					FieldPath: fmt.Sprintf("/jobs/%s/backup-to/%d", jobName, destIndex),
-					Err:       fmt.Errorf("unknown destination %s", destName),
+					Err:       err,
 				})
 			}
 		}

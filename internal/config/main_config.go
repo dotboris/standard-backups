@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/goccy/go-yaml"
@@ -214,4 +215,68 @@ func (mc *MainConfig) applyTemplate(template *configTemplate) error {
 		mc.Destinations[key] = dest
 	}
 	return nil
+}
+
+func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, error) {
+	parts := strings.SplitN(name, "/", 2)
+	destName := parts[0]
+	dest, ok := c.Destinations[destName]
+	if !ok {
+		return nil, fmt.Errorf(
+			"unknown destination %s: destinations.%s not in main config",
+			name,
+			destName,
+		)
+	}
+
+	varName := ""
+	if len(parts) > 1 {
+		varName = parts[1]
+	}
+	if varName == "" {
+		varName = dest.DefaultVariant
+	}
+	if len(dest.Variants) != 0 && varName == "" {
+		return nil, fmt.Errorf("destination %s requires a variant", name)
+	}
+
+	if varName != "" {
+		variant, ok := dest.Variants[varName]
+		if !ok {
+			return nil, fmt.Errorf(
+				"unknown destination %s: destinations.%s.variants.%s not in main config",
+				name,
+				destName,
+				varName,
+			)
+		}
+		dest.Options = mergeOptions(dest.Options, variant).(map[string]any)
+
+		// Erase variants to avoid funny nested lookup
+		dest.Variants = nil
+		dest.DefaultVariant = ""
+	}
+
+	return &dest, nil
+}
+
+func mergeOptions(base, variant any) any {
+	baseMap, baseIsMap := base.(map[string]any)
+	variantMap, variantIsMap := variant.(map[string]any)
+	if baseIsMap && variantIsMap {
+		res := make(map[string]any)
+		for k, v := range baseMap {
+			res[k] = v
+		}
+		for k, v := range variantMap {
+			existing, ok := res[k]
+			if ok {
+				res[k] = mergeOptions(existing, v)
+			} else {
+				res[k] = v
+			}
+		}
+		return res
+	}
+	return variant
 }

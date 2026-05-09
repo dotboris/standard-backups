@@ -48,14 +48,14 @@ func TestValidateSuccess(t *testing.T) {
 					Options:        map[string]any{},
 					DefaultVariant: "foo",
 					Variants: map[string]map[string]any{
-						"foo": map[string]any{},
+						"foo": {},
 					},
 				},
 			},
 			Jobs: map[string]JobConfigV1{
 				"j": {
 					Recipe:   "r",
-					BackupTo: []string{"d"},
+					BackupTo: []string{"d", "d/foo"},
 				},
 			},
 		},
@@ -125,7 +125,65 @@ func TestValidateMainConfigUnknownDestination(t *testing.T) {
 	assert.Len(t, res, 1)
 	assert.Equal(t, "bogus/config.yaml", res[0].File)
 	assert.Equal(t, "/jobs/my-job/backup-to/0", res[0].FieldPath)
-	assert.EqualError(t, res[0].Err, "unknown destination nope")
+	assert.EqualError(
+		t,
+		res[0].Err,
+		"unknown destination nope: destinations.nope not in main config",
+	)
+}
+
+func TestValidateMainConfigKnownDestinationBadVariant(t *testing.T) {
+	c := Config{
+		MainConfig: MainConfig{
+			path: "bogus/config.yaml",
+			Destinations: map[string]DestinationConfigV1{
+				"dest": {
+					Variants: map[string]map[string]any{
+						"bogus": {},
+					},
+				},
+			},
+			Jobs: map[string]JobConfigV1{
+				"my-job": {
+					BackupTo: []string{"dest/nope"},
+				},
+			},
+		},
+	}
+	res := c.Validate()
+	assert.Len(t, res, 1)
+	assert.Equal(t, "bogus/config.yaml", res[0].File)
+	assert.Equal(t, "/jobs/my-job/backup-to/0", res[0].FieldPath)
+	assert.EqualError(
+		t,
+		res[0].Err,
+		"unknown destination dest/nope: destinations.dest.variants.nope not in main config",
+	)
+}
+
+func TestValidateMainConfigKnownDestinationRequiredVariant(t *testing.T) {
+	c := Config{
+		MainConfig: MainConfig{
+			path: "bogus/config.yaml",
+			Destinations: map[string]DestinationConfigV1{
+				"dest": {
+					Variants: map[string]map[string]any{
+						"bogus": {},
+					},
+				},
+			},
+			Jobs: map[string]JobConfigV1{
+				"my-job": {
+					BackupTo: []string{"dest"},
+				},
+			},
+		},
+	}
+	res := c.Validate()
+	assert.Len(t, res, 1)
+	assert.Equal(t, "bogus/config.yaml", res[0].File)
+	assert.Equal(t, "/jobs/my-job/backup-to/0", res[0].FieldPath)
+	assert.EqualError(t, res[0].Err, "destination dest requires a variant")
 }
 
 func TestValidateDefaultVariantBadRef(t *testing.T) {
@@ -133,10 +191,10 @@ func TestValidateDefaultVariantBadRef(t *testing.T) {
 		MainConfig: MainConfig{
 			path: "bogus/config.yaml",
 			Destinations: map[string]DestinationConfigV1{
-				"my-dest": DestinationConfigV1{
+				"my-dest": {
 					DefaultVariant: "nope",
 					Variants: map[string]map[string]any{
-						"bogus": map[string]any{},
+						"bogus": {},
 					},
 				},
 			},

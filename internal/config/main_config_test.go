@@ -9,6 +9,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadMainConfigMinimalConfig(t *testing.T) {
@@ -477,4 +478,113 @@ func TestLoadMainConfigJobBadHooks(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetDestinationDirect(t *testing.T) {
+	c := MainConfig{
+		Destinations: map[string]DestinationConfigV1{
+			"target": {
+				Options: map[string]any{
+					"foo": "bar",
+				},
+			},
+		},
+	}
+
+	dest, err := c.GetDestination("target")
+	require.NoError(t, err)
+	assert.Equal(t, c.Destinations["target"], *dest)
+}
+
+func TestGetDestinationVariant(t *testing.T) {
+	c := MainConfig{
+		Destinations: map[string]DestinationConfigV1{
+			"target": {
+				Options: map[string]any{
+					"foo": "bar",
+				},
+				Variants: map[string]map[string]any{
+					"var": {
+						"foo": "override",
+					},
+				},
+			},
+		},
+	}
+
+	dest, err := c.GetDestination("target/var")
+	require.NoError(t, err)
+	assert.Equal(t, DestinationConfigV1{
+		Options: map[string]any{
+			"foo": "override",
+		},
+	}, *dest)
+}
+
+func TestGetDestinationDefaultVariant(t *testing.T) {
+	c := MainConfig{
+		Destinations: map[string]DestinationConfigV1{
+			"target": {
+				Options: map[string]any{
+					"foo": "bar",
+				},
+				DefaultVariant: "var",
+				Variants: map[string]map[string]any{
+					"var": {
+						"foo": "override",
+					},
+				},
+			},
+		},
+	}
+
+	dest, err := c.GetDestination("target")
+	require.NoError(t, err)
+	assert.Equal(t, DestinationConfigV1{
+		Options: map[string]any{
+			"foo": "override",
+		},
+	}, *dest)
+}
+
+func TestGetDestinationVariantComplexMerge(t *testing.T) {
+	c := MainConfig{
+		Destinations: map[string]DestinationConfigV1{
+			"target": {
+				Options: map[string]any{
+					"foo":             "bar",
+					"changeType":      "42",
+					"nested":          map[string]any{"foo": "bar"},
+					"arr":             []int{1, 2, 3, 4},
+					"replaceMapNil":   map[string]any{"foo": "bar"},
+					"replaceMapValue": map[string]any{"foo": "bar"},
+				},
+				Variants: map[string]map[string]any{
+					"var": {
+						"foo":             "override",
+						"changeType":      42,
+						"new":             "hello",
+						"nested":          map[string]any{"foo": "override"},
+						"arr":             []int{5, 6, 7, 8},
+						"replaceMapNil":   nil,
+						"replaceMapValue": 42,
+					},
+				},
+			},
+		},
+	}
+
+	dest, err := c.GetDestination("target/var")
+	require.NoError(t, err)
+	assert.Equal(t, DestinationConfigV1{
+		Options: map[string]any{
+			"foo":             "override",
+			"changeType":      42,
+			"new":             "hello",
+			"nested":          map[string]any{"foo": "override"},
+			"arr":             []int{5, 6, 7, 8},
+			"replaceMapNil":   nil,
+			"replaceMapValue": 42,
+		},
+	}, *dest)
 }
