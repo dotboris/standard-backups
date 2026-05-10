@@ -128,7 +128,11 @@ func TestExecDestinationNotFound(t *testing.T) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	assert.EqualError(t, err, "exit status 1")
-	assert.Equal(t, "Error: unknown destination does-not-exist: destinations.does-not-exist not in main config\n", stderr.String())
+	assert.Equal(
+		t,
+		"Error: unknown destination does-not-exist: destinations.does-not-exist not in main config\n",
+		stderr.String(),
+	)
 }
 
 func TestExecInnerError(t *testing.T) {
