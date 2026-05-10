@@ -6,3 +6,4 @@
 - e2e tests for variants & proto
 - e2e tests for restic with variants
 - Allow list-backups to operate across all variants
+- (maybe) Add test backend for e2e style tests
