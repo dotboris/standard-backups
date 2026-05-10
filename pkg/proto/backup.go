@@ -2,6 +2,7 @@ package proto
 
 import (
 	"errors"
+	"os"
 )
 
 type (
@@ -10,6 +11,7 @@ type (
 		Paths           []string
 		Exclude         []string
 		DestinationName string
+		VariantName     string
 		JobName         string
 		RawOptions      map[string]any
 	}
@@ -25,6 +27,7 @@ func NewBackupRequestFromEnv() (*BackupRequest, error) {
 	if err != nil {
 		return nil, err
 	}
+	variantName := os.Getenv(VARIANT_NAME_ENV)
 	jobName, err := getEnvStr(JOB_NAME_ENV)
 	if err != nil {
 		return nil, err
@@ -37,6 +40,7 @@ func NewBackupRequestFromEnv() (*BackupRequest, error) {
 		Paths:           paths,
 		Exclude:         exclude,
 		DestinationName: destinationName,
+		VariantName:     variantName,
 		JobName:         jobName,
 		RawOptions:      options,
 	}, nil
@@ -59,6 +63,7 @@ func (br *BackupRequest) ToEnv() ([]string, error) {
 		pathsEnv,
 		excludeEnv,
 		toEnvStr(DESTINATION_NAME_ENV, br.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, br.VariantName),
 		toEnvStr(JOB_NAME_ENV, br.JobName),
 		optionsEnv,
 	}, nil

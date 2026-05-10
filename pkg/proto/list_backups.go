@@ -11,6 +11,7 @@ type (
 	ListBackupsRequest struct {
 		RawOptions      map[string]any
 		DestinationName string
+		VariantName     string
 	}
 	ListBackupsResponseItem struct {
 		Id          string         `json:"id"`
@@ -35,9 +36,11 @@ func NewListBackupsRequestsFromEnv() (*ListBackupsRequest, error) {
 	if err != nil {
 		return nil, err
 	}
+	variantName := os.Getenv(VARIANT_NAME_ENV)
 	return &ListBackupsRequest{
 		RawOptions:      options,
 		DestinationName: destinationName,
+		VariantName:     variantName,
 	}, nil
 }
 
@@ -48,6 +51,7 @@ func (lbr *ListBackupsRequest) ToEnv() ([]string, error) {
 	}
 	return []string{
 		toEnvStr(DESTINATION_NAME_ENV, lbr.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, lbr.VariantName),
 		optionsEnv,
 	}, nil
 }

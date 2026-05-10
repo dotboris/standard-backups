@@ -2,12 +2,14 @@ package proto
 
 import (
 	"errors"
+	"os"
 )
 
 type (
 	RestoreRequest struct {
 		RawOptions      map[string]any
 		DestinationName string
+		VariantName     string
 		BackupId        string
 		OutputDir       string
 	}
@@ -19,6 +21,7 @@ func NewRestoreRequestFromEnv() (*RestoreRequest, error) {
 	if err != nil {
 		return nil, err
 	}
+	variantName := os.Getenv(VARIANT_NAME_ENV)
 	backupId, err := getEnvStr(BACKUP_ID_ENV)
 	if err != nil {
 		return nil, err
@@ -34,6 +37,7 @@ func NewRestoreRequestFromEnv() (*RestoreRequest, error) {
 	return &RestoreRequest{
 		RawOptions:      options,
 		DestinationName: destinationName,
+		VariantName:     variantName,
 		BackupId:        backupId,
 		OutputDir:       outputDir,
 	}, err
@@ -47,6 +51,7 @@ func (r *RestoreRequest) ToEnv() ([]string, error) {
 	return []string{
 		toEnvStr(BACKUP_ID_ENV, r.BackupId),
 		toEnvStr(DESTINATION_NAME_ENV, r.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, r.VariantName),
 		toEnvStr(OUTPUT_DIR_ENV, r.OutputDir),
 		optionsEnv,
 	}, nil
@@ -64,7 +69,7 @@ func (bc *BackendClient) Restore(req *RestoreRequest) error {
 
 func (bi *BackendImpl) restore() error {
 	if bi.Restore == nil {
-		return errors.New("unhandled command backup")
+		return errors.New("unhandled command restore")
 	}
 	req, err := NewRestoreRequestFromEnv()
 	if err != nil {

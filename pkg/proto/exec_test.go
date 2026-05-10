@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testExecReq = &ExecRequest{
+var testExecReqFull = &ExecRequest{
 	Args:            []string{"foo", "bar", "--baz", "-b"},
 	DestinationName: "my-dest",
+	VariantName:     "my-variant",
 	RawOptions: map[string]any{
 		"key":    "value",
 		"bool":   true,
@@ -19,31 +20,40 @@ var testExecReq = &ExecRequest{
 		"object": map[string]any{"foo": "bar"},
 	},
 }
+var testExecReqMinimal = &ExecRequest{}
 
 func TestExecRequestE2E(t *testing.T) {
-	testutils.SetEnvFromToEnv(t, testExecReq)
-	var (
-		gotReq *ExecRequest
-		called bool
-	)
-	b := &BackendImpl{
-		Exec: func(r *ExecRequest) error {
-			called = true
-			gotReq = r
-			return nil
-		},
+	testCases := map[string]*ExecRequest{
+		"full":    testExecReqFull,
+		"minimal": testExecReqMinimal,
 	}
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "exec")
-	err := b.execute()
-	if assert.NoError(t, err) {
-		assert.True(t, called, "Exec func was not called")
-		assert.Equal(t, testExecReq, gotReq)
+	for name, req := range testCases {
+		t.Run(name, func(t *testing.T) {
+			testutils.SetEnvFromToEnv(t, req)
+			var (
+				gotReq *ExecRequest
+				called bool
+			)
+			b := &BackendImpl{
+				Exec: func(r *ExecRequest) error {
+					called = true
+					gotReq = r
+					return nil
+				},
+			}
+			t.Setenv(COMMAND_ENV, "exec")
+			err := b.execute()
+			if assert.NoError(t, err) {
+				assert.True(t, called, "Exec func was not called")
+				assert.Equal(t, req, gotReq)
+			}
+		})
 	}
 }
 
 func TestExecError(t *testing.T) {
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "exec")
-	testutils.SetEnvFromToEnv(t, testExecReq)
+	t.Setenv(COMMAND_ENV, "exec")
+	testutils.SetEnvFromToEnv(t, testExecReqFull)
 	expectedErr := errors.New("oops")
 	b := &BackendImpl{
 		Exec: func(req *ExecRequest) error {
@@ -55,7 +65,7 @@ func TestExecError(t *testing.T) {
 }
 
 func TestExecNotImplemented(t *testing.T) {
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "exec")
+	t.Setenv(COMMAND_ENV, "exec")
 	b := &BackendImpl{}
 	err := b.execute()
 	assert.EqualError(t, err, "unhandled command exec")

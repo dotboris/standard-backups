@@ -44,7 +44,8 @@ var listBackupsCmd = &cobra.Command{
 
 		res, err := client.ListBackups(&proto.ListBackupsRequest{
 			RawOptions:      destination.Options,
-			DestinationName: ref.Name, // TODO: split name & variant
+			DestinationName: ref.Name,
+			VariantName:     ref.Variant,
 		})
 		if err != nil {
 			return err

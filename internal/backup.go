@@ -86,7 +86,8 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 				&proto.BackupRequest{
 					Paths:           recipe.Paths,
 					Exclude:         recipe.Exclude,
-					DestinationName: ref.Name, // TODO: include variant name
+					DestinationName: ref.Name,
+					VariantName:     ref.Variant,
 					JobName:         jobName,
 					RawOptions:      dest.Options,
 				},

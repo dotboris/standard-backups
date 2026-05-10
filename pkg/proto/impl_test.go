@@ -7,7 +7,7 @@ import (
 )
 
 func TestBackendImplUnknownCommand(t *testing.T) {
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "bogus")
+	t.Setenv(COMMAND_ENV, "bogus")
 	b := &BackendImpl{}
 	err := b.execute()
 	assert.EqualError(t, err, "unknown command bogus")

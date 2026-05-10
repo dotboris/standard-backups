@@ -8,10 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testBackupReq = &BackupRequest{
+var testBackupReqFull = &BackupRequest{
 	Paths:           []string{"/foo", "/bar"},
 	Exclude:         []string{"biz", "baz"},
 	DestinationName: "my-dest",
+	VariantName:     "my-variant",
 	JobName:         "my-job",
 	RawOptions: map[string]any{
 		"key":    "value",
@@ -22,30 +23,44 @@ var testBackupReq = &BackupRequest{
 	},
 }
 
+var testBackupReqMinimal = &BackupRequest{
+	Paths:           []string{"/foo", "/bar"},
+	DestinationName: "my-dest",
+	JobName:         "my-job",
+}
+
 func TestBackupRequestE2E(t *testing.T) {
-	testutils.SetEnvFromToEnv(t, testBackupReq)
-	var (
-		gotReq *BackupRequest
-		called bool
-	)
-	b := &BackendImpl{
-		Backup: func(r *BackupRequest) error {
-			called = true
-			gotReq = r
-			return nil
-		},
+	testCases := map[string]*BackupRequest{
+		"full":    testBackupReqFull,
+		"minimal": testBackupReqMinimal,
 	}
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
-	err := b.execute()
-	if assert.NoError(t, err) {
-		assert.True(t, called, "Backup func was not called")
-		assert.Equal(t, testBackupReq, gotReq)
+	for name, req := range testCases {
+		t.Run(name, func(t *testing.T) {
+			testutils.SetEnvFromToEnv(t, req)
+			var (
+				gotReq *BackupRequest
+				called bool
+			)
+			b := &BackendImpl{
+				Backup: func(r *BackupRequest) error {
+					called = true
+					gotReq = r
+					return nil
+				},
+			}
+			t.Setenv(COMMAND_ENV, "backup")
+			err := b.execute()
+			if assert.NoError(t, err) {
+				assert.True(t, called, "Backup func was not called")
+				assert.Equal(t, req, gotReq)
+			}
+		})
 	}
 }
 
 func TestBackupError(t *testing.T) {
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
-	testutils.SetEnvFromToEnv(t, testBackupReq)
+	t.Setenv(COMMAND_ENV, "backup")
+	testutils.SetEnvFromToEnv(t, testBackupReqFull)
 	expectedErr := errors.New("oops")
 	b := &BackendImpl{
 		Backup: func(req *BackupRequest) error {
@@ -57,7 +72,7 @@ func TestBackupError(t *testing.T) {
 }
 
 func TestBackupNotImplemented(t *testing.T) {
-	t.Setenv("STANDARD_BACKUPS_COMMAND", "backup")
+	t.Setenv(COMMAND_ENV, "backup")
 	b := &BackendImpl{}
 	err := b.execute()
 	assert.EqualError(t, err, "unhandled command backup")

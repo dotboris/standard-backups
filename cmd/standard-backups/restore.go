@@ -32,7 +32,8 @@ var restoreCmd = &cobra.Command{
 
 		err = client.Restore(&proto.RestoreRequest{
 			RawOptions:      destination.Options,
-			DestinationName: ref.Name, // TODO: split dest name from variant
+			DestinationName: ref.Name,
+			VariantName:     ref.Variant,
 			BackupId:        backupId,
 			OutputDir:       outputDir,
 		})

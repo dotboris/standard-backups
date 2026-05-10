@@ -10,12 +10,14 @@ type (
 	ExecRequest struct {
 		Args            []string
 		DestinationName string
+		VariantName     string
 		RawOptions      map[string]any
 	}
 )
 
 func NewExecRequestFromEnv() (*ExecRequest, error) {
 	destinationName, _ := os.LookupEnv(DESTINATION_NAME_ENV)
+	variantName, _ := os.LookupEnv(VARIANT_NAME_ENV)
 	options, err := getEnvJson[map[string]any](OPTIONS_ENV)
 	if err != nil {
 		return nil, err
@@ -26,6 +28,7 @@ func NewExecRequestFromEnv() (*ExecRequest, error) {
 	}
 	return &ExecRequest{
 		DestinationName: destinationName,
+		VariantName:     variantName,
 		RawOptions:      options,
 		Args:            args,
 	}, nil
@@ -43,6 +46,7 @@ func (r *ExecRequest) ToEnv() ([]string, error) {
 	return []string{
 		argsEnv,
 		toEnvStr(DESTINATION_NAME_ENV, r.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, r.VariantName),
 		optionsEnv,
 	}, nil
 }

@@ -56,7 +56,8 @@ automatically configure the command to work with the specified destination.
 				Args: args,
 			}
 			if ref != nil {
-				req.DestinationName = ref.Name // TODO: split dest name & variant
+				req.DestinationName = ref.Name
+				req.VariantName = ref.Variant
 			}
 			if dest != nil {
 				req.RawOptions = dest.Options
