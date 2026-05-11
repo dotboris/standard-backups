@@ -19,6 +19,7 @@ var testListBackupsReqFull = &ListBackupsRequest{
 	DestinationName: "my-dest",
 	VariantName:     "my-variant",
 }
+
 var testListBackupsReqMinimal = &ListBackupsRequest{
 	DestinationName: "my-dest",
 }
