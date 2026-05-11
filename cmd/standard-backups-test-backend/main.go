@@ -27,7 +27,12 @@ func trace(traceDir string, command string, req any) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("failed to close %s: %s", p, err)
+		}
+	}()
 
 	enc := json.NewEncoder(file)
 	err = enc.Encode(req)

@@ -22,7 +22,7 @@ func NewBackupRequestFromEnv() (*BackupRequest, error) {
 	if err != nil {
 		return nil, err
 	}
-	exclude, err := getEnvJson[[]string](EXCLUDE_ENV)
+	exclude, _ := getEnvJson[[]string](EXCLUDE_ENV)
 	destinationName, err := getEnvStr(DESTINATION_NAME_ENV)
 	if err != nil {
 		return nil, err
