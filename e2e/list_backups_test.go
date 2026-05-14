@@ -31,6 +31,7 @@ var testListBackupsConfigFull = testutils.DedentYaml(`
 				default:
 					default: true
 `)
+
 var testListBackupsConfigMinimal = testutils.DedentYaml(`
 	version: 1
 	destinations:

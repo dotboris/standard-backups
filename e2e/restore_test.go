@@ -30,6 +30,7 @@ var testRestoreConfigFull = testutils.DedentYaml(`
 				default:
 					default: true
 `)
+
 var testRestoreConfigMinimal = testutils.DedentYaml(`
 	version: 1
 	destinations:
@@ -66,7 +67,13 @@ func TestRestore(t *testing.T) {
 			tb.AddSelf(tc)
 			tc.WriteConfig(testutils.DedentYaml(testCase.config))
 
-			cmd := testutils.StandardBackups(t, "restore", testCase.dest, "my-backup-id", "path/to/restore/dir")
+			cmd := testutils.StandardBackups(
+				t,
+				"restore",
+				testCase.dest,
+				"my-backup-id",
+				"path/to/restore/dir",
+			)
 			tc.Apply(cmd)
 			tb.Apply(cmd)
 			err := cmd.Run()
