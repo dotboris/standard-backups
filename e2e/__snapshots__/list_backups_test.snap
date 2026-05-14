@@ -1,0 +1,172 @@
+
+[TestListBackups/full_dest - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---
+
+[TestListBackups/full_dest - 2]
+[
+ {
+  "destination": "some-dest",
+  "extra": {},
+  "id": "base",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z"
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": ""
+ }
+]
+---
+
+[TestListBackups/full_variant - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestListBackups/full_variant - 2]
+[
+ {
+  "destination": "some-dest",
+  "extra": {},
+  "id": "base",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z"
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": ""
+ }
+]
+---
+
+[TestListBackups/minimal - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestListBackups/minimal - 2]
+[
+ {
+  "destination": "some-dest",
+  "extra": {},
+  "id": "base",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z"
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": ""
+ }
+]
+---

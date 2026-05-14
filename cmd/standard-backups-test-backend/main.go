@@ -30,7 +30,7 @@ func trace(traceDir string, command string, req any) error {
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			fmt.Printf("failed to close %s: %s", p, err)
+			fmt.Fprintf(os.Stderr, "failed to close %s: %s", p, err)
 		}
 	}()
 
@@ -104,10 +104,10 @@ func main() {
 		}
 	}
 
-	fmt.Println("starting test backend")
-	fmt.Printf("traceDir=%s\n", traceDir)
-	fmt.Printf("impl=%#+v\n", impl)
-	fmt.Printf("backend=%#+v\n", b)
+	fmt.Fprintln(os.Stderr, "starting test backend")
+	fmt.Fprintf(os.Stderr, "traceDir=%s\n", traceDir)
+	fmt.Fprintf(os.Stderr, "impl=%#+v\n", impl)
+	fmt.Fprintf(os.Stderr, "backend=%#+v\n", b)
 
 	b.Execute()
 }
