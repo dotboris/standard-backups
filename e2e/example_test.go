@@ -177,6 +177,7 @@ func TestExampleResticLocal(t *testing.T) {
 	assert.Equal(t, []any{
 		"sb:dest:local-restic",
 		"sb:job:test-restic",
+		"sb:variant:medium",
 	}, parsedOutput[0]["tags"])
 
 	d := t.TempDir()

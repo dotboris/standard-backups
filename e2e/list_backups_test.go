@@ -70,6 +70,7 @@ func TestListBackups(t *testing.T) {
 								Time:        "2026-01-01T00:00:00Z",
 								Job:         "whatever",
 								Destination: "some-dest",
+								Variant:     "some-variant",
 								Size:        42069,
 								Extra:       map[string]any{},
 							},

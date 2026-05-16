@@ -28,7 +28,8 @@
   "id": "base",
   "job": "whatever",
   "size": 42069,
-  "time": "2026-01-01T00:00:00Z"
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "some-variant"
  },
  {
   "destination": "",
@@ -36,7 +37,8 @@
   "id": "nothing",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  },
  {
   "destination": "",
@@ -56,7 +58,8 @@
   "id": "extras",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  }
 ]
 ---
@@ -89,7 +92,8 @@
   "id": "base",
   "job": "whatever",
   "size": 42069,
-  "time": "2026-01-01T00:00:00Z"
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "some-variant"
  },
  {
   "destination": "",
@@ -97,7 +101,8 @@
   "id": "nothing",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  },
  {
   "destination": "",
@@ -117,7 +122,8 @@
   "id": "extras",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  }
 ]
 ---
@@ -138,7 +144,8 @@
   "id": "base",
   "job": "whatever",
   "size": 42069,
-  "time": "2026-01-01T00:00:00Z"
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "some-variant"
  },
  {
   "destination": "",
@@ -146,7 +153,8 @@
   "id": "nothing",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  },
  {
   "destination": "",
@@ -166,7 +174,8 @@
   "id": "extras",
   "job": "",
   "size": 0,
-  "time": ""
+  "time": "",
+  "variant": ""
  }
 ]
 ---
