@@ -21,6 +21,14 @@ config.MainConfig{
       },
       DefaultVariant: "medium",
       Variants:       map[string]map[string]interface {}{
+        "last-5": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-last": 5,
+            },
+          },
+        },
         "long": map[string]interface {}{
           "forget": map[string]interface {}{
             "enable":  true,
@@ -76,6 +84,7 @@ config.MainConfig{
       Recipe:   "examples",
       BackupTo: []string{
         "local",
+        "local-restic/last-5",
       },
       OnSuccess: (*config.HookV1)(nil),
       OnFailure: (*config.HookV1)(nil),

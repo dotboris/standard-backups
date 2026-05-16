@@ -19,6 +19,11 @@ destinations:
         RESTIC_PASSWORD: '{{ .Secrets.localResticPassword }}'
     default-variant: medium
     variants:
+      last-5:
+        forget:
+          enable: true
+          options:
+            keep-last: 5
       short:
         forget:
           enable: true
@@ -44,7 +49,7 @@ jobs:
     backup-to: [s3] # only to s3
   test:
     recipe: examples
-    backup-to: [local]
+    backup-to: [local, local-restic/last-5]
   test-restic:
     recipe: examples
     backup-to: [local-restic]
