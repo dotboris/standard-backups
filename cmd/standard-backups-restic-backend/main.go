@@ -42,21 +42,21 @@ var Backend = &proto.BackendImpl{
 			}
 		}
 
-		tagArgs := []string{
-			"--tag", fmt.Sprintf("sb:dest:%s", req.DestinationName),
-			"--tag", fmt.Sprintf("sb:job:%s", req.JobName),
+		tags := []string{
+			fmt.Sprintf("sb:dest:%s", req.DestinationName),
+			fmt.Sprintf("sb:job:%s", req.JobName),
 		}
 		if req.VariantName != "" {
-			tagArgs = append(tagArgs,
-				"--tag", fmt.Sprintf("sb:variant:%s", req.VariantName),
-			)
+			tags = append(tags, fmt.Sprintf("sb:variant:%s", req.VariantName))
 		}
 
 		backupArgs := []string{"backup"}
 		for _, exclude := range req.Exclude {
 			backupArgs = append(backupArgs, "--exclude", exclude)
 		}
-		backupArgs = append(backupArgs, tagArgs...)
+		for _, tag := range tags {
+			backupArgs = append(backupArgs, "--tag", tag)
+		}
 		backupArgs = append(backupArgs, req.Paths...)
 		err = restic(options.Repo, options.Env, backupArgs...)
 		if err != nil {
@@ -66,7 +66,7 @@ var Backend = &proto.BackendImpl{
 
 		if options.Forget.Enable {
 			forgetArgs := []string{"forget"}
-			forgetArgs = append(forgetArgs, tagArgs...)
+			forgetArgs = append(forgetArgs, "--tag", strings.Join(tags, ","))
 			forgetOptionArgs, err := optionsToArgs(options.Forget.Options)
 			if err != nil {
 				return err
