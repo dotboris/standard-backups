@@ -111,7 +111,7 @@ func init() {
 	)
 	listBackupsCmd.Flags().StringSliceVarP(&listBackupsColumns,
 		"columns", "C",
-		[]string{"id", "time", "job", "destination", "size"},
+		[]string{"id", "time", "job", "destination", "variant", "size"},
 		"Columns to include output",
 	)
 	listBackupsCmd.MarkFlagsMutuallyExclusive("json", "columns")
@@ -129,6 +129,8 @@ func formatColumn(col string, backup proto.ListBackupsResponseItem) string {
 		return backup.Job
 	case "destination":
 		return backup.Destination
+	case "variant":
+		return backup.Variant
 	case "size":
 		unit := "B"
 		size := float64(backup.Size)

@@ -46,6 +46,11 @@ var Backend = &proto.BackendImpl{
 			"--tag", fmt.Sprintf("sb:dest:%s", req.DestinationName),
 			"--tag", fmt.Sprintf("sb:job:%s", req.JobName),
 		}
+		if req.VariantName != "" {
+			tagArgs = append(tagArgs,
+				"--tag", fmt.Sprintf("sb:variant:%s", req.VariantName),
+			)
+		}
 
 		backupArgs := []string{"backup"}
 		for _, exclude := range req.Exclude {
@@ -124,6 +129,7 @@ var Backend = &proto.BackendImpl{
 		for i, snap := range snapshots {
 			job := ""
 			dest := ""
+			variant := ""
 			for _, tag := range snap.Tags {
 				j, ok := strings.CutPrefix(tag, "sb:job:")
 				if ok {
@@ -133,6 +139,10 @@ var Backend = &proto.BackendImpl{
 				if ok {
 					dest = d
 				}
+				v, ok := strings.CutPrefix(tag, "sb:variant:")
+				if ok {
+					variant = v
+				}
 			}
 
 			backups[i] = proto.ListBackupsResponseItem{
@@ -141,6 +151,7 @@ var Backend = &proto.BackendImpl{
 				Size:        snap.Summary.TotalBytesProcessed,
 				Job:         job,
 				Destination: dest,
+				Variant:     variant,
 				Extra:       rawSnapshots[i],
 			}
 		}
