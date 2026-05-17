@@ -13,6 +13,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/dotboris/standard-backups/pkg/proto"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
@@ -45,17 +46,13 @@ func TestResticBackupBase(t *testing.T) {
 		[]byte("back me up"),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	err = os.WriteFile(
 		path.Join(sourceDir, "not-me.txt"),
 		[]byte("can't touch this"),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	tc.AddRecipe("bogus", testutils.DedentYaml(fmt.Sprintf(`
 		version: 1
 		name: bogus
@@ -85,9 +82,7 @@ func TestResticBackupBase(t *testing.T) {
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
 	err = cmd.Run()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	// Check that repo has been initialized
 	cmd = exec.Command("restic", "-r", repoDir, "cat", "config")
@@ -96,9 +91,7 @@ func TestResticBackupBase(t *testing.T) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err, "restic repo %s has not been initialized", repoDir) {
-		return
-	}
+	require.NoErrorf(t, err, "restic repo %s has not been initialized", repoDir)
 
 	// Check that we can list the backup
 	cmd = testutils.StandardBackups(t, "list-backups", "my-dest", "--json")
@@ -107,14 +100,10 @@ func TestResticBackupBase(t *testing.T) {
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err, "failed to list backups") {
-		return
-	}
+	require.NoError(t, err, "failed to list backups")
 	var output []map[string]any
 	err = json.Unmarshal(stdout.Bytes(), &output)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Len(t, output, 1)
 	rawId, ok := output[0]["id"]
 	if !assert.True(t, ok, "failed to get output[0].id") {
@@ -130,13 +119,9 @@ func TestResticBackupBase(t *testing.T) {
 	cmd = testutils.StandardBackups(t, "restore", "my-dest", id, restoreDir)
 	tc.Apply(cmd)
 	err = cmd.Run()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	restoredFile, err := os.ReadFile(path.Join(restoreDir, sourceDir, "back-me-up.txt"))
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "back me up", string(restoredFile))
 	_, err = os.Stat(path.Join(restoreDir, "not-me.txt"))
 	assert.ErrorIs(t, err, os.ErrNotExist)
@@ -152,14 +137,10 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	expectedRepoId, err := resticGetRepoId(t, repoDir, "supersecret")
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.NotZero(t, expectedRepoId)
 
 	tc := testutils.NewTestConfig(t)
@@ -186,14 +167,10 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	cmd = testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
 	err = cmd.Run()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	actualRepoId, err := resticGetRepoId(t, repoDir, "supersecret")
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.NotZero(t, actualRepoId)
 	assert.Equal(t, expectedRepoId, actualRepoId)
 }
@@ -230,9 +207,7 @@ func TestResticBackupForget(t *testing.T) {
 		cmd := testutils.StandardBackups(t, "backup", "my-job")
 		tc.Apply(cmd)
 		err := cmd.Run()
-		if !assert.NoError(t, err) {
-			return
-		}
+		require.NoError(t, err)
 
 		// Count number of snapshots
 		cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
@@ -242,14 +217,10 @@ func TestResticBackupForget(t *testing.T) {
 		cmd.Stdout = stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
-		if !assert.NoError(t, err) {
-			return
-		}
+		require.NoError(t, err)
 		var output []map[string]any
 		err = json.Unmarshal(stdout.Bytes(), &output)
-		if !assert.NoError(t, err) {
-			return
-		}
+		require.NoError(t, err)
 		assert.Len(t, output, 1)
 	}
 }
@@ -281,9 +252,7 @@ func TestResticExec(t *testing.T) {
 	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
 	err := cmd.Run()
-	if !assert.NoError(t, err, "failed to backup") {
-		return
-	}
+	require.NoError(t, err, "failed to backup")
 
 	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
 	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
@@ -292,14 +261,10 @@ func TestResticExec(t *testing.T) {
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err, "failed to list expected snapshots in %s", repoDir) {
-		return
-	}
+	require.NoError(t, err, "failed to list expected snapshots in %s", repoDir)
 	var expectedSnapshots []map[string]any
 	err = json.Unmarshal(stdout.Bytes(), &expectedSnapshots)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	// Check that exec returns the same thing
 	cmd = testutils.StandardBackups(t, "exec", "-d", "my-dest")
@@ -308,14 +273,10 @@ func TestResticExec(t *testing.T) {
 	stdout = bytes.NewBufferString("")
 	cmd.Stdout = stdout
 	err = cmd.Run()
-	if !assert.NoError(t, err, "failed to list expected snapshots with exec in %s", repoDir) {
-		return
-	}
+	require.NoError(t, err, "failed to list expected snapshots with exec in %s", repoDir)
 	var actualSnapshots []map[string]any
 	err = json.Unmarshal(stdout.Bytes(), &actualSnapshots)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, expectedSnapshots, actualSnapshots)
 }
 
@@ -351,9 +312,7 @@ func TestResticListBackups(t *testing.T) {
 		cmd := testutils.StandardBackups(t, "backup", "my-job")
 		tc.Apply(cmd)
 		err := cmd.Run()
-		if !assert.NoError(t, err, "failed to backup") {
-			return
-		}
+		require.NoError(t, err, "failed to backup")
 	}
 
 	for _, dest := range []string{"d1", "d2"} {
@@ -363,14 +322,10 @@ func TestResticListBackups(t *testing.T) {
 		cmd.Stdout = stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
-		if !assert.NoError(t, err, "failed to list backups for %s", dest) {
-			return
-		}
+		require.NoError(t, err, "failed to list backups for %s", dest)
 		var output []proto.ListBackupsResponseItem
 		err = json.Unmarshal(stdout.Bytes(), &output)
-		if !assert.NoError(t, err, dest) {
-			return
-		}
+		require.NoError(t, err, dest)
 
 		assert.Len(t, output, 2)
 		for i := range 2 {

@@ -13,13 +13,9 @@ import (
 func TestValidateSuccess(t *testing.T) {
 	bin := path.Join(t.TempDir(), "backend-bin")
 	_, err := os.Create(bin)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	err = os.Chmod(bin, 0o755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	c := Config{
 		Backends: []BackendManifestV1{
@@ -88,9 +84,7 @@ func TestValidateBackendBinNotFound(t *testing.T) {
 func TestValidateBackendBinIsDir(t *testing.T) {
 	bin := path.Join(t.TempDir(), "some-dir")
 	err := os.Mkdir(bin, 0o755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	c := Config{
 		Backends: []BackendManifestV1{
 			{

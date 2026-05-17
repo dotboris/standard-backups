@@ -1,6 +1,7 @@
 version: "2"
 formatters:
   enable:
+    - goimports
     - golines
     - gofmt
     - gofumpt

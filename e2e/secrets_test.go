@@ -8,19 +8,16 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSecretsPassedToBackend(t *testing.T) {
 	secretFile1 := path.Join(t.TempDir(), "secret1.txt")
 	err := os.WriteFile(secretFile1, []byte("file secret 1"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	secretFile2 := path.Join(t.TempDir(), "secret2.txt")
 	err = os.WriteFile(secretFile2, []byte("file secret 2\n"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	b := testutils.NewDumpBackend(t)
 	tc := testutils.NewTestConfig(t)
 	tc.AddBogusRecipe(t, "bogus")
@@ -67,14 +64,10 @@ func TestSecretsPassedToBackend(t *testing.T) {
 func TestSecretsPassedToBackendWithVarient(t *testing.T) {
 	secretFile1 := path.Join(t.TempDir(), "secret1.txt")
 	err := os.WriteFile(secretFile1, []byte("file secret 1"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	secretFile2 := path.Join(t.TempDir(), "secret2.txt")
 	err = os.WriteFile(secretFile2, []byte("file secret 2\n"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	b := testutils.NewDumpBackend(t)
 	tc := testutils.NewTestConfig(t)
 	tc.AddBogusRecipe(t, "bogus")

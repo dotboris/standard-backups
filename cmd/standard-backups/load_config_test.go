@@ -8,6 +8,7 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func setBogusConfig(t *testing.T) {
@@ -77,13 +78,9 @@ func TestLoadConfigBackend(t *testing.T) {
 			createTestBackendManifest(t, dir, "my-backend", "bogus")
 
 			c, err := loadConfig()
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			b, err := c.GetBackendManifest("my-backend")
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			assert.Equal(t, "my-backend", b.Name)
 		})
 	}
@@ -104,13 +101,9 @@ func TestLoadConfigRecipes(t *testing.T) {
 			createTestRecipeManifest(t, dir, "my-recipe", "bogus")
 
 			c, err := loadConfig()
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			r, err := c.GetRecipeManifest("my-recipe")
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			assert.Equal(t, "my-recipe", r.Name)
 		})
 	}
@@ -145,54 +138,42 @@ func TestLoadConfigBackendLoadOrder(t *testing.T) {
 	createTestBackendManifest(t, dataDir1, "my-backend", "data dir 1")
 	t.Setenv("XDG_DATA_DIRS", dataDir1)
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data dir 1", bin)
 
 	dataDir2 := t.TempDir()
 	createTestBackendManifest(t, dataDir2, "my-backend", "data dir 2")
 	t.Setenv("XDG_DATA_DIRS", fmt.Sprintf("%s:%s", dataDir2, dataDir1))
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data dir 2", bin)
 
 	dataHome := t.TempDir()
 	createTestBackendManifest(t, dataHome, "my-backend", "data home")
 	t.Setenv("XDG_DATA_HOME", dataHome)
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data home", bin)
 
 	configDir1 := t.TempDir()
 	createTestBackendManifest(t, configDir1, "my-backend", "config dir 1")
 	t.Setenv("XDG_CONFIG_DIRS", configDir1)
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config dir 1", bin)
 
 	configDir2 := t.TempDir()
 	createTestBackendManifest(t, configDir2, "my-backend", "config dir 2")
 	t.Setenv("XDG_CONFIG_DIRS", fmt.Sprintf("%s:%s", configDir2, configDir1))
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config dir 2", bin)
 
 	configHome := t.TempDir()
 	createTestBackendManifest(t, configHome, "my-backend", "config home")
 	t.Setenv("XDG_CONFIG_HOME", configHome)
 	bin, err = getBackendBin()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config home", bin)
 }
 
@@ -225,53 +206,41 @@ func TestLoadConfigRecipesLoadOrder(t *testing.T) {
 	createTestRecipeManifest(t, dataDir1, "my-recipe", "data dir 1")
 	t.Setenv("XDG_DATA_DIRS", dataDir1)
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data dir 1", description)
 
 	dataDir2 := t.TempDir()
 	createTestRecipeManifest(t, dataDir2, "my-recipe", "data dir 2")
 	t.Setenv("XDG_DATA_DIRS", fmt.Sprintf("%s:%s", dataDir2, dataDir1))
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data dir 2", description)
 
 	dataHome := t.TempDir()
 	createTestRecipeManifest(t, dataHome, "my-recipe", "data home")
 	t.Setenv("XDG_DATA_HOME", dataHome)
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "data home", description)
 
 	configDir1 := t.TempDir()
 	createTestRecipeManifest(t, configDir1, "my-recipe", "config dir 1")
 	t.Setenv("XDG_CONFIG_DIRS", configDir1)
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config dir 1", description)
 
 	configDir2 := t.TempDir()
 	createTestRecipeManifest(t, configDir2, "my-recipe", "config dir 2")
 	t.Setenv("XDG_CONFIG_DIRS", fmt.Sprintf("%s:%s", configDir2, configDir1))
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config dir 2", description)
 
 	configHome := t.TempDir()
 	createTestRecipeManifest(t, configHome, "my-recipe", "config home")
 	t.Setenv("XDG_CONFIG_HOME", configHome)
 	description, err = getRecipeDescription()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Equal(t, "config home", description)
 }

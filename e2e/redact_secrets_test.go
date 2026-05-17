@@ -10,6 +10,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/redact"
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRedactSecretsBackend(t *testing.T) {
@@ -22,9 +23,7 @@ func TestRedactSecretsBackend(t *testing.T) {
 		echo hello from $0
 		echo "$STANDARD_BACKUPS_OPTIONS"
 	`)), 0x755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	tc.AddBackend("opts-stdout", stdoutBackend)
 
 	stderrBackend := path.Join(t.TempDir(), "opts-stderr.sh")
@@ -33,9 +32,7 @@ func TestRedactSecretsBackend(t *testing.T) {
 		echo hello from $0
 		echo >&2 "$STANDARD_BACKUPS_OPTIONS"
 	`)), 0x755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	tc.AddBackend("opts-stderr", stderrBackend)
 
 	tc.WriteConfig(testutils.DedentYaml(`
@@ -65,10 +62,8 @@ func TestRedactSecretsBackend(t *testing.T) {
 	stderr := bytes.NewBuffer(nil)
 	cmd.Stderr = stderr
 	err = cmd.Run()
-	if !assert.NoError(t, err,
-		"stdout: %s\nstderr: %s\n", stdout.String(), stderr.String()) {
-		return
-	}
+	require.NoError(t, err,
+		"stdout: %s\nstderr: %s\n", stdout.String(), stderr.String())
 	assert.NotContains(t, stdout.String(), "supersecret")
 	assert.Contains(t, stdout.String(), redact.REPLACE)
 	assert.NotContains(t, stderr.String(), "supersecret")
@@ -85,9 +80,7 @@ func TestRedactSecretsHooks(t *testing.T) {
 				[]byte("back me up"),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			tc.AddRecipe("leak-secrets", testutils.DedentYaml(fmt.Sprintf(`
 				version: 1
 				name: leak-secrets
@@ -109,9 +102,7 @@ func TestRedactSecretsHooks(t *testing.T) {
 				#!/usr/bin/env bash
 				exit %d
 			`, exit))), 0x755)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			tc.AddBackend("noop", backendBin)
 
 			tc.WriteConfig(testutils.DedentYaml(`

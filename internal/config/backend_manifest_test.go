@@ -7,6 +7,7 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadBackendManifestsSingleFile(t *testing.T) {
@@ -22,9 +23,7 @@ func TestLoadBackendManifestsSingleFile(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -53,9 +52,7 @@ func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	d2 := t.TempDir()
 	p2 := path.Join(d2, "backend2.yaml")
 	err = os.WriteFile(p2,
@@ -68,9 +65,7 @@ func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	backendManifests, err := LoadBackendManifests([]string{d1, d2})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -97,9 +92,7 @@ func TestLoadBackendManifestsMultipleFiles(t *testing.T) {
 func TestLoadBackendManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	err := os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{}, backendManifests)
@@ -134,9 +127,7 @@ func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	backendManifests, err := LoadBackendManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []BackendManifestV1{
@@ -154,9 +145,7 @@ func TestLoadBackendManifestsMinimalFields(t *testing.T) {
 func TestLoadBackendManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
 	err := os.WriteFile(path.Join(d, "backend.yaml"), []byte(""), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -173,9 +162,7 @@ func TestLoadBackendManifestsInvalidBadVersion(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -192,9 +179,7 @@ func TestLoadBackendManifestsInvalidBadProtocolVersion(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadBackendManifests([]string{d})
 	assert.Error(t, err)
 }

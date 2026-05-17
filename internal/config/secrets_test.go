@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadSecretLiteral(t *testing.T) {
@@ -18,9 +19,7 @@ func TestLoadSecretLiteral(t *testing.T) {
 func TestLoadSecretFromFile(t *testing.T) {
 	file := path.Join(t.TempDir(), "my-secret.txt")
 	err := os.WriteFile(file, []byte("supersecret from file"), 0o600)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	res, err := loadSecret(SecretConfigV1{FromFile: file})
 	if assert.NoError(t, err) {
 		assert.Equal(t, "supersecret from file", res)

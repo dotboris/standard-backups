@@ -16,9 +16,7 @@ func TestLoadMainConfigMinimalConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
 	err := os.WriteFile(configPath, []byte(`version: 1`), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	mainConfig, err := LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	if assert.NoError(t, err) {
@@ -33,9 +31,7 @@ func TestLoadMainConfigBadVersion(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
 	err := os.WriteFile(configPath, []byte(`version: -1`), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	_, err = LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
@@ -54,9 +50,7 @@ func TestLoadMainConfigEmptyConfig(t *testing.T) {
 	d := t.TempDir()
 	configPath := path.Join(d, "config.yaml")
 	err := os.WriteFile(configPath, []byte(``), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	_, err = LoadMainConfig(configPath, []BackendManifestV1{}, []RecipeManifestV1{})
 	assert.Error(t, err)
@@ -86,9 +80,7 @@ func TestLoadMainConfigBadDestinationKey(t *testing.T) {
 				`, key))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 
 			_, err = LoadMainConfig(
 				configPath,
@@ -124,9 +116,7 @@ func TestLoadMainConfigDestinationBadBackend(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{
@@ -163,9 +153,7 @@ func TestLoadMainConfigBadJobKey(t *testing.T) {
 				`, key))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 
 			_, err = LoadMainConfig(
 				configPath,
@@ -202,9 +190,7 @@ func TestLoadMainConfigTargetBadRecipe(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
@@ -261,9 +247,7 @@ func TestLoadMainConfigSecretDefinition(t *testing.T) {
 			d := t.TempDir()
 			configPath := path.Join(d, "config.yaml")
 			err := os.WriteFile(configPath, []byte(test.config), 0o644)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			c, err := LoadMainConfig(
 				configPath,
 				[]BackendManifestV1{},
@@ -290,9 +274,7 @@ func TestLoadMainConfigSecretDefinitionOneProperty(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
@@ -322,9 +304,7 @@ func TestLoadMainConfigSecretDefinitionNoProperties(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
@@ -355,9 +335,7 @@ func TestLoadMainConfigSecretDefinitionBadProperties(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadMainConfig(
 		configPath,
 		[]BackendManifestV1{},
@@ -393,9 +371,7 @@ func TestLoadMainConfigJobBadHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadMainConfig(
 				p,
 				[]BackendManifestV1{},
@@ -426,9 +402,7 @@ func TestLoadMainConfigJobBadHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadMainConfig(
 				p,
 				[]BackendManifestV1{},
@@ -459,9 +433,7 @@ func TestLoadMainConfigJobBadHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadMainConfig(
 				p,
 				[]BackendManifestV1{},

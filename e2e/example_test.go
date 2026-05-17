@@ -16,6 +16,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExamplePrintConfig(t *testing.T) {
@@ -26,11 +27,9 @@ func TestExamplePrintConfig(t *testing.T) {
 	stderr := bytes.Buffer{}
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if !assert.NoError(t, err,
+	require.NoError(t, err,
 		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
-			stdout.String(), stderr.String())) {
-		return
-	}
+			stdout.String(), stderr.String()))
 	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
 	snaps.MatchSnapshot(t, clean)
 }
@@ -43,11 +42,9 @@ func TestExampleListBackends(t *testing.T) {
 	stderr := bytes.Buffer{}
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if !assert.NoError(t, err,
+	require.NoError(t, err,
 		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
-			stdout.String(), stderr.String())) {
-		return
-	}
+			stdout.String(), stderr.String()))
 	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
 	snaps.MatchSnapshot(t, clean)
 }
@@ -60,11 +57,9 @@ func TestExampleListRecipes(t *testing.T) {
 	stderr := bytes.Buffer{}
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if !assert.NoError(t, err,
+	require.NoError(t, err,
 		fmt.Sprintf("stdout:\n%s\nstderr:\n%s",
-			stdout.String(), stderr.String())) {
-		return
-	}
+			stdout.String(), stderr.String()))
 	clean := strings.ReplaceAll(stdout.String(), testutils.GetRepoRoot(t), "[root]")
 	snaps.MatchSnapshot(t, clean)
 }
@@ -81,13 +76,9 @@ func assertTreesMatch(t *testing.T, expectedPath string, actualPath string) bool
 
 		sourcePath := filepath.Join(expectedPath, strings.TrimPrefix(p, actualPath))
 		source, err := os.ReadFile(sourcePath)
-		if !assert.NoError(t, err) {
-			return nil
-		}
+		require.NoError(t, err)
 		dest, err := os.ReadFile(p)
-		if !assert.NoError(t, err) {
-			return nil
-		}
+		require.NoError(t, err)
 
 		assert.Equal(
 			t,
@@ -105,9 +96,7 @@ func TestBackupRsyncLocal(t *testing.T) {
 	root := testutils.GetRepoRoot(t)
 	destDir := filepath.Join(root, "dist/backups/local/")
 	err := os.MkdirAll(destDir, 0o755)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	listBackups := func() mapset.Set[string] {
 		t.Helper()
@@ -130,9 +119,7 @@ func TestBackupRsyncLocal(t *testing.T) {
 	cmd := testutils.StandardBackups(t, "backup", "test")
 	testutils.ApplyExampleConfig(t, cmd)
 	err = cmd.Run()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	backupsAfter := listBackups()
 	diff := backupsAfter.Difference(backupsBefore)
@@ -153,9 +140,7 @@ func TestExampleResticLocal(t *testing.T) {
 	cmd.Stderr = stderr
 	testutils.ApplyExampleConfig(t, cmd)
 	err := cmd.Run()
-	if !assert.NoError(t, err, stderr) {
-		return
-	}
+	require.NoError(t, err, stderr)
 
 	cmd = exec.Command("restic", "-v", "-r", destDir, "snapshots", "--json")
 	cmd.Env = append(
@@ -165,14 +150,10 @@ func TestExampleResticLocal(t *testing.T) {
 	stderr = bytes.NewBufferString("")
 	cmd.Stderr = stderr
 	resticOutput, err := cmd.Output()
-	if !assert.NoError(t, err, stderr.String()) {
-		return
-	}
+	require.NoError(t, err, stderr.String())
 	var parsedOutput []map[string]any
 	err = json.Unmarshal(resticOutput, &parsedOutput)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	assert.Len(t, parsedOutput, 1)
 	assert.Equal(t, []any{
 		"sb:dest:local-restic",
@@ -187,9 +168,7 @@ func TestExampleResticLocal(t *testing.T) {
 		"RESTIC_PASSWORD=supersecret",
 	)
 	resticOutput, err = cmd.CombinedOutput()
-	if !assert.NoError(t, err, string(resticOutput)) {
-		return
-	}
+	require.NoError(t, err, string(resticOutput))
 
 	assertTreesMatch(t, root, d)
 }
