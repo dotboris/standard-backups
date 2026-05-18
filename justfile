@@ -12,7 +12,8 @@ build $cmd:
 [group("build")]
 build-backends: \
   (build "standard-backups-rsync-backend") \
-  (build "standard-backups-restic-backend")
+  (build "standard-backups-restic-backend") \
+  (build "standard-backups-test-backend")
 
 # Build all binaries
 [group("build")]

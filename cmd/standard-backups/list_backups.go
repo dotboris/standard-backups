@@ -32,9 +32,9 @@ var listBackupsCmd = &cobra.Command{
 		}
 
 		destName := args[0]
-		destination, ok := config.MainConfig.Destinations[destName]
-		if !ok {
-			return fmt.Errorf("could not find destination named %s", destName)
+		destination, ref, err := config.MainConfig.GetDestination(destName)
+		if err != nil {
+			return err
 		}
 
 		client, err := proto.NewBackendClient(*config, destination.Backend)
@@ -44,7 +44,8 @@ var listBackupsCmd = &cobra.Command{
 
 		res, err := client.ListBackups(&proto.ListBackupsRequest{
 			RawOptions:      destination.Options,
-			DestinationName: destName,
+			DestinationName: ref.Name,
+			VariantName:     ref.Variant,
 		})
 		if err != nil {
 			return err
@@ -110,7 +111,7 @@ func init() {
 	)
 	listBackupsCmd.Flags().StringSliceVarP(&listBackupsColumns,
 		"columns", "C",
-		[]string{"id", "time", "job", "destination", "size"},
+		[]string{"id", "time", "job", "destination", "variant", "size"},
 		"Columns to include output",
 	)
 	listBackupsCmd.MarkFlagsMutuallyExclusive("json", "columns")
@@ -128,6 +129,8 @@ func formatColumn(col string, backup proto.ListBackupsResponseItem) string {
 		return backup.Job
 	case "destination":
 		return backup.Destination
+	case "variant":
+		return backup.Variant
 	case "size":
 		unit := "B"
 		size := float64(backup.Size)

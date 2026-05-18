@@ -49,6 +49,7 @@
           pkgs.svu
           pkgs.gotestsum
           pkgs.just
+          pkgs.just-lsp
           pkgs.rsync
           pkgs.restic
           pkgs.bash # used in e2e tests

@@ -38,14 +38,32 @@ func (c *Config) Validate() []ValidationError {
 		}
 	}
 
+	for destName, dest := range c.MainConfig.Destinations {
+		if dest.DefaultVariant == "" {
+			continue
+		}
+		_, ok := dest.Variants[dest.DefaultVariant]
+		if !ok {
+			res = append(res, ValidationError{
+				File:      c.MainConfig.path,
+				FieldPath: fmt.Sprintf("/destinations/%s/default-variant", destName),
+				Err: fmt.Errorf(
+					"unknown variant %s for destination %s",
+					dest.DefaultVariant,
+					destName,
+				),
+			})
+		}
+	}
+
 	for jobName, job := range c.MainConfig.Jobs {
 		for destIndex, destName := range job.BackupTo {
-			_, ok := c.MainConfig.Destinations[destName]
-			if !ok {
+			_, _, err := c.MainConfig.GetDestination(destName)
+			if err != nil {
 				res = append(res, ValidationError{
 					File:      c.MainConfig.path,
 					FieldPath: fmt.Sprintf("/jobs/%s/backup-to/%d", jobName, destIndex),
-					Err:       fmt.Errorf("unknown destination %s", destName),
+					Err:       err,
 				})
 			}
 		}

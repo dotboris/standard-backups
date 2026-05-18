@@ -1,7 +1,6 @@
 package proto
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 
@@ -28,7 +27,7 @@ func (bc *BackendClient) cmd(command string, env []string) *exec.Cmd {
 	cmd := exec.Command(bc.Manifest.Bin)
 	cmd.Env = append(
 		os.Environ(),
-		fmt.Sprintf("STANDARD_BACKUPS_COMMAND=%s", command),
+		toEnvStr(COMMAND_ENV, command),
 	)
 	cmd.Env = append(cmd.Env, env...)
 	cmd.Stdout = redact.Stdout

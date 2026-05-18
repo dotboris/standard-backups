@@ -1,0 +1,100 @@
+
+[TestExec/full_destination - 1]
+{
+ "Args": [
+  "foo",
+  "bar",
+  "--baz",
+  "--qux=2",
+  "-x"
+ ],
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---
+
+[TestExec/full_variant - 1]
+{
+ "Args": [
+  "foo",
+  "bar",
+  "--baz",
+  "--qux=2",
+  "-x"
+ ],
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestExec/minimal_backend - 1]
+{
+ "Args": [
+  "foo",
+  "bar",
+  "--baz",
+  "--qux=2",
+  "-x"
+ ],
+ "DestinationName": "",
+ "RawOptions": null,
+ "VariantName": ""
+}
+---
+
+[TestExec/minimal_destination - 1]
+{
+ "Args": [
+  "foo",
+  "bar",
+  "--baz",
+  "--qux=2",
+  "-x"
+ ],
+ "DestinationName": "my-dest",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestExec/full_backend - 1]
+{
+ "Args": [
+  "foo",
+  "bar",
+  "--baz",
+  "--qux=2",
+  "-x"
+ ],
+ "DestinationName": "",
+ "RawOptions": null,
+ "VariantName": ""
+}
+---
