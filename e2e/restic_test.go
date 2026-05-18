@@ -106,13 +106,9 @@ func TestResticBackupBase(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, output, 1)
 	rawId, ok := output[0]["id"]
-	if !assert.True(t, ok, "failed to get output[0].id") {
-		return
-	}
+	require.True(t, ok, "failed to get output[0].id")
 	id, ok := rawId.(string)
-	if !assert.True(t, ok, "output[0].id is not a string") {
-		return
-	}
+	require.True(t, ok, "output[0].id is not a string")
 
 	// Test restore
 	restoreDir := t.TempDir()
