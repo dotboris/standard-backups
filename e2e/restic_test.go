@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,11 +15,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
-	cmd := exec.Command("restic", "-r", repo, "cat", "config")
+func resticCmd(t *testing.T, repo string, secret string, args ...string) *exec.Cmd {
+	t.Helper()
+	cmd := exec.Command("restic", "-r", repo)
+	cmd.Args = append(cmd.Args, args...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("RESTIC_PASSWORD=%s", secret))
 	cmd.Dir = testutils.GetRepoRoot(t)
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	return cmd
+}
+
+func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
+	t.Helper()
+	cmd := resticCmd(t, repo, secret, "cat", "config")
+	cmd.Stdout = nil
 	stdout, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -33,6 +42,18 @@ func resticGetRepoId(t *testing.T, repo string, secret string) (string, error) {
 		return "", err
 	}
 	return output.Id, nil
+}
+
+func resticListSnapshots(t *testing.T, repo string, secret string) []map[string]any {
+	t.Helper()
+	cmd := resticCmd(t, repo, secret, "snapshots", "--json")
+	cmd.Stdout = nil
+	stdout, err := cmd.Output()
+	require.NoError(t, err)
+	var output []map[string]any
+	err = json.Unmarshal(stdout, &output)
+	require.NoError(t, err)
+	return output
 }
 
 func TestResticBackupBase(t *testing.T) {
@@ -85,34 +106,23 @@ func TestResticBackupBase(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check that repo has been initialized
-	cmd = exec.Command("restic", "-r", repoDir, "cat", "config")
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err = resticCmd(t, repoDir, "supersecret", "cat", "config").Run()
 	require.NoErrorf(t, err, "restic repo %s has not been initialized", repoDir)
 
 	// Check that we can list the backup
 	cmd = testutils.StandardBackups(t, "list-backups", "my-dest", "--json")
 	tc.Apply(cmd)
-	stdout := bytes.NewBuffer(nil)
-	cmd.Stdout = stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	cmd.Stdout = nil
+	stdout, err := cmd.Output()
 	require.NoError(t, err, "failed to list backups")
-	var output []map[string]any
-	err = json.Unmarshal(stdout.Bytes(), &output)
+	var output []proto.ListBackupsResponseItem
+	err = json.Unmarshal(stdout, &output)
 	require.NoError(t, err)
 	assert.Len(t, output, 1)
-	rawId, ok := output[0]["id"]
-	require.True(t, ok, "failed to get output[0].id")
-	id, ok := rawId.(string)
-	require.True(t, ok, "output[0].id is not a string")
 
 	// Test restore
 	restoreDir := t.TempDir()
-	cmd = testutils.StandardBackups(t, "restore", "my-dest", id, restoreDir)
+	cmd = testutils.StandardBackups(t, "restore", "my-dest", output[0].Id, restoreDir)
 	tc.Apply(cmd)
 	err = cmd.Run()
 	require.NoError(t, err)
@@ -127,12 +137,7 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 	repoDir := t.TempDir()
 
 	// Create a repo ourselves
-	cmd := exec.Command("restic", "-v", "-r", repoDir, "init")
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+	err := resticCmd(t, repoDir, "supersecret", "-v", "init").Run()
 	require.NoError(t, err)
 
 	expectedRepoId, err := resticGetRepoId(t, repoDir, "supersecret")
@@ -160,7 +165,7 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 				backup-to: [my-dest]
 	`, repoDir)))
 
-	cmd = testutils.StandardBackups(t, "backup", "my-job")
+	cmd := testutils.StandardBackups(t, "backup", "my-job")
 	tc.Apply(cmd)
 	err = cmd.Run()
 	require.NoError(t, err)
@@ -205,19 +210,8 @@ func TestResticBackupForget(t *testing.T) {
 		err := cmd.Run()
 		require.NoError(t, err)
 
-		// Count number of snapshots
-		cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
-		cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-		cmd.Dir = testutils.GetRepoRoot(t)
-		stdout := bytes.NewBuffer(nil)
-		cmd.Stdout = stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		require.NoError(t, err)
-		var output []map[string]any
-		err = json.Unmarshal(stdout.Bytes(), &output)
-		require.NoError(t, err)
-		assert.Len(t, output, 1)
+		snapshots := resticListSnapshots(t, repoDir, "supersecret")
+		assert.Len(t, snapshots, 1)
 	}
 }
 
@@ -250,28 +244,17 @@ func TestResticExec(t *testing.T) {
 	err := cmd.Run()
 	require.NoError(t, err, "failed to backup")
 
-	cmd = exec.Command("restic", "-r", repoDir, "snapshots", "--json")
-	cmd.Env = append(os.Environ(), "RESTIC_PASSWORD=supersecret")
-	cmd.Dir = testutils.GetRepoRoot(t)
-	stdout := bytes.NewBufferString("")
-	cmd.Stdout = stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	require.NoError(t, err, "failed to list expected snapshots in %s", repoDir)
-	var expectedSnapshots []map[string]any
-	err = json.Unmarshal(stdout.Bytes(), &expectedSnapshots)
-	require.NoError(t, err)
+	expectedSnapshots := resticListSnapshots(t, repoDir, "supersecret")
 
 	// Check that exec returns the same thing
 	cmd = testutils.StandardBackups(t, "exec", "-d", "my-dest")
 	tc.Apply(cmd)
 	cmd.Args = append(cmd.Args, "--", "snapshots", "--json")
-	stdout = bytes.NewBufferString("")
-	cmd.Stdout = stdout
-	err = cmd.Run()
+	cmd.Stdout = nil
+	stdout, err := cmd.Output()
 	require.NoError(t, err, "failed to list expected snapshots with exec in %s", repoDir)
 	var actualSnapshots []map[string]any
-	err = json.Unmarshal(stdout.Bytes(), &actualSnapshots)
+	err = json.Unmarshal(stdout, &actualSnapshots)
 	require.NoError(t, err)
 	assert.Equal(t, expectedSnapshots, actualSnapshots)
 }
@@ -314,13 +297,11 @@ func TestResticListBackups(t *testing.T) {
 	for _, dest := range []string{"d1", "d2"} {
 		cmd := testutils.StandardBackups(t, "list-backups", dest, "--json")
 		tc.Apply(cmd)
-		stdout := bytes.NewBuffer(nil)
-		cmd.Stdout = stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
+		cmd.Stdout = nil
+		stdout, err := cmd.Output()
 		require.NoError(t, err, "failed to list backups for %s", dest)
 		var output []proto.ListBackupsResponseItem
-		err = json.Unmarshal(stdout.Bytes(), &output)
+		err = json.Unmarshal(stdout, &output)
 		require.NoError(t, err, dest)
 
 		assert.Len(t, output, 2)
