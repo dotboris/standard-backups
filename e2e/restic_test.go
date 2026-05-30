@@ -177,7 +177,8 @@ func TestResticBackupPreservesExistingRepo(t *testing.T) {
 }
 
 func TestResticBackupForget(t *testing.T) {
-	repoDir := t.TempDir()
+	simpleRepoDir := t.TempDir()
+	varsRepoDir := t.TempDir()
 
 	tc := testutils.NewTestConfig(t)
 	tc.AddBackend("restic", "dist/standard-backups-restic-backend")
@@ -188,31 +189,71 @@ func TestResticBackupForget(t *testing.T) {
 			pass:
 				literal: supersecret
 		destinations:
-			my-dest:
+			simple:
 				backend: restic
 				options:
 					repo: %s
 					forget:
 						enable: true
 						options:
+							group-by: ''
 							keep-last: 1
 					env:
 						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+			vars:
+				backend: restic
+				options:
+					repo: %s
+					forget:
+						enable: true
+						options:
+							group-by: ''
+					env:
+						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+				variants:
+					a:
+						forget:
+							options:
+								keep-last: 1
+					b:
+						forget:
+							options:
+								keep-last: 2
 		jobs:
 			my-job:
 				recipe: bogus
-				backup-to: [my-dest]
-	`, repoDir)))
+				backup-to: [simple, vars/a, vars/b]
+	`, simpleRepoDir, varsRepoDir)))
 
-	for range 2 {
+	for range 3 {
 		cmd := testutils.StandardBackups(t, "backup", "my-job")
 		tc.Apply(cmd)
 		err := cmd.Run()
 		require.NoError(t, err)
-
-		snapshots := resticListSnapshots(t, repoDir, "supersecret")
-		assert.Len(t, snapshots, 1)
 	}
+
+	snapshots := resticListSnapshots(t, simpleRepoDir, "supersecret")
+	assert.Len(t, snapshots, 1)
+
+	snapshots = resticListSnapshots(t, varsRepoDir, "supersecret")
+	assert.Len(t, snapshots, 3)
+
+	var aCount, bCount int
+	for _, snapshot := range snapshots {
+		tags := snapshot["tags"].([]any)
+		fmt.Printf("snapshot %v tags %v\n", snapshot["id"], tags)
+		for _, rawTag := range tags {
+			tag := rawTag.(string)
+			if tag == "sb:variant:a" {
+				aCount += 1
+			}
+			if tag == "sb:variant:b" {
+				bCount += 1
+			}
+		}
+	}
+	assert.Equal(t, 1, aCount)
+	assert.Equal(t, 2, bCount)
 }
 
 func TestResticExec(t *testing.T) {
