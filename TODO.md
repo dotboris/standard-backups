@@ -1,3 +1,3 @@
 # Delete this file before merging!
 
-- e2e tests for restic with variants
+- List should filter by default on dest / variant and have an --all flag to drop filtering
