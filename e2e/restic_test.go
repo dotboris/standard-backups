@@ -370,7 +370,6 @@ func TestResticListBackups(t *testing.T) {
 			err = json.Unmarshal(stdout, &output)
 			require.NoError(t, err)
 
-			variantCounts := map[string]int{}
 			assert.Len(t, output, 2)
 			for i := range 2 {
 				backupTime, err := time.Parse(time.RFC3339, output[i].Time)
@@ -385,7 +384,6 @@ func TestResticListBackups(t *testing.T) {
 				assert.Equal(t, "my-job", output[i].Job, i)
 				assert.Equal(t, check.destination, output[i].Destination, i)
 				assert.Equal(t, check.variant, output[i].Variant, i)
-				variantCounts[output[i].Variant] += 1
 			}
 
 			assert.NotEqual(t, output[0].Id, output[1].Id)
