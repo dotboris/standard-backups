@@ -66,11 +66,29 @@ func TestListBackups(t *testing.T) {
 					Res: &proto.ListBackupsResponse{
 						Backups: []proto.ListBackupsResponseItem{
 							{
-								Id:          "base",
+								Id:          "my-dest-default",
 								Time:        "2026-01-01T00:00:00Z",
 								Job:         "whatever",
-								Destination: "some-dest",
-								Variant:     "some-variant",
+								Destination: "my-dest",
+								Variant:     "default",
+								Size:        42069,
+								Extra:       map[string]any{},
+							},
+							{
+								Id:          "my-dest-my-variant",
+								Time:        "2026-01-01T00:00:00Z",
+								Job:         "whatever",
+								Destination: "my-dest",
+								Variant:     "my-variant",
+								Size:        42069,
+								Extra:       map[string]any{},
+							},
+							{
+								Id:          "my-dest-no-variant",
+								Time:        "2026-01-01T00:00:00Z",
+								Job:         "whatever",
+								Destination: "my-dest",
+								Variant:     "",
 								Size:        42069,
 								Extra:       map[string]any{},
 							},
@@ -94,17 +112,33 @@ func TestListBackups(t *testing.T) {
 			tb.AddSelf(tc)
 			tc.WriteConfig(testutils.DedentYaml(testCase.config))
 
-			cmd := testutils.StandardBackups(t, "list-backups", testCase.dest, "--json")
-			tc.Apply(cmd)
-			tb.Apply(cmd)
-			stdout := bytes.NewBufferString("")
-			cmd.Stdout = stdout
-			err := cmd.Run()
-			require.NoError(t, err)
+			t.Run("base", func(t *testing.T) {
+				// Shows only own stuff by default
+				cmd := testutils.StandardBackups(t, "list-backups", testCase.dest, "--json")
+				tc.Apply(cmd)
+				tb.Apply(cmd)
+				cmd.Stdout = nil
+				stdout, err := cmd.Output()
+				require.NoError(t, err)
 
-			trace := tb.RequireTrace("list-backups")
-			snaps.MatchJSON(t, trace)
-			snaps.MatchJSON(t, stdout.String())
+				trace := tb.RequireTrace("list-backups")
+				snaps.MatchJSON(t, trace)
+				snaps.MatchJSON(t, string(stdout))
+			})
+
+			t.Run("all", func(t *testing.T) {
+				// Shows everything with --all
+				cmd := testutils.StandardBackups(t, "list-backups", testCase.dest, "--json", "--all")
+				tc.Apply(cmd)
+				tb.Apply(cmd)
+				cmd.Stdout = nil
+				stdout, err := cmd.Output()
+				require.NoError(t, err)
+
+				trace := tb.RequireTrace("list-backups")
+				snaps.MatchJSON(t, trace)
+				snaps.MatchJSON(t, string(stdout))
+			})
 		})
 	}
 }

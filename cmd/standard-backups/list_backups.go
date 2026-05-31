@@ -16,12 +16,15 @@ import (
 var (
 	listBackupsJson    bool
 	listBackupsColumns []string
+	listBackupsAll     bool
 )
 
 var listBackupsCmd = &cobra.Command{
-	Use:     "list-backups destination",
-	Short:   "List available backups",
-	Long:    `List all backups from a given destination.`,
+	Use:   "list-backups destination",
+	Short: "List available backups",
+	Long: `List all backups from a given destination. ` +
+		`By default, backups are filtered down to the specified destination. ` +
+		`To list all backups, pass the --all flag.`,
 	GroupID: "operations",
 	Aliases: []string{"list", "ls", "l"},
 	Args:    cobra.ExactArgs(1),
@@ -56,12 +59,23 @@ var listBackupsCmd = &cobra.Command{
 			return nil
 		}
 
+		filtered := []proto.ListBackupsResponseItem{}
+		if listBackupsAll {
+			filtered = res.Backups
+		} else {
+			for _, backup := range res.Backups {
+				if backup.Destination == ref.Name && backup.Variant == ref.Variant {
+					filtered = append(filtered, backup)
+				}
+			}
+		}
+
 		w := redact.Stdout
 
 		if listBackupsJson {
 			enc := json.NewEncoder(w)
 			enc.SetIndent("", "  ")
-			err = enc.Encode(res.Backups)
+			err = enc.Encode(filtered)
 			if err != nil {
 				return err
 			}
@@ -83,7 +97,7 @@ var listBackupsCmd = &cobra.Command{
 			}),
 		)
 		table.Header(listBackupsColumns)
-		for _, backup := range res.Backups {
+		for _, backup := range filtered {
 			row := make([]string, len(listBackupsColumns))
 			for i, col := range listBackupsColumns {
 				row[i] = formatColumn(col, backup)
@@ -115,6 +129,10 @@ func init() {
 		"Columns to include output",
 	)
 	listBackupsCmd.MarkFlagsMutuallyExclusive("json", "columns")
+	listBackupsCmd.Flags().BoolVar(&listBackupsAll,
+		"all", false,
+		"Show all backups.",
+	)
 
 	rootCmd.AddCommand(listBackupsCmd)
 }

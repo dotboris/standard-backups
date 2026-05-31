@@ -339,25 +339,24 @@ func TestResticListBackups(t *testing.T) {
 	}
 
 	checks := []struct {
-		destination      string
-		variant          string
-		ref              string
-		expectedCount    int
-		expectedVariants map[string]int
+		destination string
+		variant     string
+		ref         string
 	}{
 		{
-			destination:      "simple",
-			variant:          "",
-			ref:              "simple",
-			expectedCount:    2,
-			expectedVariants: map[string]int{"": 2},
+			destination: "simple",
+			variant:     "",
+			ref:         "simple",
 		},
 		{
-			destination:      "vars",
-			variant:          "a",
-			ref:              "vars/a",
-			expectedCount:    4,
-			expectedVariants: map[string]int{"a": 2, "b": 2},
+			destination: "vars",
+			variant:     "a",
+			ref:         "vars/a",
+		},
+		{
+			destination: "vars",
+			variant:     "b",
+			ref:         "vars/b",
 		},
 	}
 	for _, check := range checks {
@@ -372,8 +371,8 @@ func TestResticListBackups(t *testing.T) {
 			require.NoError(t, err)
 
 			variantCounts := map[string]int{}
-			assert.Len(t, output, check.expectedCount)
-			for i := range check.expectedCount {
+			assert.Len(t, output, 2)
+			for i := range 2 {
 				backupTime, err := time.Parse(time.RFC3339, output[i].Time)
 				assert.NoError(t, err, "failed to parse output[%d].Time in %s", i, check.ref)
 				assert.WithinRange(t, backupTime,
@@ -385,13 +384,11 @@ func TestResticListBackups(t *testing.T) {
 				assert.Greater(t, output[i].Size, 0, i)
 				assert.Equal(t, "my-job", output[i].Job, i)
 				assert.Equal(t, check.destination, output[i].Destination, i)
+				assert.Equal(t, check.variant, output[i].Variant, i)
 				variantCounts[output[i].Variant] += 1
 			}
-			assert.Equal(t, check.expectedVariants, variantCounts)
 
-			for i := range check.expectedCount - 1 {
-				assert.NotEqual(t, output[i].Id, output[i+1].Id)
-			}
+			assert.NotEqual(t, output[0].Id, output[1].Id)
 		})
 	}
 }

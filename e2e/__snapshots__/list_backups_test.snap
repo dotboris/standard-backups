@@ -1,5 +1,5 @@
 
-[TestListBackups/full_dest - 1]
+[TestListBackups/full_dest/base - 1]
 {
  "DestinationName": "my-dest",
  "RawOptions": {
@@ -20,16 +20,69 @@
 }
 ---
 
-[TestListBackups/full_dest - 2]
+[TestListBackups/full_dest/base - 2]
 [
  {
-  "destination": "some-dest",
+  "destination": "my-dest",
   "extra": {},
-  "id": "base",
+  "id": "my-dest-default",
   "job": "whatever",
   "size": 42069,
   "time": "2026-01-01T00:00:00Z",
-  "variant": "some-variant"
+  "variant": "default"
+ }
+]
+---
+
+[TestListBackups/full_dest/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---
+
+[TestListBackups/full_dest/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
  },
  {
   "destination": "",
@@ -64,7 +117,7 @@
 ]
 ---
 
-[TestListBackups/full_variant - 1]
+[TestListBackups/full_variant/base - 1]
 {
  "DestinationName": "my-dest",
  "RawOptions": {
@@ -84,16 +137,68 @@
 }
 ---
 
-[TestListBackups/full_variant - 2]
+[TestListBackups/full_variant/base - 2]
 [
  {
-  "destination": "some-dest",
+  "destination": "my-dest",
   "extra": {},
-  "id": "base",
+  "id": "my-dest-my-variant",
   "job": "whatever",
   "size": 42069,
   "time": "2026-01-01T00:00:00Z",
-  "variant": "some-variant"
+  "variant": "my-variant"
+ }
+]
+---
+
+[TestListBackups/full_variant/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestListBackups/full_variant/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
  },
  {
   "destination": "",
@@ -128,7 +233,7 @@
 ]
 ---
 
-[TestListBackups/minimal - 1]
+[TestListBackups/minimal/base - 1]
 {
  "DestinationName": "my-dest",
  "RawOptions": {},
@@ -136,16 +241,56 @@
 }
 ---
 
-[TestListBackups/minimal - 2]
+[TestListBackups/minimal/base - 2]
 [
  {
-  "destination": "some-dest",
+  "destination": "my-dest",
   "extra": {},
-  "id": "base",
+  "id": "my-dest-no-variant",
   "job": "whatever",
   "size": 42069,
   "time": "2026-01-01T00:00:00Z",
-  "variant": "some-variant"
+  "variant": ""
+ }
+]
+---
+
+[TestListBackups/minimal/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestListBackups/minimal/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
  },
  {
   "destination": "",
