@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/goccy/go-yaml"
@@ -16,8 +17,10 @@ const (
 
 type (
 	DestinationConfigV1 struct {
-		Backend string
-		Options map[string]any
+		Backend        string
+		Options        map[string]any
+		DefaultVariant string `mapstructure:"default-variant"`
+		Variants       map[string]map[string]any
 	}
 	JobConfigV1 struct {
 		Recipe    string
@@ -76,6 +79,19 @@ func makeMainConfigSchema(
 							// TODO: allow backend to setup schema here
 							"options": map[string]any{
 								"type": "object",
+							},
+							"default-variant": map[string]any{
+								"type": "string",
+							},
+							"variants": map[string]any{
+								"type":                 "object",
+								"additionalProperties": false,
+								"patternProperties": map[string]any{
+									dynamicPropPattern: map[string]any{
+										// Same as destinations.*.options
+										"type": "object",
+									},
+								},
 							},
 						},
 					},
@@ -182,7 +198,93 @@ func (mc *MainConfig) applyTemplate(template *configTemplate) error {
 			panic(fmt.Sprintf("unexpected result type when templating %s", p))
 		}
 		dest.Options = options
+
+		for variantKey, variant := range dest.Variants {
+			p := fmt.Sprintf("destinations.%s.variants.%s", key, variantKey)
+			res, err := template.Apply(p, variant)
+			if err != nil {
+				return err
+			}
+			resVariant, ok := res.(map[string]any)
+			if !ok {
+				panic(fmt.Sprintf("unexpected result type when templating %s", p))
+			}
+			dest.Variants[variantKey] = resVariant
+		}
+
 		mc.Destinations[key] = dest
 	}
 	return nil
+}
+
+type DestinationRef struct {
+	Name    string
+	Variant string
+}
+
+func (c *MainConfig) GetDestination(name string) (*DestinationConfigV1, *DestinationRef, error) {
+	parts := strings.SplitN(name, "/", 2)
+	destName := parts[0]
+	dest, ok := c.Destinations[destName]
+	if !ok {
+		return nil, nil, fmt.Errorf(
+			"unknown destination %s: destinations.%s not in main config",
+			name,
+			destName,
+		)
+	}
+
+	varName := ""
+	if len(parts) > 1 {
+		varName = parts[1]
+	}
+	if varName == "" {
+		varName = dest.DefaultVariant
+	}
+	if len(dest.Variants) != 0 && varName == "" {
+		return nil, nil, fmt.Errorf("destination %s requires a variant", name)
+	}
+
+	if varName != "" {
+		variant, ok := dest.Variants[varName]
+		if !ok {
+			return nil, nil, fmt.Errorf(
+				"unknown destination %s: destinations.%s.variants.%s not in main config",
+				name,
+				destName,
+				varName,
+			)
+		}
+		dest.Options = mergeOptions(dest.Options, variant).(map[string]any)
+
+		// Erase variants to avoid funny nested lookup
+		dest.Variants = nil
+		dest.DefaultVariant = ""
+	}
+
+	return &dest, &DestinationRef{
+		Name:    destName,
+		Variant: varName,
+	}, nil
+}
+
+func mergeOptions(base, variant any) any {
+	baseMap, baseIsMap := base.(map[string]any)
+	variantMap, variantIsMap := variant.(map[string]any)
+	if baseIsMap && variantIsMap {
+		res := make(map[string]any)
+		for k, v := range baseMap {
+			res[k] = v
+		}
+		for k, v := range variantMap {
+			existing, ok := res[k]
+			if ok {
+				res[k] = mergeOptions(existing, v)
+			} else {
+				res[k] = v
+			}
+		}
+		return res
+	}
+	return variant
 }

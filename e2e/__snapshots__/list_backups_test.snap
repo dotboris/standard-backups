@@ -1,0 +1,326 @@
+
+[TestListBackups/full_dest/base - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---
+
+[TestListBackups/full_dest/base - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ }
+]
+---
+
+[TestListBackups/full_dest/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---
+
+[TestListBackups/full_dest/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ }
+]
+---
+
+[TestListBackups/full_variant/base - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestListBackups/full_variant/base - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ }
+]
+---
+
+[TestListBackups/full_variant/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestListBackups/full_variant/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ }
+]
+---
+
+[TestListBackups/minimal/base - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestListBackups/minimal/base - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
+ }
+]
+---
+
+[TestListBackups/minimal/all - 1]
+{
+ "DestinationName": "my-dest",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestListBackups/minimal/all - 2]
+[
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-default",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "default"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-my-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": "my-variant"
+ },
+ {
+  "destination": "my-dest",
+  "extra": {},
+  "id": "my-dest-no-variant",
+  "job": "whatever",
+  "size": 42069,
+  "time": "2026-01-01T00:00:00Z",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": null,
+  "id": "nothing",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ },
+ {
+  "destination": "",
+  "extra": {
+   "array": [
+    1,
+    2,
+    3
+   ],
+   "bool": true,
+   "key": "value",
+   "number": 42,
+   "object": {
+    "foo": "bar"
+   }
+  },
+  "id": "extras",
+  "job": "",
+  "size": 0,
+  "time": "",
+  "variant": ""
+ }
+]
+---

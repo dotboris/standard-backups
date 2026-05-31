@@ -8,6 +8,7 @@ import (
 
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadRecipeManifestsSingleFile(t *testing.T) {
@@ -27,9 +28,7 @@ func TestLoadRecipeManifestsSingleFile(t *testing.T) {
 				command: echo after
 		`)),
 		0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
@@ -69,9 +68,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				command: echo after 1
 		`)),
 		0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	d2 := t.TempDir()
 	p2 := path.Join(d2, "app2.yaml")
 	err = os.WriteFile(p2,
@@ -88,9 +85,7 @@ func TestLoadRecipeManifestsMultipleFiles(t *testing.T) {
 				command: echo after 2
 		`)),
 		0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	manifests, err := LoadRecipeManifests([]string{d1, d2})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
@@ -186,9 +181,7 @@ func TestLoadRecipeManifestsExclude(t *testing.T) {
 			d := t.TempDir()
 			p := path.Join(d, "example.yaml")
 			err := os.WriteFile(p, []byte(testCase.content), 0o644)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			manifests, err := LoadRecipeManifests([]string{d})
 			if assert.NoError(t, err) {
 				assert.Equal(t, []RecipeManifestV1{
@@ -209,9 +202,7 @@ func TestLoadRecipeManifestsExclude(t *testing.T) {
 func TestLoadRecipeManifestsIgnoreNonYaml(t *testing.T) {
 	d := t.TempDir()
 	err := os.WriteFile(path.Join(d, "bogus.txt"), []byte("bogus"), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{}, manifests)
@@ -245,9 +236,7 @@ func TestLoadRecipeManifestsNoHooks(t *testing.T) {
 			paths: [/app/to/backup]
 		`)),
 		0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	manifests, err := LoadRecipeManifests([]string{d})
 	if assert.NoError(t, err) {
 		assert.Equal(t, []RecipeManifestV1{
@@ -265,9 +254,7 @@ func TestLoadRecipeManifestsNoHooks(t *testing.T) {
 func TestLoadRecipeManifestsInvalidEmptyFile(t *testing.T) {
 	d := t.TempDir()
 	err := os.WriteFile(path.Join(d, "app.yaml"), []byte(""), 0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadRecipeManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -283,9 +270,7 @@ func TestLoadRecipeManifestsInvalidBadVersion(t *testing.T) {
 			paths: [/app/to/backup]
 		`)),
 		0o644)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadRecipeManifests([]string{d})
 	assert.Error(t, err)
 }
@@ -302,9 +287,7 @@ func TestLoadRecipeManifestsInvalidNoPaths(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadRecipeManifests([]string{d})
 	assert.Equal(
 		t,
@@ -329,9 +312,7 @@ func TestLoadRecipeManifestsInvalidEmptyPaths(t *testing.T) {
 		`)),
 		0o644,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	_, err = LoadRecipeManifests([]string{d})
 	assert.Equal(
 		t,
@@ -361,9 +342,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,
@@ -390,9 +369,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,
@@ -419,9 +396,7 @@ func TestLoadRecipeManifestsInvalidHooks(t *testing.T) {
 				`, hook))),
 				0o644,
 			)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			_, err = LoadRecipeManifests([]string{d})
 			if assert.Error(t, err) {
 				assert.Equal(t,

@@ -1,0 +1,55 @@
+
+[TestRestore/full_variant - 1]
+{
+ "BackupId": "my-backup-id",
+ "DestinationName": "my-dest",
+ "OutputDir": "path/to/restore/dir",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestRestore/minimal - 1]
+{
+ "BackupId": "my-backup-id",
+ "DestinationName": "my-dest",
+ "OutputDir": "path/to/restore/dir",
+ "RawOptions": {},
+ "VariantName": ""
+}
+---
+
+[TestRestore/full_dest - 1]
+{
+ "BackupId": "my-backup-id",
+ "DestinationName": "my-dest",
+ "OutputDir": "path/to/restore/dir",
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "default": true,
+  "number": 42,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "default"
+}
+---

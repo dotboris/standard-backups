@@ -1,11 +1,8 @@
 package proto
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
-	"strings"
 )
 
 type (
@@ -14,68 +11,61 @@ type (
 		Paths           []string
 		Exclude         []string
 		DestinationName string
+		VariantName     string
 		JobName         string
 		RawOptions      map[string]any
 	}
 )
 
 func NewBackupRequestFromEnv() (*BackupRequest, error) {
-	rawPaths, err := requireEnv("STANDARD_BACKUPS_PATHS")
+	paths, err := getEnvJson[[]string](PATHS_ENV)
 	if err != nil {
 		return nil, err
 	}
-	paths := strings.Split(rawPaths, ":")
-
-	exclude := []string{}
-	rawExclude, _ := os.LookupEnv("STANDARD_BACKUPS_EXCLUDE")
-	if rawExclude != "" {
-		exclude = strings.Split(rawExclude, ":")
-	}
-
-	destinationName, err := requireEnv("STANDARD_BACKUPS_DESTINATION_NAME")
+	exclude, _ := getEnvJson[[]string](EXCLUDE_ENV)
+	destinationName, err := getEnvStr(DESTINATION_NAME_ENV)
 	if err != nil {
 		return nil, err
 	}
-
-	jobName, err := requireEnv("STANDARD_BACKUPS_JOB_NAME")
+	variantName := os.Getenv(VARIANT_NAME_ENV)
+	jobName, err := getEnvStr(JOB_NAME_ENV)
 	if err != nil {
 		return nil, err
 	}
-
-	rawOptions, err := requireEnv("STANDARD_BACKUPS_OPTIONS")
+	options, err := getEnvJson[map[string]any](OPTIONS_ENV)
 	if err != nil {
 		return nil, err
 	}
-	var options map[string]any
-	err = json.Unmarshal([]byte(rawOptions), &options)
-	if err != nil {
-		return nil, err
-	}
-
 	return &BackupRequest{
 		Paths:           paths,
 		Exclude:         exclude,
 		DestinationName: destinationName,
+		VariantName:     variantName,
 		JobName:         jobName,
 		RawOptions:      options,
 	}, nil
 }
 
 func (br *BackupRequest) ToEnv() ([]string, error) {
-	jsonOptions, err := json.Marshal(br.RawOptions)
+	pathsEnv, err := toEnvJson(PATHS_ENV, br.Paths)
 	if err != nil {
 		return nil, err
 	}
-
+	excludeEnv, err := toEnvJson(EXCLUDE_ENV, br.Exclude)
+	if err != nil {
+		return nil, err
+	}
+	optionsEnv, err := toEnvJson(OPTIONS_ENV, br.RawOptions)
+	if err != nil {
+		return nil, err
+	}
 	return []string{
-		fmt.Sprintf("STANDARD_BACKUPS_PATHS=%s",
-			strings.Join(br.Paths, ":")),
-		fmt.Sprintf("STANDARD_BACKUPS_EXCLUDE=%s",
-			strings.Join(br.Exclude, ":")),
-		fmt.Sprintf("STANDARD_BACKUPS_DESTINATION_NAME=%s", br.DestinationName),
-		fmt.Sprintf("STANDARD_BACKUPS_JOB_NAME=%s", br.JobName),
-		fmt.Sprintf("STANDARD_BACKUPS_OPTIONS=%s",
-			jsonOptions),
+		pathsEnv,
+		excludeEnv,
+		toEnvStr(DESTINATION_NAME_ENV, br.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, br.VariantName),
+		toEnvStr(JOB_NAME_ENV, br.JobName),
+		optionsEnv,
 	}, nil
 }
 

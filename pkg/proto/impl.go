@@ -13,7 +13,7 @@ type BackendImpl struct {
 }
 
 func (bi *BackendImpl) execute() error {
-	command, err := GetCommand()
+	command, err := getEnvStr(COMMAND_ENV)
 	if err != nil {
 		return err
 	}

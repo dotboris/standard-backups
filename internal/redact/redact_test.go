@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/text/transform"
 )
 
@@ -16,9 +17,7 @@ func TestEmptySecretError(t *testing.T) {
 
 func TestNoopWithNoSecrets(t *testing.T) {
 	r, err := NewTransformer()
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	str := "Hello world!"
 
@@ -30,9 +29,7 @@ func TestNoopWithNoSecrets(t *testing.T) {
 
 func TestNoopWithNoMatch(t *testing.T) {
 	r, err := NewTransformer("bogus")
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	str := "Hello world!"
 
@@ -71,9 +68,7 @@ func TestRedact(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			r, err := NewTransformer(c.secrets...)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 
 			res, n, err := transform.String(r, c.input)
 			assert.Equal(t, c.expected, res)
@@ -168,24 +163,18 @@ func TestOverlapSecretAcrossWrites(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			r, err := NewTransformer(c.secrets...)
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 			res := bytes.NewBuffer(nil)
 			w := transform.NewWriter(res, r)
 
 			for _, write := range c.writes {
 				n, err := w.Write([]byte(write))
-				if !assert.NoError(t, err) {
-					return
-				}
+				require.NoError(t, err)
 				assert.Equal(t, len(write), n)
 			}
 
 			err = w.Close()
-			if !assert.NoError(t, err) {
-				return
-			}
+			require.NoError(t, err)
 
 			assert.Equal(t, c.expected, res.String())
 		})

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 )
 
@@ -12,12 +11,14 @@ type (
 	ListBackupsRequest struct {
 		RawOptions      map[string]any
 		DestinationName string
+		VariantName     string
 	}
 	ListBackupsResponseItem struct {
 		Id          string         `json:"id"`
 		Time        string         `json:"time"`
 		Job         string         `json:"job"`
 		Destination string         `json:"destination"`
+		Variant     string         `json:"variant"`
 		Size        int            `json:"size"` // Size of the backup in bytes
 		Extra       map[string]any `json:"extra"`
 	}
@@ -28,38 +29,31 @@ type (
 )
 
 func NewListBackupsRequestsFromEnv() (*ListBackupsRequest, error) {
-	rawOptions, err := requireEnv("STANDARD_BACKUPS_OPTIONS")
+	options, err := getEnvJson[map[string]any](OPTIONS_ENV)
 	if err != nil {
 		return nil, err
 	}
-	var options map[string]any
-	err = json.Unmarshal([]byte(rawOptions), &options)
+	destinationName, err := getEnvStr(DESTINATION_NAME_ENV)
 	if err != nil {
 		return nil, err
 	}
-
-	destinationName, err := requireEnv("STANDARD_BACKUPS_DESTINATION_NAME")
-	if err != nil {
-		return nil, err
-	}
-
+	variantName := os.Getenv(VARIANT_NAME_ENV)
 	return &ListBackupsRequest{
 		RawOptions:      options,
 		DestinationName: destinationName,
+		VariantName:     variantName,
 	}, nil
 }
 
 func (lbr *ListBackupsRequest) ToEnv() ([]string, error) {
-	jsonOptions, err := json.Marshal(lbr.RawOptions)
+	optionsEnv, err := toEnvJson(OPTIONS_ENV, lbr.RawOptions)
 	if err != nil {
 		return nil, err
 	}
-
 	return []string{
-		fmt.Sprintf("STANDARD_BACKUPS_DESTINATION_NAME=%s",
-			lbr.DestinationName),
-		fmt.Sprintf("STANDARD_BACKUPS_OPTIONS=%s",
-			jsonOptions),
+		toEnvStr(DESTINATION_NAME_ENV, lbr.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, lbr.VariantName),
+		optionsEnv,
 	}, nil
 }
 

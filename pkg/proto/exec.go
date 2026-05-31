@@ -1,9 +1,7 @@
 package proto
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 )
 
@@ -12,59 +10,44 @@ type (
 	ExecRequest struct {
 		Args            []string
 		DestinationName string
+		VariantName     string
 		RawOptions      map[string]any
 	}
 )
 
 func NewExecRequestFromEnv() (*ExecRequest, error) {
-	destinationName, _ := os.LookupEnv("STANDARD_BACKUPS_DESTINATION_NAME")
-
-	rawOptions, err := requireEnv("STANDARD_BACKUPS_OPTIONS")
+	destinationName, _ := os.LookupEnv(DESTINATION_NAME_ENV)
+	variantName, _ := os.LookupEnv(VARIANT_NAME_ENV)
+	options, err := getEnvJson[map[string]any](OPTIONS_ENV)
 	if err != nil {
 		return nil, err
 	}
-	var options map[string]any
-	err = json.Unmarshal([]byte(rawOptions), &options)
+	args, err := getEnvJson[[]string](ARGS_ENV)
 	if err != nil {
 		return nil, err
 	}
-
-	rawArgs, err := requireEnv("STANDARD_BACKUPS_ARGS")
-	if err != nil {
-		return nil, err
-	}
-	var args []string
-	err = json.Unmarshal([]byte(rawArgs), &args)
-	if err != nil {
-		return nil, err
-	}
-
 	return &ExecRequest{
 		DestinationName: destinationName,
+		VariantName:     variantName,
 		RawOptions:      options,
 		Args:            args,
 	}, nil
 }
 
 func (r *ExecRequest) ToEnv() ([]string, error) {
-	jsonOptions, err := json.Marshal(r.RawOptions)
+	optionsEnv, err := toEnvJson(OPTIONS_ENV, r.RawOptions)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to marshal destination options %v as JSON: %w",
-			r.RawOptions,
-			err,
-		)
+		return nil, err
 	}
-
-	jsonArgs, err := json.Marshal(r.Args)
+	argsEnv, err := toEnvJson(ARGS_ENV, r.Args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal args %v as JSON: %w", r.RawOptions, err)
+		return nil, err
 	}
-
 	return []string{
-		fmt.Sprintf("STANDARD_BACKUPS_ARGS=%s", jsonArgs),
-		fmt.Sprintf("STANDARD_BACKUPS_DESTINATION_NAME=%s", r.DestinationName),
-		fmt.Sprintf("STANDARD_BACKUPS_OPTIONS=%s", jsonOptions),
+		argsEnv,
+		toEnvStr(DESTINATION_NAME_ENV, r.DestinationName),
+		toEnvStr(VARIANT_NAME_ENV, r.VariantName),
+		optionsEnv,
 	}, nil
 }
 

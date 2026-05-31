@@ -8,6 +8,8 @@ config.MainConfig{
       Options: map[string]interface {}{
         "destination-dir": "./dist/backups/local",
       },
+      DefaultVariant: "",
+      Variants:       map[string]map[string]interface {}{},
     },
     "local-restic": config.DestinationConfigV1{
       Backend: "restic",
@@ -17,10 +19,47 @@ config.MainConfig{
         },
         "repo": "./dist/backups/restic-local",
       },
+      DefaultVariant: "medium",
+      Variants:       map[string]map[string]interface {}{
+        "last-5": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-last": 5,
+            },
+          },
+        },
+        "long": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-daily": 2555,
+            },
+          },
+        },
+        "medium": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-daily": 365,
+            },
+          },
+        },
+        "short": map[string]interface {}{
+          "forget": map[string]interface {}{
+            "enable":  true,
+            "options": map[string]interface {}{
+              "keep-daily": 30,
+            },
+          },
+        },
+      },
     },
     "s3": config.DestinationConfigV1{
-      Backend: "restic",
-      Options: map[string]interface {}{},
+      Backend:        "restic",
+      Options:        map[string]interface {}{},
+      DefaultVariant: "",
+      Variants:       map[string]map[string]interface {}{},
     },
   },
   Jobs: map[string]config.JobConfigV1{
@@ -45,6 +84,7 @@ config.MainConfig{
       Recipe:   "examples",
       BackupTo: []string{
         "local",
+        "local-restic/last-5",
       },
       OnSuccess: (*config.HookV1)(nil),
       OnFailure: (*config.HookV1)(nil),

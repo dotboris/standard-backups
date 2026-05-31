@@ -6,6 +6,7 @@ import (
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfigTemplateApply(t *testing.T) {
@@ -29,9 +30,7 @@ func TestConfigTemplateApply(t *testing.T) {
 		`)),
 		&value,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	res, err := tpl.Apply("test", value)
 	if assert.NoError(t, err) {
@@ -63,9 +62,7 @@ func TestConfigTemplateError(t *testing.T) {
 		`)),
 		&value,
 	)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	_, err = tpl.Apply("test", value)
 	assert.EqualError(

@@ -1,0 +1,42 @@
+
+[TestBackup/full - 1]
+{
+ "DestinationName": "my-dest",
+ "Exclude": [
+  "exclude/me",
+  "also/me"
+ ],
+ "JobName": "my-job",
+ "Paths": [
+  "/path/to/backup",
+  "/path/to/also/backup"
+ ],
+ "RawOptions": {
+  "array": [
+   1,
+   2,
+   3
+  ],
+  "bool": true,
+  "number": 69,
+  "obj": {
+   "yay": true
+  },
+  "string": "forty two"
+ },
+ "VariantName": "my-variant"
+}
+---
+
+[TestBackup/minimal - 1]
+{
+ "DestinationName": "my-dest",
+ "Exclude": null,
+ "JobName": "my-job",
+ "Paths": [
+  "/path/to/backup"
+ ],
+ "RawOptions": {},
+ "VariantName": ""
+}
+---

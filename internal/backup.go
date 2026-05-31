@@ -62,10 +62,9 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 
 	if errs == nil {
 		for _, destName := range job.BackupTo {
-			dest, ok := cfg.MainConfig.Destinations[destName]
-			if !ok {
-				errs = errors.Join(errs,
-					fmt.Errorf("could not find destination named %s", destName))
+			dest, ref, err := cfg.MainConfig.GetDestination(destName)
+			if err != nil {
+				errs = errors.Join(errs, err)
 				continue
 			}
 			client, err := s.backendClientFactory.NewBackendClient(cfg, dest.Backend)
@@ -87,7 +86,8 @@ func (s *backupService) Backup(cfg config.Config, jobName string) error {
 				&proto.BackupRequest{
 					Paths:           recipe.Paths,
 					Exclude:         recipe.Exclude,
-					DestinationName: destName,
+					DestinationName: ref.Name,
+					VariantName:     ref.Variant,
 					JobName:         jobName,
 					RawOptions:      dest.Options,
 				},

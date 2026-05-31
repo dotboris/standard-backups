@@ -17,6 +17,28 @@ destinations:
       repo: ./dist/backups/restic-local
       env:
         RESTIC_PASSWORD: '{{ .Secrets.localResticPassword }}'
+    default-variant: medium
+    variants:
+      last-5:
+        forget:
+          enable: true
+          options:
+            keep-last: 5
+      short:
+        forget:
+          enable: true
+          options:
+            keep-daily: 30 # 1 month
+      medium:
+        forget:
+          enable: true
+          options:
+            keep-daily: 365 # 1 year
+      long:
+        forget:
+          enable: true
+          options:
+            keep-daily: 2555 # 7 years
 
 jobs:
   nextcloud:
@@ -27,7 +49,7 @@ jobs:
     backup-to: [s3] # only to s3
   test:
     recipe: examples
-    backup-to: [local]
+    backup-to: [local, local-restic/last-5]
   test-restic:
     recipe: examples
     backup-to: [local-restic]
