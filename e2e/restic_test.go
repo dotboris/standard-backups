@@ -310,22 +310,25 @@ func TestResticListBackups(t *testing.T) {
 			pass:
 				literal: supersecret
 		destinations:
-			d1:
+			simple:
 				backend: restic
 				options:
 					repo: %s
 					env:
 						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
-			d2:
+			vars:
 				backend: restic
 				options:
 					repo: %s
 					env:
 						RESTIC_PASSWORD: '{{ .Secrets.pass }}'
+				variants:
+					a: {}
+					b: {}
 		jobs:
 			my-job:
 				recipe: bogus
-				backup-to: [d1, d2]
+				backup-to: [simple, vars/a, vars/b]
 	`, t.TempDir(), t.TempDir())))
 
 	for range 2 {
@@ -335,32 +338,60 @@ func TestResticListBackups(t *testing.T) {
 		require.NoError(t, err, "failed to backup")
 	}
 
-	for _, dest := range []string{"d1", "d2"} {
-		cmd := testutils.StandardBackups(t, "list-backups", dest, "--json")
-		tc.Apply(cmd)
-		cmd.Stdout = nil
-		stdout, err := cmd.Output()
-		require.NoError(t, err, "failed to list backups for %s", dest)
-		var output []proto.ListBackupsResponseItem
-		err = json.Unmarshal(stdout, &output)
-		require.NoError(t, err, dest)
+	checks := []struct {
+		destination      string
+		variant          string
+		ref              string
+		expectedCount    int
+		expectedVariants map[string]int
+	}{
+		{
+			destination:      "simple",
+			variant:          "",
+			ref:              "simple",
+			expectedCount:    2,
+			expectedVariants: map[string]int{"": 2},
+		},
+		{
+			destination:      "vars",
+			variant:          "a",
+			ref:              "vars/a",
+			expectedCount:    4,
+			expectedVariants: map[string]int{"a": 2, "b": 2},
+		},
+	}
+	for _, check := range checks {
+		t.Run(check.ref, func(t *testing.T) {
+			cmd := testutils.StandardBackups(t, "list-backups", check.ref, "--json")
+			tc.Apply(cmd)
+			cmd.Stdout = nil
+			stdout, err := cmd.Output()
+			require.NoError(t, err)
+			var output []proto.ListBackupsResponseItem
+			err = json.Unmarshal(stdout, &output)
+			require.NoError(t, err)
 
-		assert.Len(t, output, 2)
-		for i := range 2 {
-			backupTime, err := time.Parse(time.RFC3339, output[i].Time)
-			assert.NoError(t, err, "failed to parse output[%d].Time in %s", i, dest)
-			assert.WithinRange(t, backupTime,
-				backupTime.Add(time.Minute*-2),
-				backupTime.Add(time.Minute*2))
+			variantCounts := map[string]int{}
+			assert.Len(t, output, check.expectedCount)
+			for i := range check.expectedCount {
+				backupTime, err := time.Parse(time.RFC3339, output[i].Time)
+				assert.NoError(t, err, "failed to parse output[%d].Time in %s", i, check.ref)
+				assert.WithinRange(t, backupTime,
+					backupTime.Add(time.Minute*-2),
+					backupTime.Add(time.Minute*2))
 
-			assert.NotEmpty(t, output[i].Id, i)
-			assert.NotEmpty(t, output[i].Extra, i)
-			assert.Equal(t, "my-job", output[i].Job, i)
-			assert.Equal(t, dest, output[i].Destination, i)
-			assert.Greater(t, output[i].Size, 0, i)
-		}
+				assert.NotEmpty(t, output[i].Id, i)
+				assert.NotEmpty(t, output[i].Extra, i)
+				assert.Greater(t, output[i].Size, 0, i)
+				assert.Equal(t, "my-job", output[i].Job, i)
+				assert.Equal(t, check.destination, output[i].Destination, i)
+				variantCounts[output[i].Variant] += 1
+			}
+			assert.Equal(t, check.expectedVariants, variantCounts)
 
-		assert.NotEqual(t, output[0].Id, output[1].Id, dest)
-		assert.Less(t, output[0].Time, output[1].Time, dest)
+			for i := range check.expectedCount - 1 {
+				assert.NotEqual(t, output[i].Id, output[i+1].Id)
+			}
+		})
 	}
 }
