@@ -128,7 +128,13 @@ func TestListBackups(t *testing.T) {
 
 			t.Run("all", func(t *testing.T) {
 				// Shows everything with --all
-				cmd := testutils.StandardBackups(t, "list-backups", testCase.dest, "--json", "--all")
+				cmd := testutils.StandardBackups(
+					t,
+					"list-backups",
+					testCase.dest,
+					"--json",
+					"--all",
+				)
 				tc.Apply(cmd)
 				tb.Apply(cmd)
 				cmd.Stdout = nil
