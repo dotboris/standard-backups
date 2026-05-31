@@ -131,7 +131,7 @@ func init() {
 	listBackupsCmd.MarkFlagsMutuallyExclusive("json", "columns")
 	listBackupsCmd.Flags().BoolVar(&listBackupsAll,
 		"all", false,
-		"Show all backups.",
+		"Show all backups",
 	)
 
 	rootCmd.AddCommand(listBackupsCmd)
