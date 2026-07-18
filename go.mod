@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	github.com/deckarep/golang-set/v2 v2.9.0
-	github.com/gkampitakis/go-snaps v0.5.22
+	github.com/gkampitakis/go-snaps v0.5.23
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gookit/color v1.6.1
@@ -16,7 +16,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.39.0
+	golang.org/x/text v0.40.0
 )
 
 require (
