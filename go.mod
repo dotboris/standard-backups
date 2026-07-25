@@ -9,7 +9,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gookit/color v1.6.1
 	github.com/hashicorp/go-version v1.9.0
-	github.com/k0kubun/pp/v3 v3.5.1
+	github.com/k0kubun/pp/v3 v3.5.2
 	github.com/lithammer/dedent v1.1.0
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/phsym/console-slog v0.3.1
@@ -30,7 +30,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/maruel/natural v1.3.0 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
