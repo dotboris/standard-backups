@@ -61,7 +61,7 @@ type mockBackuper_Backup_Call struct {
 
 // Backup is a helper method to define mock.On call
 //   - req *proto.BackupRequest
-func (_e *mockBackuper_Expecter) Backup(req interface{}) *mockBackuper_Backup_Call {
+func (_e *mockBackuper_Expecter) Backup(req any) *mockBackuper_Backup_Call {
 	return &mockBackuper_Backup_Call{Call: _e.mock.On("Backup", req)}
 }
 
@@ -151,7 +151,7 @@ type mockNewBackendClienter_NewBackendClient_Call struct {
 // NewBackendClient is a helper method to define mock.On call
 //   - cfg config.Config
 //   - name string
-func (_e *mockNewBackendClienter_Expecter) NewBackendClient(cfg interface{}, name interface{}) *mockNewBackendClienter_NewBackendClient_Call {
+func (_e *mockNewBackendClienter_Expecter) NewBackendClient(cfg any, name any) *mockNewBackendClienter_NewBackendClient_Call {
 	return &mockNewBackendClienter_NewBackendClient_Call{Call: _e.mock.On("NewBackendClient", cfg, name)}
 }
 
