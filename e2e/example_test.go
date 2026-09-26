@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	mapset "github.com/deckarep/golang-set/v2"
+	mapset "github.com/deckarep/golang-set/v3"
 	"github.com/dotboris/standard-backups/internal/testutils"
 	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/stretchr/testify/assert"
