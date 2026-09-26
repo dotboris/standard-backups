@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-version v1.9.0
 	github.com/k0kubun/pp/v3 v3.5.2
 	github.com/lithammer/dedent v1.1.0
-	github.com/olekukonko/tablewriter v1.1.4
+	github.com/olekukonko/tablewriter v1.1.5
 	github.com/phsym/console-slog v0.3.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/spf13/cobra v1.10.2
