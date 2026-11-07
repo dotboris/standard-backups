@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/deckarep/golang-set/v3 v3.0.0
-	github.com/gkampitakis/go-snaps v0.5.24
+	github.com/gkampitakis/go-snaps v0.5.25
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gookit/color v1.6.3
