@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Use nix because it installs backup tools for us
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Use nix because it installs backup tools for us
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Use nix because it installs `mockery` for us
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Use nix because it installs backup tools for us
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Use nix because it installs backup tools for us
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           # Helps avoid rate limiting
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
